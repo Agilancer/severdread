@@ -76,6 +76,7 @@ export function planPads(X) {
     const st = [[0, X.startRow]];
     while (st.length) {
       const [c, r] = st.pop();
+      if (c === cols - 1 && r === X.bossRow) continue;   // the boss pad is a leaf: never a way through
       for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nc = c + dc, nr = r + dr;
         if (!present(nc, nr) || seen.has(nc * 16 + nr)) continue;
@@ -159,7 +160,7 @@ export function planPads(X) {
       const q = e.a === p ? e.b : e.a;
       if (done.has(q.id)) continue;
       let dh = e.boss ? 0 : e.kind === 'jump' ? rng.pick([0, 0, 0.5, -0.5]) : rng.pick(S.dhs);
-      q.y = clamp(p.y + dh, S.yMin, S.yMax);
+      q.y = Math.round(clamp(p.y + dh, S.yMin, S.yMax) * 10) / 10;
       if (e.kind === 'jump' && Math.abs(q.y - p.y) > 0.5) q.y = p.y;
       e.parent = p; e.child = q;
       done.add(q.id); queue.push(q);
@@ -300,7 +301,10 @@ function tryConnect(X, e, b, bw) {
     const inner = band(P, 2);
     if (!line.every((i) => okCell(i, P)) || !inner.every((i) => okCell(i, P, false))) return false;
     const door = line[1 + (X.rng.chance(0.5) ? 0 : bw - 1)];
-    gate = { P, line, door, axis: ax ? 'x' : 'z', facing: P === B ? -1 : 1 };
+    // the landing row beside the bridge mouth must not lead around the gate wall
+    const fence = [[C(sd.e, b - 1), C(sd.e, b)], [C(sd.e, b + bw - 1), C(sd.e, b + bw)]];
+    if (!fence.every(([u, v]) => owner[u] === P.id && owner[v] === P.id)) return false;
+    gate = { P, line, door, axis: ax ? 'x' : 'z', facing: P === B ? -1 : 1, fence, sd };
   }
   // ---- apply
   const cells = [];
@@ -322,6 +326,16 @@ function tryConnect(X, e, b, bw) {
   if (gate) {
     gateWall(g, deco, gate.line, gate.door, { wallTex: S.gateWall ?? TS.WALL2, capTex: S.gateCap ?? TS.ROOF, frameTex: S.gateFrame ?? TS.METAL, ceilTex: S.gateCeil ?? TS.CEIL, height: S.gateH ?? 4.2, axis: gate.axis, torch: S.gateLight, facing: gate.facing });
     for (const i of gate.line) { lock[i] = LOCK.HARD; if (i !== gate.door) owner[i] = -3; }
+    // rails closing the landing off from the rest of the pad's edge row
+    const y = gate.P.y;
+    for (const [u, v] of gate.fence) {
+      const ux = u % X.W, uz = (u / X.W) | 0, vx = v % X.W, vz = (v / X.W) | 0;
+      const dir = vx > ux ? 0 : vx < ux ? 1 : vz > uz ? 2 : 3;
+      g.setEdge(ux, uz, dir, true);
+      // the shared edge line
+      if (dir < 2) { const lx = Math.max(ux, vx); deco.railRun(lx, uz, lx, uz + 1, y, { style: S.rail, tex: S.railTex }); }
+      else { const lz = Math.max(uz, vz); deco.railRun(ux, lz, ux + 1, lz, y, { style: S.rail, tex: S.railTex }); }
+    }
     for (const i of band(gate.P, 2)) lock[i] = LOCK.HARD;
     X.gates.push(gate);
   }
