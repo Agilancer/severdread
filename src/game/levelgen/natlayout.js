@@ -518,20 +518,24 @@ export function buildNatural(rng, theme, depth, skin) {
         }
       }
     }
-    const y = g.floor[deck[0]];
+    // a flight inside the passage splits the deck into two levels: lay each
+    // level as its own span (one height for all would cut the flight off)
+    const levels = new Map();
+    for (const i of deck) { const h = g.floor[i]; if (!levels.has(h)) levels.set(h, []); levels.get(h).push(i); }
+    const y = Math.min(...levels.keys());
     const alongZ = t.dir[deckK[0]] >= 2;
     if (t.kind === 'bridge') {
       for (const i of gorge) {
         g.open(i % W, (i / W) | 0, -30, SKY_H, { sky: true, floorTex: TS.PITWALL, wallTex: TS.ROCK, flags: F.VOID | F.NOSPAWN | F.OUTDOOR, region: -3, light: lightAt(i % W, (i / W) | 0) });
       }
-      layBridge(g, deco, deck, y, { deck: S.deck, under: S.under, style: S.rail, railTex: S.railTex, alongZ, posts: false });
+      for (const [h, cells] of levels) layBridge(g, deco, cells, h, { deck: S.deck, under: S.under, style: S.rail, railTex: S.railTex, alongZ, posts: false });
     } else {
       // boardwalk over a toxic marsh: the marsh lies a little below the deck
       const md = skin.marshDepth ?? 2.2;
       for (const i of gorge) g.open(i % W, (i / W) | 0, y, SKY_H, { sky: true, floorTex: TS.FLOOR, wallTex: TS.ROCK, flags: F.OUTDOOR, region: -3, light: lightAt(i % W, (i / W) | 0) });
       for (const i of deck) { g.floor[i] = y; }
       sinkPit(g, deco, [...gorge, ...deck], S.marsh || 'poison', md, { base: y, lightEvery: 9 });
-      layBridge(g, deco, deck, y, { deck: S.deck, under: S.under, style: S.rail, railTex: S.railTex, alongZ, posts: true, bottom: y - md });
+      for (const [h, cells] of levels) layBridge(g, deco, cells, h, { deck: S.deck, under: S.under, style: S.rail, railTex: S.railTex, alongZ, posts: true, bottom: y - md });
     }
     t.deck = deck;
     t.gorge = gorge;

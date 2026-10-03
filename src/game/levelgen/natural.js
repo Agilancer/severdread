@@ -928,3 +928,38 @@ export function cabin(X, L, c, o = {}) {
   }
   return false;
 }
+
+// Abandoned covered wagon: plank bed and sides (WOOD), four spoked wheels
+// (WOOD, darker), bare bonnet hoops (WOOD), a shaft, and cargo crates (CRATE).
+// alongX: the wagon's length runs along x.
+export function wagon(deco, x, z, y, alongX = true, o = {}) {
+  const rng = deco.rng;
+  const L = 1.25, Wd = 0.62, bed = y + 0.55, t = 0.07;
+  const box = (a0, y0, b0, a1, y1, b1, tex, opt) => (alongX ? deco.box(x + a0, y0, z + b0, x + a1, y1, z + b1, tex, opt) : deco.box(x + b0, y0, z + a0, x + b1, y1, z + a1, tex, opt));
+  box(-L, bed, -Wd, L, bed + 0.1, Wd, TS.WOOD);                      // bed
+  box(-L, bed + 0.1, -Wd, L, bed + 0.5, -Wd + t, TS.WOOD);           // sides
+  box(-L, bed + 0.1, Wd - t, L, bed + 0.5, Wd, TS.WOOD);
+  box(-L, bed + 0.1, -Wd, -L + t, bed + 0.5, Wd, TS.WOOD);
+  box(L - t, bed + 0.1, -Wd, L, bed + 0.42, Wd, TS.WOOD);
+  for (const a of [-L * 0.62, L * 0.62]) {                           // axles + wheels
+    box(a - 0.05, y + 0.36, -Wd - 0.12, a + 0.05, y + 0.44, Wd + 0.12, TS.WOOD, { lightMul: 0.6 });
+    for (const s of [-1, 1]) {
+      const b = s * (Wd + 0.1);
+      box(a - 0.4, y + 0.02, b - 0.04, a + 0.4, y + 0.8, b + 0.04, TS.WOOD, { lightMul: 0.45, faces: FACE.SIDES });
+      box(a - 0.06, y + 0.02, b - 0.06, a + 0.06, y + 0.8, b + 0.06, TS.METAL, { lightMul: 0.6 });
+    }
+  }
+  if (!o.broken) {                                                   // bonnet hoops
+    for (const a of [-L * 0.8, 0, L * 0.8]) {
+      box(a - 0.04, bed + 0.5, -Wd, a + 0.04, bed + 1.5, -Wd + 0.06, TS.WOOD, { faces: FACE.SIDES });
+      box(a - 0.04, bed + 0.5, Wd - 0.06, a + 0.04, bed + 1.5, Wd, TS.WOOD, { faces: FACE.SIDES });
+      box(a - 0.04, bed + 1.44, -Wd, a + 0.04, bed + 1.52, Wd, TS.WOOD);
+    }
+    box(-L * 0.8, bed + 1.44, -0.04, L * 0.8, bed + 1.52, 0.04, TS.WOOD);
+  }
+  box(L, y + 0.4, -0.05, L + 1.1, y + 0.5, 0.05, TS.WOOD);           // shaft
+  box(-0.7, bed + 0.1, -0.4, -0.05, bed + 0.75, 0.25, rng.chance(0.5) ? TS.CRATE : TS.CRATE2, { uv: 'fit' });
+  box(0.1, bed + 0.1, -0.15, 0.6, bed + 0.55, 0.4, TS.CRATE, { uv: 'fit' });
+  if (alongX) deco.collider(x - L, y, z - Wd - 0.15, x + L, bed + 1.5, z + Wd + 0.15);
+  else deco.collider(x - Wd - 0.15, y, z - L, x + Wd + 0.15, bed + 1.5, z + L);
+}
