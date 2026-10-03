@@ -26,6 +26,8 @@ handling.
 | `art/raw/projectiles/` | projectile sprites | configure rows/cols (5x5 so far) |
 | `art/raw/items/` | item/armour/ring/key/reagent icons | labelled grids, lines auto-detected |
 | `art/raw/doors/` | animated key doors | 4 images: closed, open1, open2, open3 |
+| `art/raw/scatter/` | pillars, explosive barrels/props, chests, pedestals, spike traps | frame strips per object (see below) |
+| `assets/ui/` | logo, credits splash | used directly (no processing) |
 
 ---
 
@@ -110,6 +112,36 @@ Animated tiles: one tile per row, N frames left to right:
 - **Doors** (`door_frames`): designs in columns, key colours in rows
   (red, blue, yellow, green, purple); black areas in the opening frames become
   see-through.
+
+## Texture roles (logical textures)
+
+Levels never pick raw tiles: every surface and object asks for a ROLE (wall,
+floor, ceiling, trim, pillar, beam, crate, console/machine, panel, pipe,
+grate, stair, rail, light, lava, poison, spikes, water, facades, road,
+sidewalk, roof, glass, rock, ground, foliage, metal, wood, screen, paint,
+neon, carpet...). `src/data/texroles.js` lists, per role and theme family,
+the tiles that genuinely fit (checked against the atlases), plus an avoid
+list and per-role UV scales. To use a new texture sheet logically, add its
+tiles there under the roles they fit. Roles with no fitting tile fall back to
+procedural placeholders from `src/art/textures_gen.js`.
+
+## Scatter terrain
+
+`tools/process_art.py` slices the sheets in `art/raw/scatter/` into
+`assets/sprites/scatter/*.png` (manifest `scatterSets`): tall pillars and
+stumps, explosive props and barrels (4 frames: intact, damaged, exploding,
+debris), closed/open chest pairs, pedestals and 3-frame spike traps.
+`src/data/scatter.js` maps theme families to object styles; placement is in
+`src/game/levelgen/scatter.js` and behaviour (explosions, chain reactions,
+traps, pedestal items) in `src/game/scatter.js`.
+
+## Title art
+
+`assets/ui/logo.webp` is the title logo. The blood drips come from
+`assets/ui/logo_drips.json` (points on the logo where blood is exposed); if
+you replace the logo, regenerate that file from the blood-red pixels along
+the bottom edges of the art. `assets/ui/credits.webp` is the pre-title
+splash.
 
 ## Checking your work
 
