@@ -6,6 +6,7 @@ import * as B from '../../data/balance.js';
 import { TS, F, KEY_COLORS, DOOR_SLOT, fortifyArena, findChokepoints, isDoorable, cellsInRadius } from './common.js';
 import { Deco } from './deco.js';
 import { genRooms } from './gen_rooms.js';
+import { genArch } from './gen_arch.js';
 import { genCaves } from './gen_caves.js';
 import { genCity } from './gen_city.js';
 import { genPlatforms } from './gen_platforms.js';
@@ -17,8 +18,8 @@ import { genMountain } from './gen_mountain.js';
 import { genCastle } from './gen_castle.js';
 
 const GENERATORS = {
-  rooms: genRooms, station: genRooms, caves: genCaves, city: genCity, rooftops: genPlatforms, islands: genPlatforms,
-  convoy: genConvoy, canyon: genCanyon, hall: genHall, maze: genMaze, mountain: genMountain, castle: genCastle,
+  rooms: genArch, station: genArch, castle: genArch, caves: genCaves, city: genCity, rooftops: genPlatforms, islands: genPlatforms,
+  convoy: genConvoy, canyon: genCanyon, hall: genHall, maze: genMaze, mountain: genMountain,
 };
 
 export function pickTheme(depth, rng, previous = []) {
@@ -42,6 +43,7 @@ export function generateLevel({ depth, seed, playerLevel, themeId, previousTheme
     }
   }
   if (!L) { L = genRooms(rng, THEME_BY_ID.possessed_station, depth); validate(L); }
+  void genCastle;
   const level = populate(L, rng, theme, depth, playerLevel);
   level.seed = seed;
   return level;
@@ -272,6 +274,7 @@ function populate(L, rng, theme, depth, playerLevel) {
     start: { x: L.start.x + 0.5, z: L.start.z + 0.5, yaw: L.startYaw ?? guessYaw(g, startIdx, dist) },
     spawns, boss: bossSpawn, portal: { x: (portalCell % W) + 0.5, z: ((portalCell / W) | 0) + 0.5 },
     doors, keys, chests, props, lights, deco: decoOut,
+    rooms: (L.rooms || []).map((r) => ({ id: r.id, x: r.x, z: r.z, w: r.w, h: r.h, floor: r.floor, template: r.template })),
     voidY: L.voidY ?? -30,
     scrollSpeed: L.scrollSpeed || 0,
     jumpGap: L.jumpGap || 0,
@@ -280,7 +283,7 @@ function populate(L, rng, theme, depth, playerLevel) {
   };
 }
 
-const SNAP_FIELDS = ['type', 'floor', 'ceil', 'sky', 'wallTex', 'floorTex', 'flags', 'hazType', 'stairDir', 'rise', 'edge'];
+const SNAP_FIELDS = ['type', 'floor', 'ceil', 'sky', 'wallTex', 'floorTex', 'flags', 'hazType', 'stairDir', 'rise', 'edge', 'roof'];
 function snapshot(g) {
   const s = {};
   for (const k of SNAP_FIELDS) s[k] = g[k].slice();

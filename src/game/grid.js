@@ -62,6 +62,7 @@ export class Grid {
     this.stairDir = new Uint8Array(n);      // 0 none, else 1 + direction of ascent
     this.rise = new Float32Array(n);        // stair cells: height gained across the cell
     this.edge = new Uint8Array(n);          // blocked edges: EDGE_BIT[dir]
+    this.roof = new Float32Array(n);        // open cells under a building: top of the mass above (0 = ceil + 0.6)
     this.wallTop = 4;                       // default top for solid cells next to sky
     this.floor.fill(this.wallTop);
   }
@@ -198,15 +199,23 @@ export class Grid {
   // BFS distance field from a set of start cells
   //  opts.step, opts.blocked(b), opts.maxDist, opts.allowVoid,
   //  opts.jumpGap (leap across void gaps), opts.avoid (flag mask treated as blocked)
+  //  opts.clearance (head room, default 0.85)
+  //  opts.reverse: distances for walkers travelling TOWARD the starts (monster
+  //    flow fields expand from the player, so each move b -> a is tested in
+  //    the walker's direction: drops toward the start are fine, climbs limited)
+  //  opts.out / opts.queue: Int32Array(w*h) buffers to reuse (no allocation)
   bfs(starts, opts = {}) {
     const n = this.w * this.h;
-    const dist = new Int32Array(n).fill(-1);
-    const q = new Int32Array(n);
+    const dist = opts.out && opts.out.length === n ? opts.out : new Int32Array(n);
+    dist.fill(-1);
+    const q = opts.queue && opts.queue.length >= n ? opts.queue : new Int32Array(n);
     let qh = 0, qt = 0;
     for (const s of starts) { if (s >= 0 && dist[s] < 0) { dist[s] = 0; q[qt++] = s; } }
     const step = opts.step ?? 1.05;
     const blocked = opts.blocked;
     const avoid = opts.avoid || 0;
+    const clearance = opts.clearance ?? 0.85;
+    const rev = !!opts.reverse;
     while (qh < qt) {
       const a = q[qh++];
       const ax = a % this.w, az = (a / this.w) | 0;
@@ -224,7 +233,9 @@ export class Grid {
             const c = cz * this.w + cx;
             if (this.type[c] !== OPEN) break;
             if (this.flags[c] & F.VOID) continue;
-            if (dist[c] < 0 && this.edgeFloor(c, OPP[k]) - this.edgeFloor(a, k) <= (s === 2 ? 0.9 : 0.6) && !(blocked && blocked(c)) && !(this.flags[c] & avoid)) {
+            // height gained by the jumper (start -> c normally, c -> a when reversed)
+            const climb = rev ? this.edgeFloor(a, k) - this.edgeFloor(c, OPP[k]) : this.edgeFloor(c, OPP[k]) - this.edgeFloor(a, k);
+            if (dist[c] < 0 && climb <= (s === 2 ? 0.9 : 0.6) && !(this.edge[c] & EDGE_BIT[OPP[k]]) && !(blocked && blocked(c)) && !(this.flags[c] & avoid)) {
               dist[c] = d + s - 1;
               q[qt++] = c;
             }
@@ -234,7 +245,7 @@ export class Grid {
         if (dist[b] >= 0) continue;
         if (avoid && (this.flags[b] & avoid)) continue;
         if (blocked && blocked(b)) continue;
-        if (!this.passable(a, b, step, 0.85, opts.allowVoid, k)) continue;
+        if (rev ? !this.passable(b, a, step, clearance, opts.allowVoid, OPP[k]) : !this.passable(a, b, step, clearance, opts.allowVoid, k)) continue;
         dist[b] = d;
         q[qt++] = b;
       }

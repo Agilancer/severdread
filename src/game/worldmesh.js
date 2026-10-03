@@ -166,7 +166,7 @@ export function buildWorldMesh(grid, slots, opts = {}) {
     { dx: 0, dz: 1, n: [0, 0, -1], L: (x, z) => [x + 1, z + 1], R: (x, z) => [x, z + 1], u: (p) => -p[0] },
     { dx: 0, dz: -1, n: [0, 0, 1], L: (x, z) => [x, z], R: (x, z) => [x + 1, z], u: (p) => p[0] },
   ];
-  const roofOf = (i) => grid.ceil[i] + (opts.roofThickness ?? 0.6);
+  const roofOf = (i) => (grid.roof && grid.roof[i] > grid.ceil[i] ? grid.roof[i] : grid.ceil[i] + (opts.roofThickness ?? 0.6));
   const capDone = new Uint8Array(w * h);
   const bridgeDepth = opts.bridgeDepth ?? 0.35;
   const isStair = (i) => grid.stairDir[i] !== 0;

@@ -159,6 +159,11 @@ export class Deco {
       else this.box(a, y0, line, b, y1, line + depth, tex, { faces: faces ?? (FACE.PZ | FACE.TOP | FACE.BOTTOM) });
     };
     const lim = Math.min(top, f + 30);
+    // interior skin: lets a 1-thick wall show an interior texture on this side
+    if (o.skin !== undefined) {
+      const inward = d === 0 ? FACE.NX : d === 1 ? FACE.PX : d === 2 ? FACE.NZ : FACE.PZ;
+      slab(f + base, lim - (crown && lim < 40 ? 0.3 : 0), o.skin, 0.025, inward);
+    }
     slab(f, Math.min(f + base, lim), o.baseTex ?? TS.TRIM, 0.06);
     if (wain > 0 && lim - f > wain + 0.6) {
       slab(f + base, f + wain, o.wainTex ?? TS.PANEL, 0.035);
