@@ -173,7 +173,7 @@ export function genArch(rng, theme, depth, opt = {}) {
     if (r === boss) { r.template = 'arena'; continue; }
     if (r === start) { r.template = r.area > 160 && rng.chance(0.5) ? 'hall' : 'entry'; continue; }
     const opts = [
-      ['hall', r.w >= 10 && r.h >= 10 ? 3 : 0.5],
+      ['hall', r.w >= 10 && r.h >= 10 ? 2 : 0.4],
       ['atrium', big(r) ? 3 : 0],
       ['pitroom', r.w >= 11 && r.h >= 11 ? 3 : 0],
       ['split', r.w >= 12 || r.h >= 12 ? 2.2 : 0],
@@ -480,10 +480,12 @@ export function genArch(rng, theme, depth, opt = {}) {
 // Templates must keep room.reserved cells flat at room.floor and walkable.
 // ======================================================================
 function inRoom(r, x, z) { return x >= r.x && x < r.x + r.w && z >= r.z && z < r.z + r.h; }
+// rect must lie inside the room; it and its margin ring must avoid reserved exit areas
 function freeRect(ctx, x0, z0, w, h, margin = 0) {
   const { g, room: r } = ctx;
   for (let z = z0 - margin; z < z0 + h + margin; z++) for (let x = x0 - margin; x < x0 + w + margin; x++) {
-    if (!inRoom(r, x, z)) return false;
+    const core = x >= x0 && x < x0 + w && z >= z0 && z < z0 + h;
+    if (!inRoom(r, x, z)) { if (core) return false; continue; }
     if (r.reserved.has(g.idx(x, z))) return false;
   }
   return true;
@@ -686,7 +688,7 @@ const TEMPLATES = {
     const { g, deco, rng, room: r } = ctx;
     const ring = rng.pick([2, 3]);
     const x0 = r.x + ring, z0 = r.z + ring, w = r.w - 2 * ring, h = r.h - 2 * ring;
-    if (w < 4 || h < 4) return TEMPLATES.plain(ctx);
+    if (w < 4 || h < 4) return TEMPLATES.storage(ctx);
     // reserved exit areas stay as railed landings jutting into the pit
     const kind = pickHaz(ctx);
     const depth = kind === 'water' ? 2.5 : rng.pick([2.5, 3, 4]);
@@ -735,15 +737,24 @@ const TEMPLATES = {
 
   split(ctx) {
     const { g, deco, rng, room: r } = ctx;
-    const alongX = r.w >= r.h;            // split line runs along the long axis
     const up = rng.pick([1.8, 2.4, 3.0]);
     const n = Math.ceil(up / 0.6 - 1e-6);
-    const half = Math.floor((alongX ? r.h : r.w) / 2);
-    const upperFirst = rng.chance(0.5);
-    const ux = alongX ? r.x : (upperFirst ? r.x : r.x + r.w - half);
-    const uz = alongX ? (upperFirst ? r.z : r.z + r.h - half) : r.z;
-    const uw = alongX ? r.w : half, uh = alongX ? half : r.h;
-    if (!freeRect(ctx, ux, uz, uw, uh)) return TEMPLATES.hall(ctx);
+    // try the four sides (long-axis splits first) for an upper level free of exits
+    const opts = [];
+    for (const alongXo of r.w >= r.h ? [true, false] : [false, true]) {
+      for (const frac of [0.5, 0.4, 0.33]) {
+        const half = Math.max(3, Math.floor((alongXo ? r.h : r.w) * frac));
+        for (const upperFirstO of rng.shuffle([true, false])) {
+          const ux0 = alongXo ? r.x : (upperFirstO ? r.x : r.x + r.w - half);
+          const uz0 = alongXo ? (upperFirstO ? r.z : r.z + r.h - half) : r.z;
+          const uw0 = alongXo ? r.w : half, uh0 = alongXo ? half : r.h;
+          if ((alongXo ? r.h : r.w) - half >= n + 3 && freeRect(ctx, ux0, uz0, uw0, uh0)) opts.push({ alongXo, upperFirstO, ux0, uz0, uw0, uh0 });
+        }
+      }
+    }
+    if (!opts.length) return TEMPLATES.storage(ctx);
+    const o = opts[0];
+    const alongX = o.alongXo, upperFirst = o.upperFirstO, ux = o.ux0, uz = o.uz0, uw = o.uw0, uh = o.uh0;
     const upper = new Set();
     eachCell(ctx, ux, uz, uw, uh, (x, z, i) => { g.floor[i] = r.floor + up; g.wallTex[i] = TS.SIDE; upper.add(i); });
     // two flights from the lower half up to the ledge
@@ -893,7 +904,7 @@ const TEMPLATES = {
     const { g, deco, rng, room: r } = ctx;
     const cx = Math.floor(r.x + r.w / 2), cz = Math.floor(r.z + r.h / 2);
     const R = Math.floor(Math.min(r.w, r.h) / 2) - 2;
-    if (R < 3) return TEMPLATES.hall(ctx);
+    if (R < 3) return TEMPLATES.pitroom(ctx);
     const kind = ctx.style.hazards.includes('lava') ? 'lava' : 'poison';
     // ring pit around a central core platform
     const pit = [];
