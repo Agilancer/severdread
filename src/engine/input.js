@@ -34,7 +34,8 @@ export function initInput(canvas, opts = {}) {
       if (k === 'ShiftLeft' || k === 'ShiftRight') press('dash');
       if (k === 'KeyE' || k === 'KeyF' || k === 'Enter') press('use');
       if (k === 'Tab' || k === 'KeyI') press('menu');
-      if (k === 'Escape' || k === 'KeyP') press('pause');
+      // Safari delivers Esc to the page while pointer-locked; the unlock handler pauses then
+      if ((k === 'Escape' && !input.locked) || k === 'KeyP') press('pause');
       if (k === 'KeyQ') press('swap');
       if (k === 'KeyM') press('map');
       if (k >= 'Digit1' && k <= 'Digit4') press('weapon' + (k.charCodeAt(5) - 49));
@@ -81,7 +82,7 @@ export function requestLock() {
   if (!canvasEl || input.mode === 'touch') return;
   try {
     const p = canvasEl.requestPointerLock({ unadjustedMovement: true });
-    if (p && p.catch) p.catch(() => { try { canvasEl.requestPointerLock(); } catch (e) { /* ignore */ } });
+    if (p && p.catch) p.catch(() => { try { const q = canvasEl.requestPointerLock(); if (q && q.catch) q.catch(() => {}); } catch (e) { /* ignore */ } });
   } catch (e) {
     try { canvasEl.requestPointerLock(); } catch (e2) { /* ignore */ }
   }

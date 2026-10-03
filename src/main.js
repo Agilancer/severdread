@@ -39,6 +39,14 @@ async function boot() {
   const game = new Game(renderer, store, content, hud, ui, touch);
   ui.bind(game);
   window.SEVERDREAD = game; // handy for debugging from the console
+  // mobile GPUs can drop the context; save and reload instead of a black screen
+  glCanvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    try { game.persist(); } catch (err) { /* ignore */ }
+    bootStatus('GRAPHICS RESET - RELOADING...');
+    $('boot').classList.remove('hidden');
+  }, false);
+  glCanvas.addEventListener('webglcontextrestored', () => location.reload(), false);
 
   initInput(glCanvas, {
     uiBlocking: () => game.state !== 'playing',

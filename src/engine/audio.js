@@ -15,7 +15,7 @@ class AudioSystem {
 
   // must be called from a user gesture (iOS)
   unlock() {
-    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {}); return; } // iOS can leave it 'interrupted'
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) { this.enabled = false; return; }
     const ctx = new AC();
