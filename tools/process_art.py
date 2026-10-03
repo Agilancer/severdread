@@ -24,6 +24,9 @@ weapon_set    one weapon per row; columns 1-7 are the first-person frames
               (idle + 6 fire frames), column 8 is the dropped/inventory icon.
 sprite_grid   a grid of single sprites (projectiles, pickups, icons...).
 texture_grid  a grid of wall/floor tiles, resampled to N x N.
+scatter_sheet pillars / explosive barrels and props / chests / pedestals / spike
+              traps: objects of 1-4 frames (grid strips or closed/open pairs),
+              ground-aligned and packed into one atlas -> manifest scatterSets.
 """
 import json
 import os
@@ -1480,6 +1483,541 @@ def process_item_grid(sheet):
             "sprites": sprites, "source": sheet["src"], "kind": "items"}
 
 
+# --------------------------------------------------------------------------
+# scatter terrain (pillars, explosive barrels / props, chests, pedestals,
+# spike traps): objects made of 1-4 frames, packed into one atlas per sheet
+# --------------------------------------------------------------------------
+def _runs(b):
+    """(start, stop) of every True run in a 1-D bool array."""
+    out, s = [], None
+    for i, v in enumerate(b):
+        if v and s is None:
+            s = i
+        elif not v and s is not None:
+            out.append((s, i))
+            s = None
+    if s is not None:
+        out.append((s, len(b)))
+    return out
+
+
+def scatter_cuts(prof, k, lo, hi, win=0.4):
+    """k-1 cut positions splitting [lo, hi) into k bands, each at the emptiest
+    stretch near its evenly spaced guess (uneven spacing up to +-40% ok)."""
+    sm = ndimage.uniform_filter1d(np.asarray(prof, float), 3)
+    p = (hi - lo) / float(k)
+    cuts = []
+    for i in range(1, k):
+        c = lo + i * p
+        a, b = int(max(lo + 1, c - win * p)), int(min(hi - 1, c + win * p))
+        seg = sm[a:b]
+        mn = seg.min()
+        low = seg <= mn + max(0.5, 0.03 * (seg.max() - mn))
+        best = None
+        for s, e in _runs(low):
+            mid = a + (s + e - 1) / 2.0
+            key = (e - s, -abs(mid - c))
+            if best is None or key > best[0]:
+                best = (key, mid)
+        cuts.append(float(best[1]))
+    return cuts
+
+
+def _extent(prof, frac=0.0):
+    nz = np.where(np.asarray(prof) > frac)[0]
+    return (int(nz[0]), int(nz[-1]) + 1) if len(nz) else (0, len(prof))
+
+
+def _strict_mask(alpha, thr=128, min_px=12):
+    """Opaque pixels without isolated specks (sparks, haze crumbs)."""
+    m = alpha >= thr
+    lab, n = ndimage.label(m, structure=np.ones((3, 3)))
+    if n == 0:
+        return m
+    sizes = ndimage.sum(m, lab, range(1, n + 1))
+    return np.isin(lab, np.where(sizes >= min_px)[0] + 1)
+
+
+def _hue_name(rgb):
+    r, g, b = [float(v) for v in rgb]
+    mx, mn = max(r, g, b), min(r, g, b)
+    if mx - mn < 30:
+        return "white"
+    d = mx - mn
+    if mx == r:
+        h = ((g - b) / d) % 6
+    elif mx == g:
+        h = (b - r) / d + 2
+    else:
+        h = (r - g) / d + 4
+    h = (h * 60 + 360) % 360
+    for lim, name in ((15, "red"), (40, "orange"), (70, "yellow"), (160, "green"), (200, "cyan"), (250, "blue"), (335, "purple")):
+        if h < lim:
+            return name
+    return "red"
+
+
+def _dominant_hue(img, prefer=None):
+    """Most common hue among the saturated, reasonably bright pixels
+    (explosion colour: blue/green/purple outer flames win over the white-hot
+    core), with the mean colour of those pixels."""
+    px = img[img[..., 3] >= 100][:, :3].astype(float)
+    if len(px) < 20:
+        return None
+    mx, mn = px.max(1), px.min(1)
+    sat = (mx - mn) / np.maximum(mx, 1)
+    sel = px[(mx > 90) & (sat > 0.5)]
+    if len(sel) < 12:
+        return None
+    names = [_hue_name(c) for c in sel]
+    groups = {"red": "fire", "orange": "fire", "yellow": "fire"}
+    tally = {}
+    for nm in names:
+        key = groups.get(nm, nm)
+        tally[key] = tally.get(key, 0) + 1
+    best = max(tally, key=tally.get)
+    want = {v: k for k, v in HUE_ELEMENT.items() if k not in ("red", "orange", "yellow")}.get(prefer)
+    if prefer == "fire":
+        want = "fire"
+    if want and tally.get(want, 0) >= 12:
+        best = want                       # configured element: its own colour
+    pick = sel[[groups.get(nm, nm) == best for nm in names]]
+    col = pick.mean(0)
+    return [int(v) for v in col], (_hue_name(col) if best == "fire" else best)
+
+
+def _glow(img, min_frac=0.004):
+    """Colour of the bright saturated pixels (light strips, crystals, fire),
+    or None when there are too few of them."""
+    px = img[img[..., 3] >= 160][:, :3].astype(float)
+    if len(px) < 20:
+        return None
+    mx, mn = px.max(1), px.min(1)
+    sat = (mx - mn) / np.maximum(mx, 1)
+    sel = px[(mx > 150) & (sat > 0.45)]
+    if len(sel) < max(6, min_frac * len(px)):
+        return None
+    col = sel.mean(0)
+    return [int(v) for v in col], _hue_name(col), float(len(sel)) / len(px)
+
+
+HUE_ELEMENT = {"red": "fire", "orange": "fire", "yellow": "fire", "green": "poison",
+               "cyan": "ice", "blue": "lightning", "purple": "void", "white": "physical"}
+
+
+def _assign_cells(arr, row_cuts, col_cuts_per_row, ncols, lo_thr=16):
+    """Give every visible pixel to a grid cell: whole connected pieces go to
+    the cell owning most of them; pieces straddling cells (touching frames,
+    smoke) are split geodesically from each cell's solid core."""
+    H, W = arr.shape[:2]
+    alpha = arr[..., 3]
+    loose = alpha >= lo_thr
+    strict = _strict_mask(alpha)
+    row_of = np.searchsorted(np.array(row_cuts, float), np.arange(H) + 0.5)
+    near = np.zeros((H, W), np.int32)
+    edge_d = np.zeros((H, W), np.float32)
+    xs = np.arange(W) + 0.5
+    for r in range(len(row_cuts) + 1):
+        cc = np.array(col_cuts_per_row[r], float)
+        col_of = np.searchsorted(cc, xs)
+        bounds = np.concatenate([[-1e9], cc, [1e9]])
+        dx = np.minimum(xs - bounds[col_of], bounds[col_of + 1] - xs)
+        rows = row_of == r
+        near[rows] = r * ncols + col_of[None, :]
+        edge_d[rows] = dx[None, :]
+    rb = np.concatenate([[-1e9], np.array(row_cuts, float), [1e9]])
+    ys = np.arange(H) + 0.5
+    dy = np.minimum(ys - rb[row_of], rb[row_of + 1] - ys)
+    edge_d = np.minimum(edge_d, dy[:, None])
+    core = strict & (edge_d > 4)
+    lab, n = ndimage.label(loose, structure=np.ones((3, 3)))
+    out = np.full((H, W), -1, np.int32)
+    objs = ndimage.find_objects(lab)
+    for i, sl in enumerate(objs):
+        m = lab[sl] == i + 1
+        ids = near[sl][m]
+        counts = np.bincount(ids)
+        if counts.max() >= 0.85 * counts.sum():
+            out[sl][m] = int(np.argmax(counts))
+        else:
+            out[sl][m] = geodesic_split(m, near[sl], core[sl])
+    return out
+
+
+def _foot_center(img):
+    """x of the object's base: mean x of the solid pixels in its lowest rows."""
+    a = img[..., 3] >= 128
+    rows = np.where(a.sum(1) >= 3)[0]
+    if not len(rows):
+        return img.shape[1] / 2.0
+    y1 = rows[-1] + 1
+    band = max(3, int(round((y1 - rows[0]) * 0.14)))
+    ys, xs = np.where(a[max(0, y1 - band):y1])
+    return float(xs.mean()) + 0.5 if len(xs) else img.shape[1] / 2.0
+
+
+def _trim(img, thr=8):
+    ys, xs = np.where(img[..., 3] >= thr)
+    if not len(ys):
+        return None
+    return img[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+
+
+def _finish_frame(img, scale, ground=True):
+    """Trim, scale, drop sparkles under the base (ground line = solid
+    bottom) and pad horizontally so the base centre is the middle column."""
+    img = _trim(img)
+    if img is None:
+        return None
+    if abs(scale - 1) > 1e-3:
+        h, w = img.shape[:2]
+        img = resize_rgba(img, (max(1, int(round(w * scale))), max(1, int(round(h * scale)))))
+    img = clean_alpha(img, 12)
+    if ground:
+        sb = solid_bottom(img, min_px=max(2, img.shape[1] // 25))
+        img = img[:sb]
+    img = _trim(img)
+    if img is None:
+        return None
+    fc = _foot_center(img)
+    h, w = img.shape[:2]
+    half = int(np.ceil(max(fc, w - fc)))
+    out = np.zeros((h, half * 2, 4), np.uint8)
+    off = int(round(half - fc))
+    off = max(0, min(off, half * 2 - w))
+    out[:, off:off + w] = img
+    return out
+
+
+def _pack(frames, width=1024, pad=2):
+    """Shelf-pack frame images; returns (atlas, rects [x, y, w, h])."""
+    order = sorted(range(len(frames)), key=lambda i: -frames[i].shape[0])
+    rects = [None] * len(frames)
+    x = y = shelf = 0
+    for i in order:
+        h, w = frames[i].shape[:2]
+        if x + w + pad > width:
+            x, y = 0, y + shelf + pad
+            shelf = 0
+        rects[i] = [x, y, w, h]
+        x += w + pad
+        shelf = max(shelf, h)
+    H = y + shelf
+    H = (H + 3) // 4 * 4
+    atlas = np.zeros((H, width, 4), np.uint8)
+    for i, (x, y, w, h) in enumerate(rects):
+        atlas[y:y + h, x:x + w] = frames[i]
+    return atlas, rects
+
+
+def _frame_runs(prof, a, b, nf, min_gap=2, want=None):
+    """Column ranges of the separate sprites between a and b: content runs,
+    slivers merged into a neighbour, touching sprites split at their
+    emptiest column until there are at least nf."""
+    runs = []
+    for s, e in _runs(np.asarray(prof[a:b]) > 0):
+        if runs and s + a - runs[-1][1] < min_gap:
+            runs[-1] = (runs[-1][0], e + a)
+        else:
+            runs.append((s + a, e + a))
+    while len(runs) > 1:
+        wmax = max(e - s for s, e in runs)
+        i = min(range(len(runs)), key=lambda i: runs[i][1] - runs[i][0])
+        if runs[i][1] - runs[i][0] >= 0.3 * wmax:
+            break
+        if i == 0:
+            j = 1
+        elif i == len(runs) - 1:
+            j = i - 1
+        else:
+            j = i - 1 if runs[i][0] - runs[i - 1][1] <= runs[i + 1][0] - runs[i][1] else i + 1
+        lo, hi = min(i, j), max(i, j)
+        runs[lo:hi + 1] = [(runs[lo][0], runs[hi][1])]
+    # touching sprites: split a wide run at a deep valley of its profile
+    # (a fireball has none; two sprites side by side have one)
+    changed = True
+    while changed and runs:
+        changed = False
+        med = float(np.median([e - s for s, e in runs]))
+        for i, (s, e) in enumerate(runs):
+            w = e - s
+            if w < 1.3 * med or w < 16:
+                continue
+            sub = ndimage.uniform_filter1d(np.asarray(prof[s:e], float), 3)
+            lo_, hi_ = max(int(w * 0.22), int(0.45 * med)), min(int(w * 0.78), w - int(0.45 * med))
+            if hi_ <= lo_:
+                continue
+            c = lo_ + int(np.argmin(sub[lo_:hi_]))
+            if sub[c] <= 0.3 * sub.max():
+                runs[i:i + 1] = [(s, s + c), (s + c, e)]
+                changed = True
+                break
+    # still too few (frames touching through smoke): split the run with the
+    # relatively deepest valley, wide runs first
+    while runs and len(runs) < (want or nf):
+        med = float(np.median([e - s for s, e in runs]))
+        best = None
+        for i, (s, e) in enumerate(runs):
+            w = e - s
+            if w < 12:
+                continue
+            sub = ndimage.uniform_filter1d(np.asarray(prof[s:e], float), 3)
+            lo_, hi_ = int(w * 0.25), int(w * 0.75)
+            c = lo_ + int(np.argmin(sub[lo_:hi_]))
+            score = sub[c] / max(1.0, sub.max()) - 0.6 * (w / med)
+            if best is None or score < best[0]:
+                best = (score, i, s + c)
+        if best is None:
+            break
+        _, i, c = best
+        s, e = runs[i]
+        runs[i:i + 1] = [(s, c), (c, e)]
+    return runs
+
+
+def _pick_frames(runs, nf, band):
+    """Which of a strip's sprites are its nf frames. Strips with an extra
+    sprite (a second intact pose) keep the first, the last (debris), the
+    fieriest one (explosion) and the one just before it (damaged)."""
+    n = len(runs)
+    if n < nf:
+        # a missing pose (no separate damaged frame): reuse the nearest one
+        if nf == 4 and n >= 2:
+            return [0, 0 if n < 4 else 1, n - 2, n - 1] if n > 2 else [0, 0, 0, 1]
+        return [int(round(i * (n - 1) / float(max(1, nf - 1)))) for i in range(nf)]
+    if n == nf:
+        return list(range(n))
+    if nf == 1:
+        return [max(range(n), key=lambda i: runs[i][1] - runs[i][0])]
+    if nf == 4:
+        def fire(i):
+            px = band[:, runs[i][0]:runs[i][1]].reshape(-1, 4).astype(float)
+            px = px[px[:, 3] >= 100]
+            mx, mn = px[:, :3].max(1), px[:, :3].min(1)
+            return int(((mx > 170) & ((mx - mn) / np.maximum(mx, 1) > 0.5)).sum())
+        ex = max(range(1, n - 1), key=fire)
+        return [0, max(1, ex - 1) if ex > 1 else 0, ex, n - 1]
+    return [int(round(i * (n - 1) / float(nf - 1))) for i in range(nf)]
+
+
+def _scatter_grid_cells(arr, sheet):
+    """Objects of a grid sheet: rows x groups, each group a strip of `frames`
+    sprites (frames = 1: a plain grid). Rows and groups are cut at the
+    emptiest bands near their even spacing; the frames of a strip are its
+    separate sprites. Returns objects (row-major) with their frame images."""
+    rows, groups, nf = sheet["rows"], sheet.get("groups", sheet.get("cols", 1)), sheet.get("frames", 1)
+    alpha = arr[..., 3]
+    strict = _strict_mask(alpha, min_px=40)
+    ry0, ry1 = _extent(strict.sum(1))
+    row_cuts = scatter_cuts(strict.sum(1), rows, ry0, ry1)
+    rb = [ry0] + row_cuts + [ry1]
+    glob = strict.sum(0)
+    per_row, picks, counts = [], [], []
+    for r in range(rows):
+        y0, y1 = int(rb[r]), int(np.ceil(rb[r + 1]))
+        prof = strict[y0:y1].sum(0) if sheet.get("colsPerRow") else glob
+        x0, x1 = _extent(prof)
+        g = scatter_cuts(prof, groups, x0, x1) if groups > 1 else []
+        gb = [x0] + g + [x1]
+        allruns, pick, cnt = [], [], []
+        for k in range(groups):
+            a, b = int(gb[k]), int(np.ceil(gb[k + 1]))
+            if nf == 1:
+                sub = np.zeros_like(prof)
+                sub[a:b] = prof[a:b]
+                s0, s1 = _extent(sub)
+                runs = [(s0, s1)]
+            else:
+                runs = _frame_runs(prof, a, b, nf, want=sheet.get("stripSprites", {}).get("%d,%d" % (r, k)))
+            sel = _pick_frames(runs, nf, arr[y0:y1]) if runs else []
+            cnt.append(len(runs))
+            pick.append([len(allruns) + i for i in sel])
+            allruns += runs
+        per_row.append([(allruns[i][1] + allruns[i + 1][0]) / 2.0 for i in range(len(allruns) - 1)])
+        picks.append(pick)
+        counts.append(cnt)
+    MAXC = 256
+    cells = _assign_cells(arr, row_cuts, per_row, MAXC)
+    objects = []
+    for r in range(rows):
+        for gi in range(groups):
+            frames = []
+            sel = picks[r][gi]
+            for f in range(nf):
+                if f >= len(sel):
+                    frames.append(None)
+                    continue
+                idx = r * MAXC + sel[f]
+                ys, xs = np.where(cells == idx)
+                if not len(ys):
+                    frames.append(None)
+                    continue
+                y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+                img = arr[y0:y1, x0:x1].copy()
+                img[cells[y0:y1, x0:x1] != idx] = 0
+                frames.append(img)
+            objects.append({"frames": frames, "row": r, "col": gi})
+    odd = [[r, gi, nr] for r in range(rows) for gi in range(groups) for nr in [counts[r][gi]] if nr != nf]
+    return objects, {"rowCuts": [round(v, 1) for v in row_cuts], "stripsWithOtherSpriteCount": odd}
+
+
+def _scatter_pairs(arr, sheet):
+    """Closed/open chest pairs: find every sprite (splitting pairs whose
+    handles touch), tell open ones (dark interior under the lid) from closed
+    ones and pair each closed sprite with the open one right of it."""
+    alpha = arr[..., 3]
+    strict = _strict_mask(alpha, min_px=40)
+    lab, n = ndimage.label(strict, structure=np.ones((3, 3)))
+    parts = []
+    for i, sl in enumerate(ndimage.find_objects(lab)):
+        m = lab[sl] == i + 1
+        if m.sum() >= sheet.get("minArea", 800):
+            parts.append((sl[1].start, sl[0].start, m))
+    med_w = float(np.median([p[2].shape[1] for p in parts]))
+
+    def split(x0, y0, m):
+        h, w = m.shape
+        if w < 1.7 * med_w:
+            return [(x0, y0, m)]
+        prof = m.sum(0)
+        a, b = int(w * 0.3), int(w * 0.7)
+        c = a + int(np.argmin(prof[a:b]))
+        out = []
+        for sub, ox in ((m[:, :c], 0), (m[:, c:], c)):
+            ys, xs = np.where(sub)
+            if len(ys):
+                out += split(x0 + ox + xs.min(), y0 + ys.min(), sub[ys.min():ys.max() + 1, xs.min():xs.max() + 1])
+        return out
+
+    sid = np.full(alpha.shape, -1, np.int32)
+    boxes = []
+    for x0, y0, m in parts:
+        for sx, sy, sm in split(x0, y0, m):
+            h, w = sm.shape
+            sid[sy:sy + h, sx:sx + w][sm] = len(boxes)
+            boxes.append((sx, sy, w, h))
+    # visible haze / thin edges join the nearest solid sprite (within 4 px)
+    d, (iy, ix) = ndimage.distance_transform_edt(sid < 0, return_indices=True)
+    own = sid[iy, ix]
+    own[(alpha < 16) | (d > 4)] = -1
+    sprites = []
+    for k, (x0, y0, w, h) in enumerate(boxes):
+        ys, xs = np.where(own[max(0, y0 - 5):y0 + h + 5, max(0, x0 - 5):x0 + w + 5] == k)
+        oy, ox = max(0, y0 - 5), max(0, x0 - 5)
+        y0_, y1_, x0_, x1_ = ys.min() + oy, ys.max() + 1 + oy, xs.min() + ox, xs.max() + 1 + ox
+        img = arr[y0_:y1_, x0_:x1_].copy()
+        img[own[y0_:y1_, x0_:x1_] != k] = 0
+        # open chests: the middle of the upper half is the black interior
+        sm = img[..., 3] >= 128
+        hh, ww = sm.shape
+        reg = (slice(int(hh * 0.15), int(hh * 0.5)), slice(int(ww * 0.3), int(ww * 0.7)))
+        dark = float(((img[reg][..., :3].max(-1) < 32) & sm[reg]).sum()) / max(1, sm[reg].sum())
+        sprites.append({"img": img, "x0": x0_, "x1": x1_, "y0": y0_, "y1": y1_, "cx": (x0_ + x1_) / 2.0,
+                        "cy": (y0_ + y1_) / 2.0, "dark": dark, "open": dark >= sheet.get("openDark", 0.4)})
+    used, pairs = set(), []
+    for s in sorted(sprites, key=lambda s: (s["cy"], s["x0"])):
+        if s["open"]:
+            continue
+        best, bd = None, 1e9
+        for j, o in enumerate(sprites):
+            if not o["open"] or j in used or o["x0"] < s["cx"]:
+                continue
+            ov = min(s["y1"], o["y1"]) - max(s["y0"], o["y0"])
+            if ov < 0.4 * min(s["y1"] - s["y0"], o["y1"] - o["y0"]):
+                continue
+            gap = o["x0"] - s["x1"]
+            if gap < bd and gap < sheet.get("maxPairGap", 60):
+                best, bd = j, gap
+        if best is not None:
+            used.add(best)
+            pairs.append((s, sprites[best]))
+    rows = sheet.get("rows", 10)
+    cys = [(a["cy"] + b["cy"]) / 2 for a, b in pairs]
+    centers = sorted(cluster_1d(cys, [1] * len(cys), rows)) if len(cys) >= rows else sorted(cys)
+    objects = []
+    for a, b in pairs:
+        cy = (a["cy"] + b["cy"]) / 2
+        r = int(np.argmin([abs(cy - c) for c in centers]))
+        objects.append({"frames": [a["img"], b["img"]], "row": r, "col": a["cx"]})
+    objects.sort(key=lambda o: (o["row"], o["col"]))
+    info = {"sprites": len(sprites), "open": sum(1 for s in sprites if s["open"]), "pairs": len(pairs),
+            "unpaired": [[int(s["x0"]), int(s["y0"])] for s in sprites if not s["open"] and not any(s is p[0] for p in pairs)]}
+    return objects, info
+
+
+def process_scatter_sheet(sheet):
+    """Scatter objects: every object is a group of frames (barrels: intact,
+    damaged, exploding, debris; chests: closed, open; spikes: retracted,
+    rising, extended). Frames are trimmed, scaled, ground-aligned (bottom =
+    floor) and centred on their base, then shelf-packed into one 256-colour
+    atlas. Manifest: per-object frame rects + style / element tags."""
+    arr = load_rgba(sheet["src"])
+    arr = key_background(arr, sheet.get("background", "auto"))
+    arr = clean_alpha(arr, sheet.get("alphaThreshold", 10))
+    if sheet.get("layout") == "pairs":
+        objs, info = _scatter_pairs(arr, sheet)
+    else:
+        objs, info = _scatter_grid_cells(arr, sheet)
+    scale = sheet.get("scale", 1.0)
+    # per-object metadata in reading order: "objectTags" strings ("style tag
+    # tag ...") and optional "elements" (explosives / traps), or full dicts
+    meta = list(sheet.get("objects", []))
+    for k, t in enumerate(sheet.get("objectTags", [])):
+        while len(meta) <= k:
+            meta.append({})
+        words = t.split()
+        meta[k] = dict(meta[k] or {}, style=words[0], tags=words[1:]) if words else dict(meta[k] or {}, skip=True)
+    for k, el in enumerate(sheet.get("elements", [])):
+        while len(meta) <= k:
+            meta.append({})
+        if el:
+            meta[k] = dict(meta[k] or {}, element=el)
+    col_kind = sheet.get("colKinds")          # e.g. pillars: tall columns then stumps
+    frames, objects = [], []
+    for k, o in enumerate(objs):
+        fr = [_finish_frame(im, scale) if im is not None else None for im in o["frames"]]
+        if fr[0] is None or any(f is None for f in fr):
+            print("  %s: object %d (row %d) has missing frames - skipped" % (sheet["id"], k, o["row"]))
+            continue
+        m = dict(meta[k]) if k < len(meta) and meta[k] else {}
+        if m.get("skip"):
+            continue
+        oid = m.pop("id", "%s%02d" % (sheet.get("idPrefix", sheet["id"] + "_"), k))
+        entry = {"id": oid, "kind": sheet["kind"], "px": int(fr[0].shape[0]), "pxW": int(fr[0].shape[1])}
+        if col_kind:
+            entry["size"] = col_kind[int(o["col"])] if isinstance(o["col"], int) else col_kind[0]
+        for key in ("name", "style", "tags", "element", "size", "glow"):
+            if key in m:
+                entry[key] = m[key]
+        # glow / element colour from the art: explosion frame for explosives,
+        # extended spikes for traps, the object itself otherwise
+        src = fr[sheet.get("glowFrame", 0)]
+        gl = _glow(src, 0.002 if sheet["kind"] == "explosive" else 0.006)
+        if gl:
+            entry["light"] = gl[0]
+            entry["hue"] = gl[1]
+        if sheet["kind"] == "explosive":
+            dh = _dominant_hue(src, entry.get("element"))
+            if dh:
+                entry["light"], entry["hue"] = dh
+            if "element" not in entry:
+                entry["element"] = HUE_ELEMENT[dh[1]] if dh else "fire"
+        entry["frames"] = []
+        for f in fr:
+            entry["frames"].append(len(frames))
+            frames.append(f)
+        objects.append(entry)
+    atlas, rects = _pack(frames, sheet.get("atlasWidth", 1024))
+    for e in objects:
+        e["frames"] = [rects[i] for i in e["frames"]]
+    save_png(atlas, sheet["out"])
+    print("  %s: %d objects x %d frames -> %s (%dx%d)" % (sheet["id"], len(objects), len(objs[0]["frames"]) if objs else 0,
+                                                     sheet["out"], atlas.shape[1], atlas.shape[0]))
+    return {"id": sheet["id"], "kind": sheet["kind"], "file": sheet["out"], "w": int(atlas.shape[1]), "h": int(atlas.shape[0]),
+            "frames": len(objs[0]["frames"]) if objs else 1, "frameNames": sheet.get("frameNames", []),
+            "objects": objects, "source": sheet["src"], "slice": info}
+
+
 PROCESSORS = {
     "monster": ("monsters", process_monster),
     "weapon_set": ("weaponSets", process_weapon_set),
@@ -1488,6 +2026,7 @@ PROCESSORS = {
     "door_frames": ("doorSets", process_door_frames),
     "animated_texture": ("animatedTextureSets", process_animated_texture),
     "item_grid": ("spriteSets", process_item_grid),
+    "scatter_sheet": ("scatterSets", process_scatter_sheet),
 }
 
 

@@ -12,6 +12,12 @@ export const ITEM_ICON_POOLS = {
 
 // Key cards, chest, coin
 export const KEY_SPRITES = { red: 'it_keys_currency_11', blue: 'it_keys_currency_12', yellow: 'it_keys_currency_13', green: 'it_keys_currency_14', purple: 'it_keys_currency_15' };
+// Chests are closed / open pairs from the scatter chest sheet (manifest
+// scatterSets id CHEST_SET): skull chests in hell / gothic / dark themes,
+// light-strip tech chests in stations, cities and cyberspace - picked per
+// level by data/scatter.js (chest style) in game/scatter.js. CHEST_SPRITE is
+// the old single icon, only used when that sheet is missing.
+export const CHEST_SET = 'scatter_chests';
 export const CHEST_SPRITE = 'it_currency_treasure_48';
 export const COIN_SPRITE = 'it_keys_currency_23';
 

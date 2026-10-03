@@ -155,7 +155,7 @@ export function explode(game, x, y, z, radius, dmg, element, owner, o = {}) {
   if (w.gore) w.gore.scorch(x, y, z, radius, o.small);
   if (!o.silent) game.sfx(o.small ? 'hit' : 'explosion', { dist: Math.hypot(x - game.player.x, z - game.player.z), pitch: o.small ? 1.5 : 1 });
   if (!o.small) game.shake(clamp(0.5 - Math.hypot(x - game.player.x, z - game.player.z) * 0.04, 0, 0.4));
-  if (owner === 'player') {
+  if (owner === 'player' || owner === 'world') {
     for (const m of w.monsters) {
       if (m.dead || m === o.skip) continue;
       const d = Math.hypot(m.x - x, (m.y + m.height * 0.5) - y, m.z - z);
@@ -166,11 +166,14 @@ export function explode(game, x, y, z, radius, dmg, element, owner, o = {}) {
       const dir = [(m.x - x) / (d || 1), (m.z - z) / (d || 1)];
       damageMonster(game, m, dmg * k, { element, dir, knock: 1.5, statusChance: o.statusChance || 0.15, crit: o.crit, explosive: true });
     }
-  } else {
-    const p = game.player;
-    const d = Math.hypot(p.x - x, (p.y + 0.6) - y, p.z - z);
-    if (d < radius + p.radius && (w.los(x, y, z, p.x, p.y + 0.8, p.z) || w.los(x, y, z, p.x, p.y + 1.4, p.z))) damagePlayer(game, dmg * (1 - Math.max(0, d - p.radius) / radius * 0.6), element, { status: ELEMENTS[element]?.status });
   }
+  if (owner !== 'player') {
+    const p = game.player, pd = o.playerDmg ?? dmg;
+    const d = Math.hypot(p.x - x, (p.y + 0.6) - y, p.z - z);
+    if (d < radius + p.radius && (w.los(x, y, z, p.x, p.y + 0.8, p.z) || w.los(x, y, z, p.x, p.y + 1.4, p.z))) damagePlayer(game, pd * (1 - Math.max(0, d - p.radius) / radius * 0.6), element, { status: ELEMENTS[element]?.status });
+  }
+  // explosive barrels / props in reach go off too (chain reactions: game/scatter.js)
+  if (w.scatter) w.scatter.blast(x, y, z, radius, dmg, o.src);
 }
 
 // ---------------------------------------------------------------- projectiles
@@ -241,6 +244,7 @@ export function firePlayerWeapon(game, weapon) {
       hits++;
     }
     if (hits) game.shake(0.08);
+    if (game.world.scatter) game.world.scatter.melee(p.x, p.z, p.y, yaw, range, arc, baseDmg, el);
     if (has('nova') && p.shotCount % 5 === 0) novaRing(game, mz, baseDmg * 0.6, el, 12);
     return;
   }
@@ -366,7 +370,10 @@ function hitscan(game, muzzle, eye, d, range, dmg, el, weapon, arch, critForced)
   const col = el === 'physical' ? [0.7, 0.85, 1] : elemColor(el);
   if (arch.proj === 'beam') w.beam(muzzle[0], muzzle[1], muzzle[2], ex, ey, ez, col, 0.06, 0.06, 0.22);
   else { w.beam(muzzle[0], muzzle[1], muzzle[2], ex, ey, ez, col, 0.09, 0.35, 0); w.beam(muzzle[0], muzzle[1], muzzle[2], ex, ey, ez, [1, 1, 1], 0.04, 0.2, 0.05); }
-  if (wall && n <= pierce) { w.burst(ex, ey, ez, col, 6, { speed: 3 }); w.flash(ex, ey, ez, col, 2.5, 0.1); }
+  if (wall && n <= pierce) {
+    w.burst(ex, ey, ez, col, 6, { speed: 3 }); w.flash(ex, ey, ez, col, 2.5, 0.1);
+    if (wall.box >= 0 && w.scatter) w.scatter.hitBox(wall.box, dmg, el);
+  }
 }
 
 // ray vs monster vertical cylinder; returns distance or null
@@ -476,6 +483,7 @@ export function updateProjectiles(game, dt) {
       if (ht >= 0) {
         const hx = hn.x + hn.nx * 0.02, hy = hn.y + hn.ny * 0.02, hz = hn.z + hn.nz * 0.02;
         const nX = hn.nx, nY = hn.ny, nZ = hn.nz;
+        if (hn.box >= 0 && w.scatter && !pr.fuse) w.scatter.hitBox(hn.box, pr.dmg, pr.element);
         if (pr.slide) {
           // keep sliding along floor/ceiling; bounce off walls
           const fl = Math.hypot(nX, nZ) || 1, ux = nX / fl, uz = nZ / fl;

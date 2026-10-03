@@ -16,6 +16,7 @@ import { genHall } from './gen_hall.js';
 import { genMaze } from './gen_maze.js';
 import { genMountain } from './gen_mountain.js';
 import { genCastle } from './gen_castle.js';
+import { placeScatter } from './scatter.js';
 
 const GENERATORS = {
   rooms: genArch, station: genArch, castle: genArch, caves: genCaves, city: genCity, rooftops: genPlatforms, islands: genPlatforms,
@@ -246,7 +247,8 @@ function populate(L, rng, theme, depth, playerLevel) {
   // ---- props & light sources
   const props = [];
   const lights = [...deco.lights];
-  const propNames = theme.props || [];
+  // (real explosive barrels come from the scatter pass below, not the placeholder prop)
+  const propNames = (theme.props || []).filter((p) => p !== 'barrel');
   if (propNames.length) {
     const nProps = Math.floor(countReachable(dist) / 45);
     for (let k = 0; k < nProps; k++) {
@@ -266,6 +268,8 @@ function populate(L, rng, theme, depth, playerLevel) {
       lights.push({ x: p.x, z: p.z, color: col, radius: p.prop === 'lamp' ? 6 : 4.5, flicker: p.prop !== 'lamp' && p.prop !== 'crystal' });
     }
   }
+  // ---- scatter terrain: pillars, explosive barrels, pedestals, spike traps (levelgen/scatter.js)
+  const scatter = placeScatter({ g, deco, rng: rng.fork('scatter'), theme, depth, dist, startIdx, bossCell, portalCell, arenaSet, spawns, chests, keys, doors, lockCells, props, jumpGap: L.jumpGap || 0 });
   bakeLights(g, lights, theme);
   const decoOut = deco.result();
 
@@ -273,7 +277,7 @@ function populate(L, rng, theme, depth, playerLevel) {
     theme, depth, grid: g,
     start: { x: L.start.x + 0.5, z: L.start.z + 0.5, yaw: L.startYaw ?? guessYaw(g, startIdx, dist) },
     spawns, boss: bossSpawn, portal: { x: (portalCell % W) + 0.5, z: ((portalCell / W) | 0) + 0.5 },
-    doors, keys, chests, props, lights, deco: decoOut,
+    doors, keys, chests, props, lights, deco: decoOut, scatter,
     rooms: (L.rooms || []).map((r) => ({ id: r.id, x: r.x, z: r.z, w: r.w, h: r.h, floor: r.floor, template: r.template })),
     voidY: L.voidY ?? -30,
     scrollSpeed: L.scrollSpeed || 0,

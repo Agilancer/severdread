@@ -155,6 +155,7 @@ export class Game {
     // keys, chests
     for (const k of level.keys) w.pickups.push({ kind: 'key', color: k.color, x: k.x, y: (w.floorAt(k.x, k.z) ?? 0) + 0.6, z: k.z, vx: 0, vy: 0, vz: 0, settled: true, age: 0, phase: fx.float(0, 6) });
     for (const c of level.chests) w.chests.push({ ...c, y: w.floorAt(c.x, c.z) ?? 0, open: false });
+    w.scatter.stockPedestals(this.save.level, this.content.weaponBases, this.player.stats?.itemFind || 0);   // special items on pedestals
     this.player.spawnAt(level.start.x, level.start.z, level.start.yaw);
     audio.setMusic(level.theme.music || 'industrial', seed);
     this.ui.hideLoading();
@@ -301,6 +302,7 @@ export class Game {
     for (const m of w.monsters) m.update(dt);
     w.monsters = w.monsters.filter((m) => !m.dead || m.deathT < 1.2);
     updateProjectiles(this, dt);
+    w.scatter.update(dt);          // explosives (fuses, chain reactions), spike traps
     this.updatePickups(dt);
     this.updateShockwaves(dt);
     this.updateInteractions(dt);
@@ -422,7 +424,9 @@ export class Game {
       const d = Math.hypot(t.x - p.x, t.z - p.z);
       if (d < t.r + 0.4) consider(0, { text: '[E] Activate teleporter', short: 'WARP', act: () => this.ui.openTeleporter() });
     }
-    for (const c of w.chests) if (!c.open) consider(Math.hypot(c.x - p.x, c.z - p.z) - 0.3, { text: '[E] Open cybernetic chest', short: 'OPEN', act: () => this.openChest(c) });
+    const chestName = w.scatter.chestLabel();
+    for (const c of w.chests) if (!c.open) consider(Math.hypot(c.x - p.x, c.z - p.z) - 0.3, { text: `[E] Open ${chestName}`, short: 'OPEN', act: () => this.openChest(c) });
+    w.scatter.interactions(consider);   // pedestal items
     if (w.portal) consider(Math.hypot(w.portal.x - p.x, w.portal.z - p.z) - 0.6, { text: '[E] Enter the portal', short: 'ENTER', act: () => this.ui.openPortal() });
     this.prompt = best;
     if (best && consume('use')) best.act();
@@ -509,6 +513,7 @@ export class Game {
       else if (pk.kind === 'orb') { const col = pk.orb === 'red' ? [1, 0.2, 0.2] : pk.orb === 'blue' ? [0.3, 0.5, 1] : [1, 0.8, 0.2]; extra.push({ x: pk.x, y: pk.y, z: pk.z, r: col[0], g: col[1], b: col[2], radius: 3, intensity: 1 }); }
     }
     for (const m of w.monsters) if (m.elemental && !m.dead && m.distToPlayer < 14) { const col = ELEMENTS[m.elemental].light; extra.push({ x: m.x, y: m.y + m.height * 0.5, z: m.z, r: col[0], g: col[1], b: col[2], radius: 2.5, intensity: 0.5 }); }
+    w.scatter.lights(extra);
     const lights = w.collectLights(extra);
     r.beginFrame(cam, w.env, lights, w.time);
     r.drawSky(w.sky);
@@ -540,10 +545,14 @@ export class Game {
       b.add(h, MODE.CUTOUT, pr.x, y, pr.z, size * h.w / h.h, size, { light: lightAt(pr.x, pr.z), fullbright: pr.prop === 'torch' || pr.prop === 'crystal' || pr.prop === 'lamp' });
       if (pr.prop === 'torch' || pr.prop === 'candles') b.add(c.fx, MODE.ADD, pr.x, y + size * 0.9, pr.z, 0.5, 0.6, { uv: [0, 0, 0.25, 1], tint: [1, 0.55, 0.2, 0.6 + Math.sin(t * 15 + pr.x) * 0.2], anchorY: 0.5, fullbright: true });
     }
+    w.scatter.submit(b, cam);   // pillars, explosives, pedestals + items, spike traps
     for (const ch of w.chests) {
-      const h = ch.open ? c.chestOpen : c.chestClosed;
-      b.add(h, MODE.CUTOUT, ch.x, ch.y, ch.z, 0.95, 0.77, { light: lightAt(ch.x, ch.z), glow: ch.open ? [0, 0, 0, 0] : [0, 0.05 + 0.05 * Math.sin(t * 3), 0.08, 0] });
-      if (!ch.open) b.add(c.fx, MODE.ADD, ch.x, ch.y + 0.4, ch.z, 1.4, 1.0, { uv: [0, 0, 0.25, 1], tint: [0.2, 0.8, 1, 0.25 + 0.1 * Math.sin(t * 3)], anchorY: 0.5, fullbright: true });
+      // theme-matched closed / open pair from the scatter chest sheet (game/scatter.js)
+      if (!w.scatter.drawChest(b, ch)) {
+        const h = ch.open ? c.chestOpen : c.chestClosed;
+        b.add(h, MODE.CUTOUT, ch.x, ch.y, ch.z, 0.95, 0.77, { light: lightAt(ch.x, ch.z), glow: ch.open ? [0, 0, 0, 0] : [0, 0.05 + 0.05 * Math.sin(t * 3), 0.08, 0] });
+      }
+      if (!ch.open) { const gc = w.scatter.chestGlow(ch); b.add(c.fx, MODE.ADD, ch.x, ch.y + 0.4, ch.z, 1.4, 1.0, { uv: [0, 0, 0.25, 1], tint: [gc[0], gc[1], gc[2], 0.22 + 0.1 * Math.sin(t * 3)], anchorY: 0.5, fullbright: true }); }
     }
     for (const n of w.npcs) {
       const info = c.monsterSprite('piston_monk');

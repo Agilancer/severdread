@@ -6,7 +6,7 @@ import { MONSTERS } from '../data/monsters.js';
 import { PLACEHOLDER_BASES, ARCHETYPES } from '../data/weapons.js';
 import { REAGENTS } from '../data/reagents.js';
 import { KEY_HEX } from './levelgen/common.js';
-import { ITEM_ICON_POOLS, KEY_SPRITES, CHEST_SPRITE, COIN_SPRITE, REAGENT_SPRITES, PLAYER_PROJ, ENEMY_PROJ_SHEETS, ENERGY_PROJ_SHEETS } from '../data/itemart.js';
+import { ITEM_ICON_POOLS, KEY_SPRITES, CHEST_SPRITE, CHEST_SET, COIN_SPRITE, REAGENT_SPRITES, PLAYER_PROJ, ENEMY_PROJ_SHEETS, ENERGY_PROJ_SHEETS } from '../data/itemart.js';
 import {
   generateWeaponFP, generateWeaponIcon, FP_W, FP_H, ICON_W, ICON_H, generateArmorIcon, generateRingIcon,
   generateReagentIcon, generateChest, generateKeycard, generateCredit, generatePortalFrames, generateProp,
@@ -53,6 +53,7 @@ export class Content {
       progress(++done / total);
     }
     for (const [id, s] of this.sprites) s.hue = hueName(s.color || [200, 200, 200]);
+    await this._loadScatter();
     for (const [rid, sid] of Object.entries(REAGENT_SPRITES)) if (this.sprites.has(sid) && REAGENTS[rid]) REAGENTS[rid].sprite = sid;
     this.enemyProjPool = [...this.sprites.values()].filter((s) => ENEMY_PROJ_SHEETS.includes(s.set.id));
     this.energyProjPool = [...this.sprites.values()].filter((s) => ENERGY_PROJ_SHEETS.includes(s.set.id));
@@ -66,11 +67,48 @@ export class Content {
     this.keycards = {};
     for (const [c, hex] of Object.entries(KEY_HEX)) this.keycards[c] = this.spriteHandle(KEY_SPRITES[c]) || this.store.fromCanvas('key_' + c, generateKeycard(hex));
     this.chestClosed = this.spriteHandle(CHEST_SPRITE) || this.chestClosed;
+    this._scatterChestFallback();
     this.credit = this.spriteHandle(COIN_SPRITE) || this.credit;
     this.props = {};
     for (const name of Object.keys(PROP_SIZE)) this.props[name] = this.store.fromCanvas('prop_' + name, generateProp(name));
     this._buildWeaponBases();
     progress(1);
+  }
+
+  // ---------------------------------------------------------------- scatter terrain
+  // manifest scatterSets (tools/process_art.py scatter_sheet): one atlas per
+  // sheet, objects with per-frame rects. this.scatter[kind] = objects with
+  // their GL handle and per-frame {uv, pw, ph, aspect}; range[kind] = pixel
+  // height range (sizes keep the art's proportions, see data/scatter.js).
+  async _loadScatter() {
+    const sc = { pillar: [], explosive: [], pedestal: [], chest: [], spike: [], range: {} };
+    for (const ss of this.manifest.scatterSets || []) {
+      const handle = this.store.fromURL(ss.file);
+      try { await handle.promise; } catch (e) { continue; }
+      if (handle.failed) continue;
+      const W = ss.w, H = ss.h;
+      const list = sc[ss.kind] || (sc[ss.kind] = []);
+      for (const o of ss.objects) {
+        const frames = o.frames.map(([x, y, w, h]) => ({ uv: [(x + 0.5) / W, (y + 0.5) / H, (x + w - 0.5) / W, (y + h - 0.5) / H], pw: w, ph: h, aspect: w / h, rect: [x, y, w, h] }));
+        list.push({ ...o, frames, handle, set: ss.id });
+      }
+    }
+    for (const k of Object.keys(sc)) {
+      if (k === 'range' || !sc[k].length) continue;
+      let lo = Infinity, hi = 0;
+      for (const o of sc[k]) { lo = Math.min(lo, o.px); hi = Math.max(hi, o.px); }
+      sc.range[k] = [lo, hi];
+    }
+    this.scatter = sc;
+  }
+  // legacy single chest handles (content.chestClosed / chestOpen) show the
+  // first tech chest pair of the scatter sheet when it is there
+  _scatterChestFallback() {
+    const pair = (this.scatter?.chest || []).find((o) => o.set === CHEST_SET && o.style === 'tech') || this.scatter?.chest?.[0];
+    if (!pair || !pair.handle.image) return;
+    const crop = (f) => cropToCanvas(pair.handle.image, f.rect[0], f.rect[1], f.rect[2], f.rect[3]);
+    this.chestClosed = this.store.fromCanvas('chest_scatter0', crop(pair.frames[0]));
+    this.chestOpen = this.store.fromCanvas('chest_scatter1', crop(pair.frames[1]));
   }
 
   // GL handle for a single sprite cut out of a sprite set (cached)

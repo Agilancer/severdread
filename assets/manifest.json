@@ -60751,5 +60751,10090 @@
    ],
    "source": "art/raw/textures/animated/anim_nature_energy.webp"
   }
+ ],
+ "scatterSets": [
+  {
+   "id": "scatter_pillars",
+   "kind": "pillar",
+   "file": "assets/sprites/scatter/pillars.png",
+   "w": 1024,
+   "h": 592,
+   "frames": 1,
+   "frameNames": [],
+   "objects": [
+    {
+     "id": "pillar_00",
+     "kind": "pillar",
+     "px": 139,
+     "pxW": 84,
+     "size": "tall",
+     "style": "gothic",
+     "tags": [
+      "skull",
+      "niche"
+     ],
+     "frames": [
+      [
+       176,
+       0,
+       84,
+       139
+      ]
+     ]
+    },
+    {
+     "id": "pillar_01",
+     "kind": "pillar",
+     "px": 139,
+     "pxW": 72,
+     "size": "tall",
+     "style": "stone",
+     "tags": [
+      "fluted",
+      "classic"
+     ],
+     "frames": [
+      [
+       262,
+       0,
+       72,
+       139
+      ]
+     ]
+    },
+    {
+     "id": "pillar_02",
+     "kind": "pillar",
+     "px": 141,
+     "pxW": 86,
+     "size": "tall",
+     "style": "gothic",
+     "tags": [
+      "skull",
+      "banner"
+     ],
+     "frames": [
+      [
+       0,
+       0,
+       86,
+       141
+      ]
+     ]
+    },
+    {
+     "id": "pillar_03",
+     "kind": "pillar",
+     "px": 139,
+     "pxW": 86,
+     "size": "tall",
+     "style": "iron",
+     "tags": [
+      "girder",
+      "industrial"
+     ],
+     "frames": [
+      [
+       336,
+       0,
+       86,
+       139
+      ]
+     ]
+    },
+    {
+     "id": "pillar_04",
+     "kind": "pillar",
+     "px": 140,
+     "pxW": 86,
+     "size": "tall",
+     "style": "tech",
+     "tags": [
+      "tube",
+      "blue",
+      "glow"
+     ],
+     "light": [
+      61,
+      90,
+      195
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       88,
+       0,
+       86,
+       140
+      ]
+     ]
+    },
+    {
+     "id": "pillar_05",
+     "kind": "pillar",
+     "px": 84,
+     "pxW": 86,
+     "size": "stump",
+     "style": "gothic",
+     "tags": [
+      "skull",
+      "ruin"
+     ],
+     "frames": [
+      [
+       822,
+       414,
+       86,
+       84
+      ]
+     ]
+    },
+    {
+     "id": "pillar_06",
+     "kind": "pillar",
+     "px": 75,
+     "pxW": 86,
+     "size": "stump",
+     "style": "stone",
+     "tags": [
+      "fluted",
+      "classic"
+     ],
+     "frames": [
+      [
+       446,
+       510,
+       86,
+       75
+      ]
+     ]
+    },
+    {
+     "id": "pillar_07",
+     "kind": "pillar",
+     "px": 83,
+     "pxW": 102,
+     "size": "stump",
+     "style": "hell",
+     "tags": [
+      "horns",
+      "demon"
+     ],
+     "light": [
+      167,
+      66,
+      53
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       910,
+       414,
+       102,
+       83
+      ]
+     ]
+    },
+    {
+     "id": "pillar_08",
+     "kind": "pillar",
+     "px": 76,
+     "pxW": 86,
+     "size": "stump",
+     "style": "industrial",
+     "tags": [
+      "hazard",
+      "metal"
+     ],
+     "light": [
+      193,
+      149,
+      45
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       358,
+       510,
+       86,
+       76
+      ]
+     ]
+    },
+    {
+     "id": "pillar_09",
+     "kind": "pillar",
+     "px": 74,
+     "pxW": 86,
+     "size": "stump",
+     "style": "tech",
+     "tags": [
+      "tube",
+      "blue",
+      "glow"
+     ],
+     "light": [
+      60,
+      94,
+      194
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       534,
+       510,
+       86,
+       74
+      ]
+     ]
+    },
+    {
+     "id": "pillar_10",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 80,
+     "size": "tall",
+     "style": "gold",
+     "tags": [
+      "skull",
+      "ornate",
+      "red"
+     ],
+     "light": [
+      168,
+      100,
+      81
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       860,
+       0,
+       80,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_11",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 82,
+     "size": "tall",
+     "style": "crypt",
+     "tags": [
+      "statue",
+      "moss"
+     ],
+     "frames": [
+      [
+       0,
+       143,
+       82,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_12",
+     "kind": "pillar",
+     "px": 135,
+     "pxW": 88,
+     "size": "tall",
+     "style": "hell",
+     "tags": [
+      "horns",
+      "demon",
+      "skull"
+     ],
+     "light": [
+      180,
+      49,
+      34
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       512,
+       0,
+       88,
+       135
+      ]
+     ]
+    },
+    {
+     "id": "pillar_13",
+     "kind": "pillar",
+     "px": 135,
+     "pxW": 84,
+     "size": "tall",
+     "style": "rust",
+     "tags": [
+      "cables",
+      "hazard",
+      "industrial"
+     ],
+     "light": [
+      194,
+      143,
+      35
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       602,
+       0,
+       84,
+       135
+      ]
+     ]
+    },
+    {
+     "id": "pillar_14",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 82,
+     "size": "tall",
+     "style": "bone",
+     "tags": [
+      "skull"
+     ],
+     "frames": [
+      [
+       84,
+       143,
+       82,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_15",
+     "kind": "pillar",
+     "px": 90,
+     "pxW": 106,
+     "size": "stump",
+     "style": "crypt",
+     "tags": [
+      "candles",
+      "skull",
+      "ruin"
+     ],
+     "light": [
+      213,
+      152,
+      58
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       200,
+       414,
+       106,
+       90
+      ]
+     ]
+    },
+    {
+     "id": "pillar_16",
+     "kind": "pillar",
+     "px": 80,
+     "pxW": 88,
+     "size": "stump",
+     "style": "moss",
+     "tags": [
+      "stone",
+      "ruin"
+     ],
+     "frames": [
+      [
+       176,
+       510,
+       88,
+       80
+      ]
+     ]
+    },
+    {
+     "id": "pillar_17",
+     "kind": "pillar",
+     "px": 89,
+     "pxW": 100,
+     "size": "stump",
+     "style": "lava",
+     "tags": [
+      "horns",
+      "demon",
+      "hell"
+     ],
+     "light": [
+      190,
+      62,
+      27
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       516,
+       414,
+       100,
+       89
+      ]
+     ]
+    },
+    {
+     "id": "pillar_18",
+     "kind": "pillar",
+     "px": 82,
+     "pxW": 86,
+     "size": "stump",
+     "style": "tech",
+     "tags": [
+      "red",
+      "glow"
+     ],
+     "light": [
+      197,
+      24,
+      13
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       510,
+       86,
+       82
+      ]
+     ]
+    },
+    {
+     "id": "pillar_19",
+     "kind": "pillar",
+     "px": 98,
+     "pxW": 100,
+     "size": "stump",
+     "style": "bone",
+     "tags": [
+      "horn"
+     ],
+     "frames": [
+      [
+       380,
+       279,
+       100,
+       98
+      ]
+     ]
+    },
+    {
+     "id": "pillar_20",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 82,
+     "size": "tall",
+     "style": "crypt",
+     "tags": [
+      "skull",
+      "chain"
+     ],
+     "frames": [
+      [
+       168,
+       143,
+       82,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_21",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 80,
+     "size": "tall",
+     "style": "marble",
+     "tags": [
+      "gold",
+      "white"
+     ],
+     "light": [
+      164,
+      127,
+      81
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       252,
+       143,
+       80,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_22",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 80,
+     "size": "tall",
+     "style": "lava",
+     "tags": [
+      "rock",
+      "glow"
+     ],
+     "light": [
+      197,
+      78,
+      30
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       334,
+       143,
+       80,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_23",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 94,
+     "size": "tall",
+     "style": "tech",
+     "tags": [
+      "cables",
+      "dark",
+      "industrial"
+     ],
+     "frames": [
+      [
+       416,
+       143,
+       94,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_24",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 84,
+     "size": "tall",
+     "style": "crystal",
+     "tags": [
+      "purple",
+      "glow"
+     ],
+     "light": [
+      140,
+      77,
+      186
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       512,
+       143,
+       84,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_25",
+     "kind": "pillar",
+     "px": 82,
+     "pxW": 86,
+     "size": "stump",
+     "style": "rock",
+     "tags": [
+      "ruin"
+     ],
+     "frames": [
+      [
+       88,
+       510,
+       86,
+       82
+      ]
+     ]
+    },
+    {
+     "id": "pillar_26",
+     "kind": "pillar",
+     "px": 79,
+     "pxW": 90,
+     "size": "stump",
+     "style": "marble",
+     "tags": [
+      "gold",
+      "white"
+     ],
+     "light": [
+      169,
+      129,
+      71
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       266,
+       510,
+       90,
+       79
+      ]
+     ]
+    },
+    {
+     "id": "pillar_27",
+     "kind": "pillar",
+     "px": 97,
+     "pxW": 100,
+     "size": "stump",
+     "style": "lava",
+     "tags": [
+      "rock",
+      "glow"
+     ],
+     "light": [
+      204,
+      82,
+      24
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       482,
+       279,
+       100,
+       97
+      ]
+     ]
+    },
+    {
+     "id": "pillar_28",
+     "kind": "pillar",
+     "px": 88,
+     "pxW": 86,
+     "size": "stump",
+     "style": "tech",
+     "tags": [
+      "red",
+      "glow"
+     ],
+     "light": [
+      205,
+      27,
+      24
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       734,
+       414,
+       86,
+       88
+      ]
+     ]
+    },
+    {
+     "id": "pillar_29",
+     "kind": "pillar",
+     "px": 94,
+     "pxW": 86,
+     "size": "stump",
+     "style": "crystal",
+     "tags": [
+      "purple",
+      "glow"
+     ],
+     "light": [
+      136,
+      77,
+      181
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       882,
+       279,
+       86,
+       94
+      ]
+     ]
+    },
+    {
+     "id": "pillar_30",
+     "kind": "pillar",
+     "px": 133,
+     "pxW": 88,
+     "size": "tall",
+     "style": "crypt",
+     "tags": [
+      "skull",
+      "moss",
+      "bronze"
+     ],
+     "frames": [
+      [
+       676,
+       143,
+       88,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "pillar_31",
+     "kind": "pillar",
+     "px": 133,
+     "pxW": 80,
+     "size": "tall",
+     "style": "gothic",
+     "tags": [
+      "statue",
+      "niche"
+     ],
+     "frames": [
+      [
+       766,
+       143,
+       80,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "pillar_32",
+     "kind": "pillar",
+     "px": 133,
+     "pxW": 82,
+     "size": "tall",
+     "style": "iron",
+     "tags": [
+      "spikes",
+      "hell"
+     ],
+     "frames": [
+      [
+       848,
+       143,
+       82,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "pillar_33",
+     "kind": "pillar",
+     "px": 135,
+     "pxW": 80,
+     "size": "tall",
+     "style": "tech",
+     "tags": [
+      "tube",
+      "cyan",
+      "glow"
+     ],
+     "frames": [
+      [
+       688,
+       0,
+       80,
+       135
+      ]
+     ]
+    },
+    {
+     "id": "pillar_34",
+     "kind": "pillar",
+     "px": 133,
+     "pxW": 80,
+     "size": "tall",
+     "style": "flesh",
+     "tags": [
+      "ribs",
+      "bone"
+     ],
+     "light": [
+      164,
+      94,
+      80
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       932,
+       143,
+       80,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "pillar_35",
+     "kind": "pillar",
+     "px": 96,
+     "pxW": 92,
+     "size": "stump",
+     "style": "crypt",
+     "tags": [
+      "skull",
+      "moss"
+     ],
+     "frames": [
+      [
+       684,
+       279,
+       92,
+       96
+      ]
+     ]
+    },
+    {
+     "id": "pillar_36",
+     "kind": "pillar",
+     "px": 91,
+     "pxW": 94,
+     "size": "stump",
+     "style": "gothic",
+     "tags": [
+      "skull",
+      "winged"
+     ],
+     "frames": [
+      [
+       104,
+       414,
+       94,
+       91
+      ]
+     ]
+    },
+    {
+     "id": "pillar_37",
+     "kind": "pillar",
+     "px": 89,
+     "pxW": 114,
+     "size": "stump",
+     "style": "iron",
+     "tags": [
+      "spikes",
+      "hell"
+     ],
+     "frames": [
+      [
+       618,
+       414,
+       114,
+       89
+      ]
+     ]
+    },
+    {
+     "id": "pillar_38",
+     "kind": "pillar",
+     "px": 90,
+     "pxW": 104,
+     "size": "stump",
+     "style": "tech",
+     "tags": [
+      "tube",
+      "cyan",
+      "glow"
+     ],
+     "frames": [
+      [
+       308,
+       414,
+       104,
+       90
+      ]
+     ]
+    },
+    {
+     "id": "pillar_39",
+     "kind": "pillar",
+     "px": 97,
+     "pxW": 98,
+     "size": "stump",
+     "style": "flesh",
+     "tags": [
+      "horns"
+     ],
+     "light": [
+      167,
+      91,
+      81
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       584,
+       279,
+       98,
+       97
+      ]
+     ]
+    },
+    {
+     "id": "pillar_40",
+     "kind": "pillar",
+     "px": 135,
+     "pxW": 88,
+     "size": "tall",
+     "style": "occult",
+     "tags": [
+      "pentagram",
+      "hell"
+     ],
+     "frames": [
+      [
+       770,
+       0,
+       88,
+       135
+      ]
+     ]
+    },
+    {
+     "id": "pillar_41",
+     "kind": "pillar",
+     "px": 133,
+     "pxW": 92,
+     "size": "tall",
+     "style": "rock",
+     "tags": [
+      "cave"
+     ],
+     "frames": [
+      [
+       0,
+       279,
+       92,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "pillar_42",
+     "kind": "pillar",
+     "px": 137,
+     "pxW": 86,
+     "size": "tall",
+     "style": "gold",
+     "tags": [
+      "statue",
+      "gothic"
+     ],
+     "light": [
+      171,
+      134,
+      79
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       424,
+       0,
+       86,
+       137
+      ]
+     ]
+    },
+    {
+     "id": "pillar_43",
+     "kind": "pillar",
+     "px": 133,
+     "pxW": 86,
+     "size": "tall",
+     "style": "rust",
+     "tags": [
+      "cables",
+      "red"
+     ],
+     "light": [
+      164,
+      69,
+      62
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       94,
+       279,
+       86,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "pillar_44",
+     "kind": "pillar",
+     "px": 134,
+     "pxW": 76,
+     "size": "tall",
+     "style": "ice",
+     "tags": [
+      "crystal",
+      "blue",
+      "glow"
+     ],
+     "light": [
+      87,
+      123,
+      179
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       598,
+       143,
+       76,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "pillar_45",
+     "kind": "pillar",
+     "px": 94,
+     "pxW": 102,
+     "size": "stump",
+     "style": "rock",
+     "tags": [
+      "cave"
+     ],
+     "frames": [
+      [
+       0,
+       414,
+       102,
+       94
+      ]
+     ]
+    },
+    {
+     "id": "pillar_46",
+     "kind": "pillar",
+     "px": 90,
+     "pxW": 100,
+     "size": "stump",
+     "style": "gold",
+     "tags": [
+      "statue",
+      "gothic"
+     ],
+     "light": [
+      169,
+      130,
+      76
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       414,
+       414,
+       100,
+       90
+      ]
+     ]
+    },
+    {
+     "id": "pillar_47",
+     "kind": "pillar",
+     "px": 101,
+     "pxW": 98,
+     "size": "stump",
+     "style": "rock",
+     "tags": [
+      "ruin",
+      "wood"
+     ],
+     "frames": [
+      [
+       280,
+       279,
+       98,
+       101
+      ]
+     ]
+    },
+    {
+     "id": "pillar_48",
+     "kind": "pillar",
+     "px": 95,
+     "pxW": 102,
+     "size": "stump",
+     "style": "rust",
+     "tags": [
+      "tank",
+      "red"
+     ],
+     "light": [
+      170,
+      74,
+      56
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       778,
+       279,
+       102,
+       95
+      ]
+     ]
+    },
+    {
+     "id": "pillar_49",
+     "kind": "pillar",
+     "px": 108,
+     "pxW": 96,
+     "size": "stump",
+     "style": "ice",
+     "tags": [
+      "crystal",
+      "blue",
+      "glow"
+     ],
+     "light": [
+      86,
+      126,
+      183
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       182,
+       279,
+       96,
+       108
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/pillars.webp",
+   "slice": {
+    "rowCuts": [
+     186.0,
+     363.0,
+     536.5,
+     711.0
+    ],
+    "stripsWithOtherSpriteCount": []
+   }
+  },
+  {
+   "id": "scatter_barrels",
+   "kind": "explosive",
+   "file": "assets/sprites/scatter/barrels.png",
+   "w": 1024,
+   "h": 596,
+   "frames": 4,
+   "frameNames": [
+    "intact",
+    "damaged",
+    "exploding",
+    "debris"
+   ],
+   "objects": [
+    {
+     "id": "barrel_00",
+     "kind": "explosive",
+     "px": 45,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      181,
+      75,
+      16
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       470,
+       463,
+       32,
+       45
+      ],
+      [
+       590,
+       303,
+       48,
+       52
+      ],
+      [
+       882,
+       129,
+       70,
+       56
+      ],
+      [
+       846,
+       512,
+       48,
+       37
+      ]
+     ]
+    },
+    {
+     "id": "barrel_01",
+     "kind": "explosive",
+     "px": 45,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      22,
+      64,
+      176
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       504,
+       463,
+       32,
+       45
+      ],
+      [
+       224,
+       246,
+       44,
+       54
+      ],
+      [
+       874,
+       67,
+       66,
+       57
+      ],
+      [
+       896,
+       512,
+       62,
+       37
+      ]
+     ]
+    },
+    {
+     "id": "barrel_02",
+     "kind": "explosive",
+     "px": 45,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "yellow",
+      "radiation"
+     ],
+     "element": "fire",
+     "light": [
+      197,
+      119,
+      25
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       538,
+       463,
+       32,
+       45
+      ],
+      [
+       642,
+       359,
+       58,
+       49
+      ],
+      [
+       942,
+       67,
+       62,
+       57
+      ],
+      [
+       0,
+       559,
+       48,
+       36
+      ]
+     ]
+    },
+    {
+     "id": "barrel_03",
+     "kind": "explosive",
+     "px": 45,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      71,
+      184,
+      14
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       572,
+       463,
+       32,
+       45
+      ],
+      [
+       606,
+       463,
+       42,
+       45
+      ],
+      [
+       0,
+       129,
+       74,
+       57
+      ],
+      [
+       50,
+       559,
+       48,
+       35
+      ]
+     ]
+    },
+    {
+     "id": "barrel_04",
+     "kind": "explosive",
+     "px": 45,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      128,
+      22,
+      175
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       650,
+       463,
+       32,
+       45
+      ],
+      [
+       646,
+       188,
+       40,
+       55
+      ],
+      [
+       76,
+       129,
+       76,
+       57
+      ],
+      [
+       208,
+       512,
+       50,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "barrel_05",
+     "kind": "explosive",
+     "px": 47,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "orange"
+     ],
+     "element": "fire",
+     "light": [
+      182,
+      81,
+      17
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       750,
+       412,
+       32,
+       47
+      ],
+      [
+       94,
+       412,
+       48,
+       48
+      ],
+      [
+       0,
+       188,
+       74,
+       56
+      ],
+      [
+       160,
+       463,
+       52,
+       46
+      ]
+     ]
+    },
+    {
+     "id": "barrel_06",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "cyan"
+     ],
+     "element": "ice",
+     "light": [
+      33,
+      198,
+      229
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       144,
+       412,
+       32,
+       48
+      ],
+      [
+       178,
+       412,
+       46,
+       48
+      ],
+      [
+       154,
+       129,
+       74,
+       57
+      ],
+      [
+       402,
+       559,
+       48,
+       32
+      ]
+     ]
+    },
+    {
+     "id": "barrel_07",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "barrel",
+      "white"
+     ],
+     "element": "fire",
+     "light": [
+      198,
+      131,
+      35
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       226,
+       412,
+       32,
+       48
+      ],
+      [
+       260,
+       412,
+       44,
+       48
+      ],
+      [
+       440,
+       67,
+       74,
+       58
+      ],
+      [
+       340,
+       359,
+       60,
+       50
+      ]
+     ]
+    },
+    {
+     "id": "barrel_08",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 32,
+     "style": "rust",
+     "tags": [
+      "barrel",
+      "black"
+     ],
+     "element": "fire",
+     "light": [
+      204,
+      106,
+      25
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       306,
+       412,
+       32,
+       48
+      ],
+      [
+       340,
+       412,
+       44,
+       48
+      ],
+      [
+       230,
+       129,
+       68,
+       57
+      ],
+      [
+       260,
+       512,
+       50,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "barrel_09",
+     "kind": "explosive",
+     "px": 47,
+     "pxW": 32,
+     "style": "rust",
+     "tags": [
+      "barrel",
+      "brown"
+     ],
+     "element": "fire",
+     "light": [
+      180,
+      103,
+      38
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       784,
+       412,
+       32,
+       47
+      ],
+      [
+       702,
+       359,
+       44,
+       49
+      ],
+      [
+       76,
+       188,
+       78,
+       56
+      ],
+      [
+       296,
+       559,
+       50,
+       33
+      ]
+     ]
+    },
+    {
+     "id": "barrel_10",
+     "kind": "explosive",
+     "px": 49,
+     "pxW": 46,
+     "style": "industrial",
+     "tags": [
+      "cage",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      183,
+      80,
+      18
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       748,
+       359,
+       46,
+       49
+      ],
+      [
+       684,
+       463,
+       42,
+       45
+      ],
+      [
+       156,
+       188,
+       68,
+       56
+      ],
+      [
+       248,
+       559,
+       46,
+       34
+      ]
+     ]
+    },
+    {
+     "id": "barrel_11",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 44,
+     "style": "industrial",
+     "tags": [
+      "cage",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      28,
+      60,
+      142
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       386,
+       412,
+       44,
+       48
+      ],
+      [
+       728,
+       463,
+       46,
+       45
+      ],
+      [
+       226,
+       188,
+       66,
+       56
+      ],
+      [
+       452,
+       559,
+       50,
+       32
+      ]
+     ]
+    },
+    {
+     "id": "barrel_12",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 44,
+     "style": "industrial",
+     "tags": [
+      "cage",
+      "yellow"
+     ],
+     "element": "fire",
+     "light": [
+      200,
+      125,
+      30
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       432,
+       412,
+       44,
+       48
+      ],
+      [
+       214,
+       463,
+       48,
+       46
+      ],
+      [
+       206,
+       67,
+       68,
+       59
+      ],
+      [
+       776,
+       463,
+       50,
+       45
+      ]
+     ]
+    },
+    {
+     "id": "barrel_13",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 44,
+     "style": "industrial",
+     "tags": [
+      "cage",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      67,
+      188,
+      12
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       478,
+       412,
+       44,
+       48
+      ],
+      [
+       264,
+       463,
+       52,
+       46
+      ],
+      [
+       300,
+       129,
+       68,
+       57
+      ],
+      [
+       100,
+       559,
+       46,
+       35
+      ]
+     ]
+    },
+    {
+     "id": "barrel_14",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 44,
+     "style": "industrial",
+     "tags": [
+      "cage",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      135,
+      23,
+      176
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       524,
+       412,
+       44,
+       48
+      ],
+      [
+       828,
+       463,
+       44,
+       45
+      ],
+      [
+       370,
+       129,
+       62,
+       57
+      ],
+      [
+       148,
+       559,
+       48,
+       35
+      ]
+     ]
+    },
+    {
+     "id": "barrel_15",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 62,
+     "style": "industrial",
+     "tags": [
+      "tank",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      182,
+      84,
+      18
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       816,
+       303,
+       62,
+       51
+      ],
+      [
+       874,
+       463,
+       42,
+       45
+      ],
+      [
+       270,
+       246,
+       58,
+       54
+      ],
+      [
+       918,
+       463,
+       52,
+       45
+      ]
+     ]
+    },
+    {
+     "id": "barrel_16",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 60,
+     "style": "industrial",
+     "tags": [
+      "tank",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      25,
+      62,
+      171
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       402,
+       359,
+       60,
+       50
+      ],
+      [
+       972,
+       463,
+       38,
+       45
+      ],
+      [
+       294,
+       188,
+       72,
+       56
+      ],
+      [
+       312,
+       512,
+       52,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "barrel_17",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 64,
+     "style": "industrial",
+     "tags": [
+      "tank",
+      "yellow"
+     ],
+     "element": "fire",
+     "light": [
+      192,
+      123,
+      32
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       880,
+       303,
+       64,
+       51
+      ],
+      [
+       0,
+       512,
+       44,
+       45
+      ],
+      [
+       688,
+       188,
+       66,
+       55
+      ],
+      [
+       366,
+       512,
+       48,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "barrel_18",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 60,
+     "style": "industrial",
+     "tags": [
+      "tank",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      67,
+      183,
+      13
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       946,
+       303,
+       60,
+       51
+      ],
+      [
+       464,
+       359,
+       44,
+       50
+      ],
+      [
+       330,
+       246,
+       58,
+       54
+      ],
+      [
+       96,
+       512,
+       56,
+       43
+      ]
+     ]
+    },
+    {
+     "id": "barrel_19",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 62,
+     "style": "industrial",
+     "tags": [
+      "tank",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      141,
+      27,
+      182
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       0,
+       359,
+       62,
+       51
+      ],
+      [
+       570,
+       412,
+       40,
+       48
+      ],
+      [
+       264,
+       303,
+       54,
+       53
+      ],
+      [
+       632,
+       512,
+       50,
+       39
+      ]
+     ]
+    },
+    {
+     "id": "barrel_20",
+     "kind": "explosive",
+     "px": 55,
+     "pxW": 42,
+     "style": "industrial",
+     "tags": [
+      "bottles",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      187,
+      82,
+      19
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       756,
+       188,
+       42,
+       55
+      ],
+      [
+       390,
+       246,
+       48,
+       54
+      ],
+      [
+       490,
+       0,
+       74,
+       62
+      ],
+      [
+       796,
+       359,
+       48,
+       49
+      ]
+     ]
+    },
+    {
+     "id": "barrel_21",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 40,
+     "style": "industrial",
+     "tags": [
+      "bottles",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      22,
+      60,
+      166
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       440,
+       246,
+       40,
+       54
+      ],
+      [
+       482,
+       246,
+       48,
+       54
+      ],
+      [
+       566,
+       0,
+       66,
+       61
+      ],
+      [
+       818,
+       412,
+       52,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "barrel_22",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 40,
+     "style": "industrial",
+     "tags": [
+      "bottles",
+      "yellow"
+     ],
+     "element": "fire",
+     "light": [
+      200,
+      130,
+      31
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       532,
+       246,
+       40,
+       54
+      ],
+      [
+       574,
+       246,
+       48,
+       54
+      ],
+      [
+       352,
+       0,
+       68,
+       63
+      ],
+      [
+       872,
+       412,
+       48,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "barrel_23",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 40,
+     "style": "industrial",
+     "tags": [
+      "bottles",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      69,
+      182,
+      13
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       624,
+       246,
+       40,
+       54
+      ],
+      [
+       634,
+       0,
+       50,
+       61
+      ],
+      [
+       422,
+       0,
+       66,
+       63
+      ],
+      [
+       922,
+       412,
+       48,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "barrel_24",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 40,
+     "style": "industrial",
+     "tags": [
+      "bottles",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      137,
+      24,
+      180
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       666,
+       246,
+       40,
+       54
+      ],
+      [
+       708,
+       246,
+       48,
+       54
+      ],
+      [
+       686,
+       0,
+       62,
+       61
+      ],
+      [
+       318,
+       463,
+       48,
+       46
+      ]
+     ]
+    },
+    {
+     "id": "barrel_25",
+     "kind": "explosive",
+     "px": 58,
+     "pxW": 38,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      184,
+      73,
+      21
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       516,
+       67,
+       38,
+       58
+      ],
+      [
+       276,
+       67,
+       42,
+       59
+      ],
+      [
+       210,
+       0,
+       72,
+       64
+      ],
+      [
+       528,
+       512,
+       50,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "barrel_26",
+     "kind": "explosive",
+     "px": 60,
+     "pxW": 38,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      31,
+      62,
+      164
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       750,
+       0,
+       38,
+       60
+      ],
+      [
+       790,
+       0,
+       42,
+       60
+      ],
+      [
+       0,
+       0,
+       68,
+       65
+      ],
+      [
+       320,
+       303,
+       56,
+       53
+      ]
+     ]
+    },
+    {
+     "id": "barrel_27",
+     "kind": "explosive",
+     "px": 58,
+     "pxW": 38,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "yellow"
+     ],
+     "element": "fire",
+     "light": [
+      195,
+      123,
+      31
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       556,
+       67,
+       38,
+       58
+      ],
+      [
+       320,
+       67,
+       46,
+       59
+      ],
+      [
+       70,
+       0,
+       64,
+       65
+      ],
+      [
+       758,
+       246,
+       56,
+       54
+      ]
+     ]
+    },
+    {
+     "id": "barrel_28",
+     "kind": "explosive",
+     "px": 60,
+     "pxW": 36,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      69,
+      188,
+      14
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       834,
+       0,
+       36,
+       60
+      ],
+      [
+       872,
+       0,
+       46,
+       60
+      ],
+      [
+       136,
+       0,
+       72,
+       65
+      ],
+      [
+       64,
+       359,
+       60,
+       51
+      ]
+     ]
+    },
+    {
+     "id": "barrel_29",
+     "kind": "explosive",
+     "px": 60,
+     "pxW": 36,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      139,
+      25,
+      179
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       920,
+       0,
+       36,
+       60
+      ],
+      [
+       958,
+       0,
+       42,
+       60
+      ],
+      [
+       284,
+       0,
+       66,
+       64
+      ],
+      [
+       368,
+       188,
+       52,
+       56
+      ]
+     ]
+    },
+    {
+     "id": "barrel_30",
+     "kind": "explosive",
+     "px": 52,
+     "pxW": 36,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "red",
+      "radiation"
+     ],
+     "element": "fire",
+     "light": [
+      184,
+      66,
+      21
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       640,
+       303,
+       36,
+       52
+      ],
+      [
+       846,
+       359,
+       46,
+       49
+      ],
+      [
+       800,
+       188,
+       62,
+       55
+      ],
+      [
+       0,
+       463,
+       60,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "barrel_31",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 38,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "blue",
+      "radiation"
+     ],
+     "element": "lightning",
+     "light": [
+      11,
+      58,
+      178
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       126,
+       359,
+       38,
+       51
+      ],
+      [
+       894,
+       359,
+       50,
+       49
+      ],
+      [
+       422,
+       188,
+       64,
+       56
+      ],
+      [
+       504,
+       559,
+       50,
+       32
+      ]
+     ]
+    },
+    {
+     "id": "barrel_32",
+     "kind": "explosive",
+     "px": 52,
+     "pxW": 36,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "yellow",
+      "radiation"
+     ],
+     "element": "fire",
+     "light": [
+      194,
+      117,
+      27
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       678,
+       303,
+       36,
+       52
+      ],
+      [
+       946,
+       359,
+       50,
+       49
+      ],
+      [
+       434,
+       129,
+       68,
+       57
+      ],
+      [
+       198,
+       559,
+       48,
+       35
+      ]
+     ]
+    },
+    {
+     "id": "barrel_33",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 36,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "green",
+      "radiation"
+     ],
+     "element": "poison",
+     "light": [
+      60,
+      189,
+      14
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       166,
+       359,
+       36,
+       51
+      ],
+      [
+       204,
+       359,
+       50,
+       51
+      ],
+      [
+       504,
+       129,
+       66,
+       57
+      ],
+      [
+       716,
+       303,
+       48,
+       52
+      ]
+     ]
+    },
+    {
+     "id": "barrel_34",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 36,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "purple",
+      "radiation"
+     ],
+     "element": "void",
+     "light": [
+      141,
+      24,
+      182
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       256,
+       359,
+       36,
+       51
+      ],
+      [
+       612,
+       412,
+       46,
+       48
+      ],
+      [
+       572,
+       129,
+       66,
+       57
+      ],
+      [
+       684,
+       512,
+       50,
+       39
+      ]
+     ]
+    },
+    {
+     "id": "barrel_35",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 42,
+     "style": "industrial",
+     "tags": [
+      "bomb",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      184,
+      96,
+      28
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       510,
+       359,
+       42,
+       50
+      ],
+      [
+       660,
+       412,
+       46,
+       48
+      ],
+      [
+       816,
+       246,
+       58,
+       54
+      ],
+      [
+       154,
+       512,
+       52,
+       43
+      ]
+     ]
+    },
+    {
+     "id": "barrel_36",
+     "kind": "explosive",
+     "px": 49,
+     "pxW": 44,
+     "style": "industrial",
+     "tags": [
+      "bomb",
+      "blue"
+     ],
+     "element": "fire",
+     "light": [
+      192,
+      109,
+      26
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       0,
+       412,
+       44,
+       49
+      ],
+      [
+       368,
+       463,
+       50,
+       46
+      ],
+      [
+       876,
+       246,
+       74,
+       54
+      ],
+      [
+       348,
+       559,
+       52,
+       33
+      ]
+     ]
+    },
+    {
+     "id": "barrel_37",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 42,
+     "style": "industrial",
+     "tags": [
+      "bomb",
+      "orange"
+     ],
+     "element": "fire",
+     "light": [
+      191,
+      114,
+      29
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       554,
+       359,
+       42,
+       50
+      ],
+      [
+       708,
+       412,
+       40,
+       48
+      ],
+      [
+       378,
+       303,
+       64,
+       53
+      ],
+      [
+       416,
+       512,
+       62,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "barrel_38",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 42,
+     "style": "industrial",
+     "tags": [
+      "bomb",
+      "cyan"
+     ],
+     "element": "ice",
+     "light": [
+      36,
+      212,
+      233
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       598,
+       359,
+       42,
+       50
+      ],
+      [
+       46,
+       412,
+       46,
+       49
+      ],
+      [
+       864,
+       188,
+       66,
+       55
+      ],
+      [
+       62,
+       463,
+       50,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "barrel_39",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 44,
+     "style": "industrial",
+     "tags": [
+      "bomb",
+      "white"
+     ],
+     "element": "fire",
+     "light": [
+      201,
+      127,
+      38
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       294,
+       359,
+       44,
+       51
+      ],
+      [
+       114,
+       463,
+       44,
+       47
+      ],
+      [
+       932,
+       188,
+       68,
+       55
+      ],
+      [
+       46,
+       512,
+       48,
+       44
+      ]
+     ]
+    },
+    {
+     "id": "barrel_40",
+     "kind": "explosive",
+     "px": 56,
+     "pxW": 42,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      181,
+      52,
+      25
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       488,
+       188,
+       42,
+       56
+      ],
+      [
+       766,
+       303,
+       48,
+       52
+      ],
+      [
+       368,
+       67,
+       70,
+       59
+      ],
+      [
+       480,
+       512,
+       46,
+       41
+      ]
+     ]
+    },
+    {
+     "id": "barrel_41",
+     "kind": "explosive",
+     "px": 58,
+     "pxW": 42,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      16,
+      66,
+      160
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       596,
+       67,
+       42,
+       58
+      ],
+      [
+       444,
+       303,
+       48,
+       53
+      ],
+      [
+       0,
+       67,
+       68,
+       60
+      ],
+      [
+       580,
+       512,
+       50,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "barrel_42",
+     "kind": "explosive",
+     "px": 57,
+     "pxW": 42,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "yellow"
+     ],
+     "element": "fire",
+     "light": [
+      184,
+      112,
+      31
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       640,
+       129,
+       42,
+       57
+      ],
+      [
+       952,
+       246,
+       48,
+       54
+      ],
+      [
+       640,
+       67,
+       70,
+       58
+      ],
+      [
+       684,
+       129,
+       44,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "barrel_43",
+     "kind": "explosive",
+     "px": 58,
+     "pxW": 42,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      69,
+      196,
+      20
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       712,
+       67,
+       42,
+       58
+      ],
+      [
+       494,
+       303,
+       46,
+       53
+      ],
+      [
+       70,
+       67,
+       70,
+       60
+      ],
+      [
+       0,
+       246,
+       46,
+       55
+      ]
+     ]
+    },
+    {
+     "id": "barrel_44",
+     "kind": "explosive",
+     "px": 58,
+     "pxW": 42,
+     "style": "gothic",
+     "tags": [
+      "lantern",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      142,
+      26,
+      183
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       756,
+       67,
+       42,
+       58
+      ],
+      [
+       542,
+       303,
+       46,
+       53
+      ],
+      [
+       142,
+       67,
+       62,
+       60
+      ],
+      [
+       532,
+       188,
+       44,
+       56
+      ]
+     ]
+    },
+    {
+     "id": "barrel_45",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 30,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      183,
+      55,
+      20
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       303,
+       30,
+       54
+      ],
+      [
+       32,
+       303,
+       40,
+       54
+      ],
+      [
+       48,
+       246,
+       68,
+       55
+      ],
+      [
+       556,
+       559,
+       46,
+       31
+      ]
+     ]
+    },
+    {
+     "id": "barrel_46",
+     "kind": "explosive",
+     "px": 55,
+     "pxW": 30,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      14,
+      54,
+      173
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       118,
+       246,
+       30,
+       55
+      ],
+      [
+       74,
+       303,
+       40,
+       54
+      ],
+      [
+       730,
+       129,
+       74,
+       57
+      ],
+      [
+       736,
+       512,
+       52,
+       39
+      ]
+     ]
+    },
+    {
+     "id": "barrel_47",
+     "kind": "explosive",
+     "px": 55,
+     "pxW": 30,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "yellow"
+     ],
+     "element": "fire",
+     "light": [
+      192,
+      113,
+      28
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       150,
+       246,
+       30,
+       55
+      ],
+      [
+       182,
+       246,
+       40,
+       55
+      ],
+      [
+       800,
+       67,
+       72,
+       58
+      ],
+      [
+       960,
+       512,
+       52,
+       37
+      ]
+     ]
+    },
+    {
+     "id": "barrel_48",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 30,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      68,
+      185,
+      14
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       116,
+       303,
+       30,
+       54
+      ],
+      [
+       148,
+       303,
+       40,
+       54
+      ],
+      [
+       806,
+       129,
+       74,
+       57
+      ],
+      [
+       790,
+       512,
+       54,
+       39
+      ]
+     ]
+    },
+    {
+     "id": "barrel_49",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 30,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "black"
+     ],
+     "element": "fire",
+     "light": [
+      186,
+      94,
+      27
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       190,
+       303,
+       30,
+       54
+      ],
+      [
+       222,
+       303,
+       40,
+       54
+      ],
+      [
+       578,
+       188,
+       66,
+       56
+      ],
+      [
+       420,
+       463,
+       48,
+       46
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/explosive_barrels.webp",
+   "slice": {
+    "rowCuts": [
+     76.0,
+     149.5,
+     223.0,
+     295.5,
+     374.5,
+     455.5,
+     527.5,
+     595.5,
+     669.5
+    ],
+    "stripsWithOtherSpriteCount": []
+   }
+  },
+  {
+   "id": "scatter_props",
+   "kind": "explosive",
+   "file": "assets/sprites/scatter/props.png",
+   "w": 1024,
+   "h": 500,
+   "frames": 4,
+   "frameNames": [
+    "intact",
+    "damaged",
+    "exploding",
+    "debris"
+   ],
+   "objects": [
+    {
+     "id": "xprop_00",
+     "kind": "explosive",
+     "px": 47,
+     "pxW": 40,
+     "style": "tech",
+     "tags": [
+      "terminal"
+     ],
+     "element": "fire",
+     "light": [
+      150,
+      61,
+      30
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       452,
+       359,
+       40,
+       47
+      ],
+      [
+       494,
+       359,
+       40,
+       47
+      ],
+      [
+       688,
+       70,
+       48,
+       59
+      ],
+      [
+       304,
+       458,
+       48,
+       39
+      ]
+     ]
+    },
+    {
+     "id": "xprop_01",
+     "kind": "explosive",
+     "px": 52,
+     "pxW": 30,
+     "style": "tech",
+     "tags": [
+      "server"
+     ],
+     "element": "fire",
+     "light": [
+      154,
+      57,
+      29
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       970,
+       195,
+       30,
+       52
+      ],
+      [
+       0,
+       252,
+       34,
+       52
+      ],
+      [
+       94,
+       70,
+       44,
+       61
+      ],
+      [
+       0,
+       410,
+       58,
+       46
+      ]
+     ]
+    },
+    {
+     "id": "xprop_02",
+     "kind": "explosive",
+     "px": 56,
+     "pxW": 24,
+     "style": "industrial",
+     "tags": [
+      "gas",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      145,
+      33,
+      28
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       562,
+       134,
+       24,
+       56
+      ],
+      [
+       826,
+       134,
+       26,
+       55
+      ],
+      [
+       280,
+       70,
+       52,
+       60
+      ],
+      [
+       744,
+       458,
+       46,
+       33
+      ]
+     ]
+    },
+    {
+     "id": "xprop_03",
+     "kind": "explosive",
+     "px": 55,
+     "pxW": 36,
+     "style": "tech",
+     "tags": [
+      "cell",
+      "blue",
+      "glow"
+     ],
+     "element": "lightning",
+     "light": [
+      46,
+      96,
+      170
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       854,
+       134,
+       36,
+       55
+      ],
+      [
+       892,
+       134,
+       34,
+       55
+      ],
+      [
+       334,
+       70,
+       46,
+       60
+      ],
+      [
+       36,
+       252,
+       46,
+       52
+      ]
+     ]
+    },
+    {
+     "id": "xprop_04",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 38,
+     "style": "industrial",
+     "tags": [
+      "safe"
+     ],
+     "element": "fire",
+     "light": [
+      149,
+      63,
+      28
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       98,
+       306,
+       38,
+       50
+      ],
+      [
+       138,
+       306,
+       40,
+       50
+      ],
+      [
+       144,
+       195,
+       40,
+       54
+      ],
+      [
+       402,
+       458,
+       48,
+       38
+      ]
+     ]
+    },
+    {
+     "id": "xprop_05",
+     "kind": "explosive",
+     "px": 52,
+     "pxW": 38,
+     "style": "industrial",
+     "tags": [
+      "tanks",
+      "copper"
+     ],
+     "element": "fire",
+     "light": [
+      157,
+      90,
+      36
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       84,
+       252,
+       38,
+       52
+      ],
+      [
+       540,
+       252,
+       38,
+       51
+      ],
+      [
+       928,
+       134,
+       42,
+       55
+      ],
+      [
+       60,
+       410,
+       52,
+       46
+      ]
+     ]
+    },
+    {
+     "id": "xprop_06",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 34,
+     "style": "tech",
+     "tags": [
+      "console",
+      "blue"
+     ],
+     "element": "fire",
+     "light": [
+      140,
+      51,
+      28
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       40,
+       359,
+       34,
+       48
+      ],
+      [
+       76,
+       359,
+       32,
+       48
+      ],
+      [
+       382,
+       70,
+       38,
+       60
+      ],
+      [
+       666,
+       410,
+       52,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "xprop_07",
+     "kind": "explosive",
+     "px": 53,
+     "pxW": 26,
+     "style": "industrial",
+     "tags": [
+      "gas",
+      "radiation"
+     ],
+     "element": "fire",
+     "light": [
+      158,
+      71,
+      29
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       434,
+       195,
+       26,
+       53
+      ],
+      [
+       462,
+       195,
+       28,
+       53
+      ],
+      [
+       762,
+       0,
+       46,
+       62
+      ],
+      [
+       536,
+       359,
+       54,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "xprop_08",
+     "kind": "explosive",
+     "px": 55,
+     "pxW": 36,
+     "style": "tech",
+     "tags": [
+      "generator",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      166,
+      46,
+      24
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       972,
+       134,
+       36,
+       55
+      ],
+      [
+       0,
+       195,
+       32,
+       55
+      ],
+      [
+       124,
+       252,
+       46,
+       52
+      ],
+      [
+       452,
+       458,
+       46,
+       38
+      ]
+     ]
+    },
+    {
+     "id": "xprop_09",
+     "kind": "explosive",
+     "px": 47,
+     "pxW": 40,
+     "style": "industrial",
+     "tags": [
+      "ammo",
+      "military"
+     ],
+     "element": "fire",
+     "light": [
+      139,
+      48,
+      40
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       592,
+       359,
+       40,
+       47
+      ],
+      [
+       706,
+       306,
+       40,
+       49
+      ],
+      [
+       422,
+       70,
+       38,
+       60
+      ],
+      [
+       186,
+       195,
+       48,
+       54
+      ]
+     ]
+    },
+    {
+     "id": "xprop_10",
+     "kind": "explosive",
+     "px": 57,
+     "pxW": 38,
+     "style": "tech",
+     "tags": [
+      "coolant",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      37,
+      95,
+      150
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       290,
+       134,
+       38,
+       57
+      ],
+      [
+       330,
+       134,
+       38,
+       57
+      ],
+      [
+       144,
+       0,
+       50,
+       66
+      ],
+      [
+       236,
+       195,
+       54,
+       54
+      ]
+     ]
+    },
+    {
+     "id": "xprop_11",
+     "kind": "explosive",
+     "px": 59,
+     "pxW": 34,
+     "style": "industrial",
+     "tags": [
+      "transformer"
+     ],
+     "element": "fire",
+     "light": [
+      145,
+      68,
+      34
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       738,
+       70,
+       34,
+       59
+      ],
+      [
+       36,
+       134,
+       34,
+       58
+      ],
+      [
+       348,
+       0,
+       42,
+       64
+      ],
+      [
+       720,
+       410,
+       50,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "xprop_12",
+     "kind": "explosive",
+     "px": 46,
+     "pxW": 32,
+     "style": "tech",
+     "tags": [
+      "gas",
+      "medical"
+     ],
+     "element": "fire",
+     "light": [
+      160,
+      50,
+      28
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       114,
+       410,
+       32,
+       46
+      ],
+      [
+       634,
+       359,
+       34,
+       47
+      ],
+      [
+       392,
+       0,
+       54,
+       64
+      ],
+      [
+       180,
+       306,
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "id": "xprop_13",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 30,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "orange"
+     ],
+     "element": "fire",
+     "light": [
+      159,
+      64,
+      22
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       580,
+       252,
+       30,
+       51
+      ],
+      [
+       172,
+       252,
+       34,
+       52
+      ],
+      [
+       774,
+       70,
+       48,
+       59
+      ],
+      [
+       652,
+       458,
+       40,
+       36
+      ]
+     ]
+    },
+    {
+     "id": "xprop_14",
+     "kind": "explosive",
+     "px": 42,
+     "pxW": 48,
+     "style": "industrial",
+     "tags": [
+      "generator"
+     ],
+     "element": "fire",
+     "light": [
+      148,
+      51,
+      25
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       772,
+       410,
+       48,
+       42
+      ],
+      [
+       486,
+       410,
+       36,
+       45
+      ],
+      [
+       588,
+       134,
+       38,
+       56
+      ],
+      [
+       822,
+       410,
+       48,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "xprop_15",
+     "kind": "explosive",
+     "px": 46,
+     "pxW": 40,
+     "style": "tech",
+     "tags": [
+      "terminal"
+     ],
+     "element": "poison",
+     "light": [
+      39,
+      159,
+      57
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       148,
+       410,
+       40,
+       46
+      ],
+      [
+       190,
+       410,
+       38,
+       46
+      ],
+      [
+       748,
+       306,
+       44,
+       49
+      ],
+      [
+       562,
+       410,
+       54,
+       43
+      ]
+     ]
+    },
+    {
+     "id": "xprop_16",
+     "kind": "explosive",
+     "px": 52,
+     "pxW": 36,
+     "style": "industrial",
+     "tags": [
+      "cabinet",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      155,
+      59,
+      28
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       208,
+       252,
+       36,
+       52
+      ],
+      [
+       612,
+       252,
+       36,
+       51
+      ],
+      [
+       304,
+       0,
+       42,
+       65
+      ],
+      [
+       872,
+       410,
+       48,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "xprop_17",
+     "kind": "explosive",
+     "px": 59,
+     "pxW": 22,
+     "style": "industrial",
+     "tags": [
+      "gas",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      44,
+      98,
+      168
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       824,
+       70,
+       22,
+       59
+      ],
+      [
+       848,
+       70,
+       28,
+       59
+      ],
+      [
+       196,
+       0,
+       58,
+       66
+      ],
+      [
+       232,
+       306,
+       46,
+       50
+      ]
+     ]
+    },
+    {
+     "id": "xprop_18",
+     "kind": "explosive",
+     "px": 53,
+     "pxW": 50,
+     "style": "tech",
+     "tags": [
+      "bio",
+      "green"
+     ],
+     "element": "poison",
+     "light": [
+      46,
+      134,
+      82
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       492,
+       195,
+       50,
+       53
+      ],
+      [
+       544,
+       195,
+       44,
+       53
+      ],
+      [
+       370,
+       134,
+       34,
+       57
+      ],
+      [
+       590,
+       195,
+       40,
+       53
+      ]
+     ]
+    },
+    {
+     "id": "xprop_19",
+     "kind": "explosive",
+     "px": 42,
+     "pxW": 38,
+     "style": "industrial",
+     "tags": [
+      "box"
+     ],
+     "element": "fire",
+     "light": [
+      162,
+      70,
+      30
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       922,
+       410,
+       38,
+       42
+      ],
+      [
+       962,
+       410,
+       38,
+       42
+      ],
+      [
+       810,
+       0,
+       42,
+       62
+      ],
+      [
+       500,
+       458,
+       50,
+       38
+      ]
+     ]
+    },
+    {
+     "id": "xprop_20",
+     "kind": "explosive",
+     "px": 57,
+     "pxW": 76,
+     "style": "industrial",
+     "tags": [
+      "machine",
+      "pipes"
+     ],
+     "element": "fire",
+     "light": [
+      145,
+      42,
+      23
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       406,
+       134,
+       76,
+       57
+      ],
+      [
+       484,
+       134,
+       76,
+       57
+      ],
+      [
+       878,
+       70,
+       42,
+       59
+      ],
+      [
+       150,
+       458,
+       50,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "xprop_21",
+     "kind": "explosive",
+     "px": 49,
+     "pxW": 36,
+     "style": "tech",
+     "tags": [
+      "medical",
+      "cabinet"
+     ],
+     "element": "fire",
+     "light": [
+      152,
+      55,
+      25
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       794,
+       306,
+       36,
+       49
+      ],
+      [
+       832,
+       306,
+       34,
+       49
+      ],
+      [
+       462,
+       70,
+       46,
+       60
+      ],
+      [
+       618,
+       410,
+       46,
+       43
+      ]
+     ]
+    },
+    {
+     "id": "xprop_22",
+     "kind": "explosive",
+     "px": 53,
+     "pxW": 30,
+     "style": "tech",
+     "tags": [
+      "cell",
+      "purple",
+      "glow"
+     ],
+     "element": "void",
+     "light": [
+      129,
+      44,
+      166
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       632,
+       195,
+       30,
+       53
+      ],
+      [
+       664,
+       195,
+       32,
+       53
+      ],
+      [
+       922,
+       70,
+       44,
+       59
+      ],
+      [
+       94,
+       458,
+       54,
+       41
+      ]
+     ]
+    },
+    {
+     "id": "xprop_23",
+     "kind": "explosive",
+     "px": 52,
+     "pxW": 34,
+     "style": "tech",
+     "tags": [
+      "droid",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      51,
+      89,
+      156
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       246,
+       252,
+       34,
+       52
+      ],
+      [
+       650,
+       252,
+       46,
+       51
+      ],
+      [
+       510,
+       70,
+       70,
+       60
+      ],
+      [
+       846,
+       458,
+       28,
+       32
+      ]
+     ]
+    },
+    {
+     "id": "xprop_24",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 42,
+     "style": "industrial",
+     "tags": [
+      "crate",
+      "yellow"
+     ],
+     "element": "fire",
+     "light": [
+      144,
+      78,
+      31
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       292,
+       195,
+       42,
+       54
+      ],
+      [
+       698,
+       195,
+       38,
+       53
+      ],
+      [
+       140,
+       70,
+       36,
+       61
+      ],
+      [
+       354,
+       458,
+       46,
+       39
+      ]
+     ]
+    },
+    {
+     "id": "xprop_25",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 36,
+     "style": "tech",
+     "tags": [
+      "server",
+      "cyan"
+     ],
+     "element": "ice",
+     "light": [
+      44,
+      119,
+      123
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       110,
+       359,
+       36,
+       48
+      ],
+      [
+       868,
+       306,
+       34,
+       49
+      ],
+      [
+       282,
+       252,
+       46,
+       52
+      ],
+      [
+       230,
+       410,
+       56,
+       46
+      ]
+     ]
+    },
+    {
+     "id": "xprop_26",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 44,
+     "style": "industrial",
+     "tags": [
+      "sphere",
+      "tank"
+     ],
+     "element": "fire",
+     "light": [
+      167,
+      74,
+      25
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       698,
+       252,
+       44,
+       51
+      ],
+      [
+       330,
+       252,
+       40,
+       52
+      ],
+      [
+       256,
+       0,
+       46,
+       66
+      ],
+      [
+       670,
+       359,
+       40,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "xprop_27",
+     "kind": "explosive",
+     "px": 49,
+     "pxW": 30,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "toxic"
+     ],
+     "element": "poison",
+     "light": [
+      48,
+      141,
+      28
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       904,
+       306,
+       30,
+       49
+      ],
+      [
+       936,
+       306,
+       34,
+       49
+      ],
+      [
+       548,
+       0,
+       52,
+       63
+      ],
+      [
+       72,
+       134,
+       50,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "xprop_28",
+     "kind": "explosive",
+     "px": 59,
+     "pxW": 32,
+     "style": "industrial",
+     "tags": [
+      "cabinet",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      176,
+      54,
+      23
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       968,
+       70,
+       32,
+       59
+      ],
+      [
+       0,
+       134,
+       34,
+       59
+      ],
+      [
+       46,
+       0,
+       50,
+       67
+      ],
+      [
+       34,
+       195,
+       44,
+       55
+      ]
+     ]
+    },
+    {
+     "id": "xprop_29",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 54,
+     "style": "rust",
+     "tags": [
+      "scrap"
+     ],
+     "element": "fire",
+     "light": [
+      125,
+      38,
+      33
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       148,
+       359,
+       54,
+       48
+      ],
+      [
+       204,
+       359,
+       58,
+       48
+      ],
+      [
+       628,
+       134,
+       44,
+       56
+      ],
+      [
+       712,
+       359,
+       46,
+       47
+      ]
+     ]
+    },
+    {
+     "id": "xprop_30",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 44,
+     "style": "tech",
+     "tags": [
+      "terminal"
+     ],
+     "element": "fire",
+     "light": [
+      168,
+      102,
+      32
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       280,
+       306,
+       44,
+       50
+      ],
+      [
+       972,
+       306,
+       40,
+       49
+      ],
+      [
+       602,
+       0,
+       50,
+       63
+      ],
+      [
+       264,
+       359,
+       48,
+       48
+      ]
+     ]
+    },
+    {
+     "id": "xprop_31",
+     "kind": "explosive",
+     "px": 46,
+     "pxW": 32,
+     "style": "tech",
+     "tags": [
+      "canister",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      40,
+      88,
+      150
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       288,
+       410,
+       32,
+       46
+      ],
+      [
+       322,
+       410,
+       34,
+       46
+      ],
+      [
+       674,
+       134,
+       50,
+       56
+      ],
+      [
+       326,
+       306,
+       46,
+       50
+      ]
+     ]
+    },
+    {
+     "id": "xprop_32",
+     "kind": "explosive",
+     "px": 55,
+     "pxW": 28,
+     "style": "industrial",
+     "tags": [
+      "extinguisher"
+     ],
+     "element": "fire",
+     "light": [
+      159,
+      34,
+      28
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       80,
+       195,
+       28,
+       55
+      ],
+      [
+       110,
+       195,
+       32,
+       55
+      ],
+      [
+       854,
+       0,
+       38,
+       62
+      ],
+      [
+       202,
+       458,
+       58,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "xprop_33",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 36,
+     "style": "industrial",
+     "tags": [
+      "generator",
+      "orange"
+     ],
+     "element": "fire",
+     "light": [
+      171,
+      75,
+      27
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       744,
+       252,
+       36,
+       51
+      ],
+      [
+       374,
+       306,
+       36,
+       50
+      ],
+      [
+       178,
+       70,
+       48,
+       61
+      ],
+      [
+       792,
+       458,
+       52,
+       33
+      ]
+     ]
+    },
+    {
+     "id": "xprop_34",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 38,
+     "style": "tech",
+     "tags": [
+      "cryo",
+      "drum"
+     ],
+     "element": "lightning",
+     "light": [
+      43,
+      82,
+      151
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       412,
+       306,
+       38,
+       50
+      ],
+      [
+       452,
+       306,
+       36,
+       50
+      ],
+      [
+       490,
+       306,
+       44,
+       50
+      ],
+      [
+       262,
+       458,
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "xprop_35",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 54,
+     "style": "rust",
+     "tags": [
+      "machine",
+      "pipes"
+     ],
+     "element": "fire",
+     "light": [
+      150,
+      35,
+      29
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       782,
+       252,
+       54,
+       51
+      ],
+      [
+       372,
+       252,
+       48,
+       52
+      ],
+      [
+       448,
+       0,
+       52,
+       64
+      ],
+      [
+       694,
+       458,
+       48,
+       36
+      ]
+     ]
+    },
+    {
+     "id": "xprop_36",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 36,
+     "style": "tech",
+     "tags": [
+      "server",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      140,
+      42,
+      169
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       838,
+       252,
+       36,
+       51
+      ],
+      [
+       876,
+       252,
+       36,
+       51
+      ],
+      [
+       654,
+       0,
+       50,
+       63
+      ],
+      [
+       738,
+       195,
+       42,
+       53
+      ]
+     ]
+    },
+    {
+     "id": "xprop_37",
+     "kind": "explosive",
+     "px": 54,
+     "pxW": 28,
+     "style": "industrial",
+     "tags": [
+      "canister",
+      "toxic"
+     ],
+     "element": "poison",
+     "light": [
+      78,
+      153,
+      24
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       336,
+       195,
+       28,
+       54
+      ],
+      [
+       366,
+       195,
+       30,
+       54
+      ],
+      [
+       502,
+       0,
+       44,
+       64
+      ],
+      [
+       314,
+       359,
+       50,
+       48
+      ]
+     ]
+    },
+    {
+     "id": "xprop_38",
+     "kind": "explosive",
+     "px": 56,
+     "pxW": 48,
+     "style": "tech",
+     "tags": [
+      "transformer",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      38,
+      76,
+      142
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       726,
+       134,
+       48,
+       56
+      ],
+      [
+       776,
+       134,
+       48,
+       56
+      ],
+      [
+       582,
+       70,
+       54,
+       60
+      ],
+      [
+       782,
+       195,
+       58,
+       53
+      ]
+     ]
+    },
+    {
+     "id": "xprop_39",
+     "kind": "explosive",
+     "px": 47,
+     "pxW": 46,
+     "style": "rust",
+     "tags": [
+      "sphere"
+     ],
+     "element": "fire",
+     "light": [
+      151,
+      41,
+      25
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       760,
+       359,
+       46,
+       47
+      ],
+      [
+       808,
+       359,
+       38,
+       47
+      ],
+      [
+       706,
+       0,
+       54,
+       63
+      ],
+      [
+       876,
+       458,
+       32,
+       31
+      ]
+     ]
+    },
+    {
+     "id": "xprop_40",
+     "kind": "explosive",
+     "px": 47,
+     "pxW": 46,
+     "style": "industrial",
+     "tags": [
+      "generator",
+      "orange"
+     ],
+     "element": "fire",
+     "light": [
+      165,
+      78,
+      35
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       848,
+       359,
+       46,
+       47
+      ],
+      [
+       896,
+       359,
+       40,
+       47
+      ],
+      [
+       894,
+       0,
+       48,
+       62
+      ],
+      [
+       0,
+       458,
+       46,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "xprop_41",
+     "kind": "explosive",
+     "px": 51,
+     "pxW": 38,
+     "style": "industrial",
+     "tags": [
+      "cabinet"
+     ],
+     "element": "fire",
+     "light": [
+      159,
+      65,
+      27
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       914,
+       252,
+       38,
+       51
+      ],
+      [
+       536,
+       306,
+       38,
+       50
+      ],
+      [
+       842,
+       195,
+       42,
+       53
+      ],
+      [
+       576,
+       306,
+       48,
+       50
+      ]
+     ]
+    },
+    {
+     "id": "xprop_42",
+     "kind": "explosive",
+     "px": 52,
+     "pxW": 36,
+     "style": "tech",
+     "tags": [
+      "bomb"
+     ],
+     "element": "fire",
+     "light": [
+      177,
+      78,
+      28
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       422,
+       252,
+       36,
+       52
+      ],
+      [
+       954,
+       252,
+       38,
+       51
+      ],
+      [
+       228,
+       70,
+       50,
+       61
+      ],
+      [
+       460,
+       252,
+       44,
+       52
+      ]
+     ]
+    },
+    {
+     "id": "xprop_43",
+     "kind": "explosive",
+     "px": 53,
+     "pxW": 44,
+     "style": "tech",
+     "tags": [
+      "cell",
+      "red",
+      "glow"
+     ],
+     "element": "fire",
+     "light": [
+      153,
+      29,
+      19
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       886,
+       195,
+       44,
+       53
+      ],
+      [
+       506,
+       252,
+       32,
+       52
+      ],
+      [
+       638,
+       70,
+       48,
+       60
+      ],
+      [
+       366,
+       359,
+       48,
+       48
+      ]
+     ]
+    },
+    {
+     "id": "xprop_44",
+     "kind": "explosive",
+     "px": 45,
+     "pxW": 36,
+     "style": "rust",
+     "tags": [
+      "scrap"
+     ],
+     "element": "fire",
+     "light": [
+      131,
+      29,
+      23
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       524,
+       410,
+       36,
+       45
+      ],
+      [
+       124,
+       134,
+       56,
+       58
+      ],
+      [
+       182,
+       134,
+       54,
+       58
+      ],
+      [
+       0,
+       306,
+       58,
+       51
+      ]
+     ]
+    },
+    {
+     "id": "xprop_45",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 40,
+     "style": "tech",
+     "tags": [
+      "cells",
+      "cyan",
+      "glow"
+     ],
+     "element": "ice",
+     "light": [
+      39,
+      154,
+      174
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       626,
+       306,
+       40,
+       50
+      ],
+      [
+       0,
+       359,
+       38,
+       49
+      ],
+      [
+       944,
+       0,
+       48,
+       62
+      ],
+      [
+       552,
+       458,
+       48,
+       38
+      ]
+     ]
+    },
+    {
+     "id": "xprop_46",
+     "kind": "explosive",
+     "px": 50,
+     "pxW": 36,
+     "style": "industrial",
+     "tags": [
+      "cabinet"
+     ],
+     "element": "fire",
+     "light": [
+      160,
+      74,
+      28
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       668,
+       306,
+       36,
+       50
+      ],
+      [
+       60,
+       306,
+       36,
+       51
+      ],
+      [
+       98,
+       0,
+       44,
+       67
+      ],
+      [
+       602,
+       458,
+       48,
+       38
+      ]
+     ]
+    },
+    {
+     "id": "xprop_47",
+     "kind": "explosive",
+     "px": 53,
+     "pxW": 36,
+     "style": "tech",
+     "tags": [
+      "canister",
+      "purple"
+     ],
+     "element": "void",
+     "light": [
+      128,
+      44,
+      177
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       932,
+       195,
+       36,
+       53
+      ],
+      [
+       398,
+       195,
+       34,
+       54
+      ],
+      [
+       0,
+       0,
+       44,
+       68
+      ],
+      [
+       358,
+       410,
+       42,
+       46
+      ]
+     ]
+    },
+    {
+     "id": "xprop_48",
+     "kind": "explosive",
+     "px": 48,
+     "pxW": 34,
+     "style": "tech",
+     "tags": [
+      "tank",
+      "blue"
+     ],
+     "element": "lightning",
+     "light": [
+      46,
+      92,
+      162
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       416,
+       359,
+       34,
+       48
+      ],
+      [
+       938,
+       359,
+       36,
+       47
+      ],
+      [
+       0,
+       70,
+       54,
+       62
+      ],
+      [
+       238,
+       134,
+       50,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "xprop_49",
+     "kind": "explosive",
+     "px": 46,
+     "pxW": 42,
+     "style": "industrial",
+     "tags": [
+      "crate",
+      "red"
+     ],
+     "element": "fire",
+     "light": [
+      155,
+      38,
+      20
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       402,
+       410,
+       42,
+       46
+      ],
+      [
+       446,
+       410,
+       38,
+       46
+      ],
+      [
+       56,
+       70,
+       36,
+       62
+      ],
+      [
+       48,
+       458,
+       44,
+       42
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/explosives_props.webp",
+   "slice": {
+    "rowCuts": [
+     64.5,
+     126.5,
+     194.0,
+     262.0,
+     327.0,
+     395.0,
+     460.5,
+     529.0,
+     593.0
+    ],
+    "stripsWithOtherSpriteCount": [
+     [
+      0,
+      2,
+      5
+     ],
+     [
+      4,
+      0,
+      3
+     ],
+     [
+      7,
+      3,
+      3
+     ]
+    ]
+   }
+  },
+  {
+   "id": "scatter_pedestals",
+   "kind": "pedestal",
+   "file": "assets/sprites/scatter/pedestals.png",
+   "w": 1024,
+   "h": 300,
+   "frames": 1,
+   "frameNames": [],
+   "objects": [
+    {
+     "id": "pedestal_00",
+     "kind": "pedestal",
+     "px": 63,
+     "pxW": 58,
+     "style": "gothic",
+     "tags": [
+      "skull",
+      "gargoyle"
+     ],
+     "frames": [
+      [
+       796,
+       165,
+       58,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_01",
+     "kind": "pedestal",
+     "px": 76,
+     "pxW": 56,
+     "style": "gold",
+     "tags": [
+      "marble",
+      "skull"
+     ],
+     "light": [
+      176,
+      135,
+      72
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       608,
+       0,
+       56,
+       76
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_02",
+     "kind": "pedestal",
+     "px": 62,
+     "pxW": 74,
+     "style": "iron",
+     "tags": [
+      "red",
+      "glow"
+     ],
+     "frames": [
+      [
+       108,
+       237,
+       74,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_03",
+     "kind": "pedestal",
+     "px": 76,
+     "pxW": 70,
+     "style": "tech",
+     "tags": [
+      "cyan",
+      "glow"
+     ],
+     "light": [
+      60,
+      186,
+      193
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       666,
+       0,
+       70,
+       76
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_04",
+     "kind": "pedestal",
+     "px": 66,
+     "pxW": 78,
+     "style": "hell",
+     "tags": [
+      "flesh",
+      "skull"
+     ],
+     "light": [
+      171,
+      69,
+      62
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       354,
+       165,
+       78,
+       66
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_05",
+     "kind": "pedestal",
+     "px": 62,
+     "pxW": 62,
+     "style": "crypt",
+     "tags": [
+      "skulls",
+      "stone"
+     ],
+     "frames": [
+      [
+       184,
+       237,
+       62,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_06",
+     "kind": "pedestal",
+     "px": 76,
+     "pxW": 62,
+     "style": "marble",
+     "tags": [
+      "gold",
+      "blue"
+     ],
+     "light": [
+      177,
+      134,
+      72
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       738,
+       0,
+       62,
+       76
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_07",
+     "kind": "pedestal",
+     "px": 63,
+     "pxW": 68,
+     "style": "tech",
+     "tags": [
+      "red",
+      "glow",
+      "dark"
+     ],
+     "light": [
+      177,
+      29,
+      31
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       856,
+       165,
+       68,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_08",
+     "kind": "pedestal",
+     "px": 67,
+     "pxW": 94,
+     "style": "moss",
+     "tags": [
+      "horns",
+      "skull"
+     ],
+     "frames": [
+      [
+       178,
+       165,
+       94,
+       67
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_09",
+     "kind": "pedestal",
+     "px": 63,
+     "pxW": 106,
+     "style": "tech",
+     "tags": [
+      "blue",
+      "glow"
+     ],
+     "light": [
+      79,
+      133,
+      201
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       0,
+       237,
+       106,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_10",
+     "kind": "pedestal",
+     "px": 53,
+     "pxW": 84,
+     "style": "gothic",
+     "tags": [
+      "banner",
+      "studs"
+     ],
+     "light": [
+      174,
+      89,
+      56
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       828,
+       237,
+       84,
+       53
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_11",
+     "kind": "pedestal",
+     "px": 84,
+     "pxW": 54,
+     "style": "tech",
+     "tags": [
+      "red",
+      "glow"
+     ],
+     "light": [
+      198,
+      22,
+      10
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       62,
+       0,
+       54,
+       84
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_12",
+     "kind": "pedestal",
+     "px": 58,
+     "pxW": 80,
+     "style": "gold",
+     "tags": [
+      "marble",
+      "gems"
+     ],
+     "light": [
+      177,
+      131,
+      68
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       576,
+       237,
+       80,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_13",
+     "kind": "pedestal",
+     "px": 73,
+     "pxW": 70,
+     "style": "industrial",
+     "tags": [
+      "dark",
+      "metal"
+     ],
+     "frames": [
+      [
+       316,
+       88,
+       70,
+       73
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_14",
+     "kind": "pedestal",
+     "px": 74,
+     "pxW": 78,
+     "style": "hell",
+     "tags": [
+      "flesh",
+      "skull"
+     ],
+     "light": [
+      171,
+      64,
+      60
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       80,
+       88,
+       78,
+       74
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_15",
+     "kind": "pedestal",
+     "px": 62,
+     "pxW": 98,
+     "style": "crypt",
+     "tags": [
+      "skulls",
+      "stone"
+     ],
+     "frames": [
+      [
+       248,
+       237,
+       98,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_16",
+     "kind": "pedestal",
+     "px": 80,
+     "pxW": 74,
+     "style": "tech",
+     "tags": [
+      "green",
+      "glow"
+     ],
+     "light": [
+      48,
+      190,
+      71
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       118,
+       0,
+       74,
+       80
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_17",
+     "kind": "pedestal",
+     "px": 79,
+     "pxW": 70,
+     "style": "gothic",
+     "tags": [
+      "arches",
+      "stone"
+     ],
+     "frames": [
+      [
+       194,
+       0,
+       70,
+       79
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_18",
+     "kind": "pedestal",
+     "px": 75,
+     "pxW": 78,
+     "style": "rust",
+     "tags": [
+      "bronze",
+      "skull",
+      "pipes"
+     ],
+     "light": [
+      164,
+      117,
+      79
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       0,
+       88,
+       78,
+       75
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_19",
+     "kind": "pedestal",
+     "px": 77,
+     "pxW": 82,
+     "style": "hell",
+     "tags": [
+      "demon",
+      "skull",
+      "spikes"
+     ],
+     "light": [
+      177,
+      52,
+      43
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       326,
+       0,
+       82,
+       77
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_20",
+     "kind": "pedestal",
+     "px": 72,
+     "pxW": 62,
+     "style": "moss",
+     "tags": [
+      "skull",
+      "hourglass"
+     ],
+     "light": [
+      178,
+      136,
+      76
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       596,
+       88,
+       62,
+       72
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_21",
+     "kind": "pedestal",
+     "px": 58,
+     "pxW": 76,
+     "style": "industrial",
+     "tags": [
+      "hazard"
+     ],
+     "light": [
+      181,
+      131,
+      49
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       658,
+       237,
+       76,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_22",
+     "kind": "pedestal",
+     "px": 86,
+     "pxW": 60,
+     "style": "gold",
+     "tags": [
+      "reliquary",
+      "skull",
+      "spire"
+     ],
+     "light": [
+      177,
+      135,
+      75
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       0,
+       0,
+       60,
+       86
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_23",
+     "kind": "pedestal",
+     "px": 76,
+     "pxW": 72,
+     "style": "tech",
+     "tags": [
+      "blue",
+      "glow",
+      "energy"
+     ],
+     "light": [
+      50,
+      118,
+      206
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       802,
+       0,
+       72,
+       76
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_24",
+     "kind": "pedestal",
+     "px": 67,
+     "pxW": 78,
+     "style": "hell",
+     "tags": [
+      "runes",
+      "spikes"
+     ],
+     "frames": [
+      [
+       274,
+       165,
+       78,
+       67
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_25",
+     "kind": "pedestal",
+     "px": 71,
+     "pxW": 84,
+     "style": "sandstone",
+     "tags": [
+      "stepped",
+      "desert"
+     ],
+     "light": [
+      170,
+      129,
+      70
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       752,
+       88,
+       84,
+       71
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_26",
+     "kind": "pedestal",
+     "px": 73,
+     "pxW": 68,
+     "style": "flesh",
+     "tags": [
+      "roots",
+      "dark"
+     ],
+     "frames": [
+      [
+       388,
+       88,
+       68,
+       73
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_27",
+     "kind": "pedestal",
+     "px": 71,
+     "pxW": 92,
+     "style": "hell",
+     "tags": [
+      "demon",
+      "wings"
+     ],
+     "light": [
+      175,
+      47,
+      44
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       838,
+       88,
+       92,
+       71
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_28",
+     "kind": "pedestal",
+     "px": 77,
+     "pxW": 68,
+     "style": "tech",
+     "tags": [
+      "blue",
+      "glow"
+     ],
+     "light": [
+      51,
+      130,
+      219
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       410,
+       0,
+       68,
+       77
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_29",
+     "kind": "pedestal",
+     "px": 74,
+     "pxW": 74,
+     "style": "crypt",
+     "tags": [
+      "skulls",
+      "stone"
+     ],
+     "frames": [
+      [
+       160,
+       88,
+       74,
+       74
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_30",
+     "kind": "pedestal",
+     "px": 78,
+     "pxW": 58,
+     "style": "iron",
+     "tags": [
+      "chains",
+      "dark"
+     ],
+     "frames": [
+      [
+       266,
+       0,
+       58,
+       78
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_31",
+     "kind": "pedestal",
+     "px": 62,
+     "pxW": 70,
+     "style": "hell",
+     "tags": [
+      "runes"
+     ],
+     "light": [
+      177,
+      36,
+      31
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       348,
+       237,
+       70,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_32",
+     "kind": "pedestal",
+     "px": 59,
+     "pxW": 86,
+     "style": "stone",
+     "tags": [
+      "plain"
+     ],
+     "frames": [
+      [
+       488,
+       237,
+       86,
+       59
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_33",
+     "kind": "pedestal",
+     "px": 74,
+     "pxW": 78,
+     "style": "gold",
+     "tags": [
+      "skull",
+      "drum"
+     ],
+     "light": [
+      177,
+      134,
+      73
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       236,
+       88,
+       78,
+       74
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_34",
+     "kind": "pedestal",
+     "px": 70,
+     "pxW": 80,
+     "style": "gothic",
+     "tags": [
+      "skull",
+      "spikes"
+     ],
+     "frames": [
+      [
+       0,
+       165,
+       80,
+       70
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_35",
+     "kind": "pedestal",
+     "px": 66,
+     "pxW": 82,
+     "style": "tech",
+     "tags": [
+      "cyan",
+      "glow",
+      "cables"
+     ],
+     "light": [
+      62,
+      188,
+      175
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       434,
+       165,
+       82,
+       66
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_36",
+     "kind": "pedestal",
+     "px": 66,
+     "pxW": 78,
+     "style": "gold",
+     "tags": [
+      "marble",
+      "banner",
+      "skull"
+     ],
+     "light": [
+      172,
+      120,
+      68
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       518,
+       165,
+       78,
+       66
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_37",
+     "kind": "pedestal",
+     "px": 64,
+     "pxW": 96,
+     "style": "moss",
+     "tags": [
+      "stepped"
+     ],
+     "light": [
+      175,
+      137,
+      79
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       698,
+       165,
+       96,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_38",
+     "kind": "pedestal",
+     "px": 77,
+     "pxW": 64,
+     "style": "tech",
+     "tags": [
+      "red",
+      "glow",
+      "tube"
+     ],
+     "light": [
+      211,
+      19,
+      13
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       480,
+       0,
+       64,
+       77
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_39",
+     "kind": "pedestal",
+     "px": 76,
+     "pxW": 64,
+     "style": "gold",
+     "tags": [
+      "gothic",
+      "arches"
+     ],
+     "light": [
+      175,
+      131,
+      71
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       876,
+       0,
+       64,
+       76
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_40",
+     "kind": "pedestal",
+     "px": 54,
+     "pxW": 90,
+     "style": "crypt",
+     "tags": [
+      "gold",
+      "skulls"
+     ],
+     "light": [
+      166,
+      121,
+      83
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       736,
+       237,
+       90,
+       54
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_41",
+     "kind": "pedestal",
+     "px": 76,
+     "pxW": 62,
+     "style": "tech",
+     "tags": [
+      "blue",
+      "glow",
+      "energy"
+     ],
+     "light": [
+      40,
+      127,
+      218
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       942,
+       0,
+       62,
+       76
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_42",
+     "kind": "pedestal",
+     "px": 69,
+     "pxW": 94,
+     "style": "gold",
+     "tags": [
+      "sandstone",
+      "stepped",
+      "desert"
+     ],
+     "light": [
+      172,
+      130,
+      71
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       82,
+       165,
+       94,
+       69
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_43",
+     "kind": "pedestal",
+     "px": 73,
+     "pxW": 60,
+     "style": "hell",
+     "tags": [
+      "red",
+      "glow",
+      "horns"
+     ],
+     "light": [
+      200,
+      21,
+      16
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       458,
+       88,
+       60,
+       73
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_44",
+     "kind": "pedestal",
+     "px": 66,
+     "pxW": 98,
+     "style": "crypt",
+     "tags": [
+      "rock",
+      "skulls"
+     ],
+     "frames": [
+      [
+       598,
+       165,
+       98,
+       66
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_45",
+     "kind": "pedestal",
+     "px": 71,
+     "pxW": 74,
+     "style": "tech",
+     "tags": [
+      "orange",
+      "glow"
+     ],
+     "light": [
+      215,
+      112,
+      25
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       932,
+       88,
+       74,
+       71
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_46",
+     "kind": "pedestal",
+     "px": 73,
+     "pxW": 74,
+     "style": "gold",
+     "tags": [
+      "marble",
+      "horns",
+      "skull"
+     ],
+     "light": [
+      177,
+      135,
+      72
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       520,
+       88,
+       74,
+       73
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_47",
+     "kind": "pedestal",
+     "px": 72,
+     "pxW": 90,
+     "style": "hell",
+     "tags": [
+      "demon"
+     ],
+     "light": [
+      172,
+      61,
+      55
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       660,
+       88,
+       90,
+       72
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_48",
+     "kind": "pedestal",
+     "px": 62,
+     "pxW": 66,
+     "style": "industrial",
+     "tags": [
+      "hazard",
+      "vent"
+     ],
+     "light": [
+      186,
+      133,
+      48
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       420,
+       237,
+       66,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "pedestal_49",
+     "kind": "pedestal",
+     "px": 77,
+     "pxW": 60,
+     "style": "gothic",
+     "tags": [
+      "horns",
+      "skull"
+     ],
+     "frames": [
+      [
+       546,
+       0,
+       60,
+       77
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/pedestals.webp",
+   "slice": {
+    "rowCuts": [
+     180.5,
+     361.5,
+     531.0,
+     697.0
+    ],
+    "stripsWithOtherSpriteCount": []
+   }
+  },
+  {
+   "id": "scatter_chests",
+   "kind": "chest",
+   "file": "assets/sprites/scatter/chests.png",
+   "w": 1024,
+   "h": 396,
+   "frames": 2,
+   "frameNames": [
+    "closed",
+    "open"
+   ],
+   "objects": [
+    {
+     "id": "chest_00",
+     "kind": "chest",
+     "px": 38,
+     "pxW": 40,
+     "style": "skull",
+     "tags": [
+      "small"
+     ],
+     "frames": [
+      [
+       964,
+       283,
+       40,
+       38
+      ],
+      [
+       202,
+       128,
+       66,
+       51
+      ]
+     ]
+    },
+    {
+     "id": "chest_01",
+     "kind": "chest",
+     "px": 41,
+     "pxW": 82,
+     "style": "skull",
+     "tags": [
+      "wide"
+     ],
+     "frames": [
+      [
+       410,
+       283,
+       82,
+       41
+      ],
+      [
+       68,
+       68,
+       64,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_02",
+     "kind": "chest",
+     "px": 38,
+     "pxW": 64,
+     "style": "skull",
+     "tags": [
+      "wide"
+     ],
+     "frames": [
+      [
+       0,
+       328,
+       64,
+       38
+      ],
+      [
+       270,
+       128,
+       66,
+       51
+      ]
+     ]
+    },
+    {
+     "id": "chest_03",
+     "kind": "chest",
+     "px": 39,
+     "pxW": 66,
+     "style": "skull",
+     "tags": [
+      "wide"
+     ],
+     "frames": [
+      [
+       896,
+       283,
+       66,
+       39
+      ],
+      [
+       516,
+       128,
+       66,
+       50
+      ]
+     ]
+    },
+    {
+     "id": "chest_04",
+     "kind": "chest",
+     "px": 47,
+     "pxW": 44,
+     "style": "skull",
+     "tags": [
+      "drum"
+     ],
+     "frames": [
+      [
+       416,
+       184,
+       44,
+       47
+      ],
+      [
+       338,
+       128,
+       46,
+       51
+      ]
+     ]
+    },
+    {
+     "id": "chest_05",
+     "kind": "chest",
+     "px": 49,
+     "pxW": 44,
+     "style": "skull",
+     "tags": [
+      "drum"
+     ],
+     "light": [
+      159,
+      49,
+      43
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       724,
+       128,
+       44,
+       49
+      ],
+      [
+       884,
+       68,
+       48,
+       55
+      ]
+     ]
+    },
+    {
+     "id": "chest_06",
+     "kind": "chest",
+     "px": 49,
+     "pxW": 78,
+     "style": "skull",
+     "tags": [
+      "big"
+     ],
+     "light": [
+      166,
+      78,
+      74
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       770,
+       128,
+       78,
+       49
+      ],
+      [
+       638,
+       68,
+       72,
+       56
+      ]
+     ]
+    },
+    {
+     "id": "chest_07",
+     "kind": "chest",
+     "px": 50,
+     "pxW": 74,
+     "style": "skull",
+     "tags": [
+      "big"
+     ],
+     "frames": [
+      [
+       584,
+       128,
+       74,
+       50
+      ],
+      [
+       134,
+       68,
+       68,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_08",
+     "kind": "chest",
+     "px": 47,
+     "pxW": 76,
+     "style": "skull",
+     "tags": [
+      "big"
+     ],
+     "frames": [
+      [
+       462,
+       184,
+       76,
+       47
+      ],
+      [
+       204,
+       68,
+       72,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_09",
+     "kind": "chest",
+     "px": 61,
+     "pxW": 54,
+     "style": "skull",
+     "tags": [
+      "tall"
+     ],
+     "light": [
+      172,
+      45,
+      37
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       344,
+       0,
+       54,
+       61
+      ],
+      [
+       0,
+       0,
+       50,
+       66
+      ]
+     ]
+    },
+    {
+     "id": "chest_10",
+     "kind": "chest",
+     "px": 49,
+     "pxW": 84,
+     "style": "skull",
+     "tags": [
+      "barrel"
+     ],
+     "light": [
+      176,
+      68,
+      68
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       850,
+       128,
+       84,
+       49
+      ],
+      [
+       488,
+       0,
+       78,
+       60
+      ]
+     ]
+    },
+    {
+     "id": "chest_11",
+     "kind": "chest",
+     "px": 43,
+     "pxW": 70,
+     "style": "skull",
+     "tags": [
+      "wide"
+     ],
+     "frames": [
+      [
+       656,
+       235,
+       70,
+       43
+      ],
+      [
+       568,
+       0,
+       80,
+       60
+      ]
+     ]
+    },
+    {
+     "id": "chest_12",
+     "kind": "chest",
+     "px": 46,
+     "pxW": 82,
+     "style": "skull",
+     "tags": [
+      "spiked"
+     ],
+     "light": [
+      166,
+      71,
+      82
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       744,
+       184,
+       82,
+       46
+      ],
+      [
+       278,
+       68,
+       66,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_13",
+     "kind": "chest",
+     "px": 58,
+     "pxW": 56,
+     "style": "skull",
+     "tags": [
+      "drum"
+     ],
+     "light": [
+      163,
+      69,
+      67
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       740,
+       0,
+       56,
+       58
+      ],
+      [
+       214,
+       0,
+       54,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "chest_14",
+     "kind": "chest",
+     "px": 60,
+     "pxW": 88,
+     "style": "skull",
+     "tags": [
+      "pyramid"
+     ],
+     "light": [
+      173,
+      66,
+      62
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       650,
+       0,
+       88,
+       60
+      ],
+      [
+       400,
+       0,
+       86,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "chest_15",
+     "kind": "chest",
+     "px": 62,
+     "pxW": 72,
+     "style": "skull",
+     "tags": [
+      "round"
+     ],
+     "light": [
+      169,
+      60,
+      66
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       270,
+       0,
+       72,
+       62
+      ],
+      [
+       52,
+       0,
+       78,
+       65
+      ]
+     ]
+    },
+    {
+     "id": "chest_16",
+     "kind": "chest",
+     "px": 44,
+     "pxW": 72,
+     "style": "skull",
+     "tags": [
+      "wide"
+     ],
+     "frames": [
+      [
+       172,
+       235,
+       72,
+       44
+      ],
+      [
+       346,
+       68,
+       60,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_17",
+     "kind": "chest",
+     "px": 46,
+     "pxW": 82,
+     "style": "skull",
+     "tags": [
+      "gears"
+     ],
+     "frames": [
+      [
+       828,
+       184,
+       82,
+       46
+      ],
+      [
+       408,
+       68,
+       78,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_18",
+     "kind": "chest",
+     "px": 47,
+     "pxW": 78,
+     "style": "skull",
+     "tags": [
+      "wide"
+     ],
+     "frames": [
+      [
+       540,
+       184,
+       78,
+       47
+      ],
+      [
+       798,
+       0,
+       66,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "chest_19",
+     "kind": "chest",
+     "px": 47,
+     "pxW": 78,
+     "style": "skull",
+     "tags": [
+      "angled"
+     ],
+     "frames": [
+      [
+       620,
+       184,
+       78,
+       47
+      ],
+      [
+       866,
+       0,
+       70,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "chest_20",
+     "kind": "chest",
+     "px": 44,
+     "pxW": 104,
+     "style": "skull",
+     "tags": [
+      "capsule"
+     ],
+     "frames": [
+      [
+       246,
+       235,
+       104,
+       44
+      ],
+      [
+       712,
+       68,
+       80,
+       56
+      ]
+     ]
+    },
+    {
+     "id": "chest_21",
+     "kind": "chest",
+     "px": 53,
+     "pxW": 66,
+     "style": "skull",
+     "tags": [
+      "spiked"
+     ],
+     "frames": [
+      [
+       134,
+       128,
+       66,
+       53
+      ],
+      [
+       938,
+       0,
+       64,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "chest_22",
+     "kind": "chest",
+     "px": 46,
+     "pxW": 80,
+     "style": "skull",
+     "tags": [
+      "round"
+     ],
+     "light": [
+      168,
+      49,
+      54
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       912,
+       184,
+       80,
+       46
+      ],
+      [
+       488,
+       68,
+       76,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_23",
+     "kind": "chest",
+     "px": 54,
+     "pxW": 60,
+     "style": "skull",
+     "tags": [
+      "tall"
+     ],
+     "light": [
+      167,
+      53,
+      43
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       128,
+       60,
+       54
+      ],
+      [
+       566,
+       68,
+       70,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "chest_24",
+     "kind": "chest",
+     "px": 49,
+     "pxW": 76,
+     "style": "skull",
+     "tags": [
+      "tall"
+     ],
+     "frames": [
+      [
+       936,
+       128,
+       76,
+       49
+      ],
+      [
+       0,
+       68,
+       66,
+       58
+      ]
+     ]
+    },
+    {
+     "id": "chest_25",
+     "kind": "chest",
+     "px": 56,
+     "pxW": 88,
+     "style": "skull",
+     "tags": [
+      "diamond"
+     ],
+     "light": [
+      182,
+      54,
+      53
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       794,
+       68,
+       88,
+       56
+      ],
+      [
+       132,
+       0,
+       80,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "chest_26",
+     "kind": "chest",
+     "px": 37,
+     "pxW": 40,
+     "style": "tech",
+     "tags": [
+      "small"
+     ],
+     "light": [
+      35,
+      129,
+      209
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       122,
+       328,
+       40,
+       37
+      ],
+      [
+       186,
+       283,
+       48,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "chest_27",
+     "kind": "chest",
+     "px": 27,
+     "pxW": 82,
+     "style": "tech",
+     "tags": [
+      "long"
+     ],
+     "light": [
+      61,
+      166,
+      212
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       76,
+       368,
+       82,
+       27
+      ],
+      [
+       660,
+       283,
+       78,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "chest_28",
+     "kind": "chest",
+     "px": 42,
+     "pxW": 54,
+     "style": "tech",
+     "tags": [
+      "small"
+     ],
+     "light": [
+      56,
+      192,
+      72
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       236,
+       283,
+       54,
+       42
+      ],
+      [
+       0,
+       184,
+       62,
+       49
+      ]
+     ]
+    },
+    {
+     "id": "chest_29",
+     "kind": "chest",
+     "px": 34,
+     "pxW": 84,
+     "style": "tech",
+     "tags": [
+      "long"
+     ],
+     "light": [
+      225,
+      171,
+      21
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       554,
+       328,
+       84,
+       34
+      ],
+      [
+       728,
+       235,
+       80,
+       43
+      ]
+     ]
+    },
+    {
+     "id": "chest_30",
+     "kind": "chest",
+     "px": 46,
+     "pxW": 52,
+     "style": "tech",
+     "tags": [
+      "orb"
+     ],
+     "light": [
+      18,
+      110,
+      220
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       0,
+       235,
+       52,
+       46
+      ],
+      [
+       934,
+       68,
+       50,
+       55
+      ]
+     ]
+    },
+    {
+     "id": "chest_31",
+     "kind": "chest",
+     "px": 47,
+     "pxW": 42,
+     "style": "tech",
+     "tags": [
+      "tall"
+     ],
+     "light": [
+      61,
+      203,
+      88
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       700,
+       184,
+       42,
+       47
+      ],
+      [
+       386,
+       128,
+       56,
+       51
+      ]
+     ]
+    },
+    {
+     "id": "chest_32",
+     "kind": "chest",
+     "px": 43,
+     "pxW": 70,
+     "style": "tech",
+     "tags": [
+      "hex"
+     ],
+     "light": [
+      27,
+      106,
+      209
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       810,
+       235,
+       70,
+       43
+      ],
+      [
+       444,
+       128,
+       70,
+       51
+      ]
+     ]
+    },
+    {
+     "id": "chest_33",
+     "kind": "chest",
+     "px": 31,
+     "pxW": 70,
+     "style": "tech",
+     "tags": [
+      "capsule"
+     ],
+     "light": [
+      51,
+      179,
+      207
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       866,
+       328,
+       70,
+       31
+      ],
+      [
+       494,
+       283,
+       82,
+       41
+      ]
+     ]
+    },
+    {
+     "id": "chest_34",
+     "kind": "chest",
+     "px": 37,
+     "pxW": 78,
+     "style": "tech",
+     "tags": [
+      "hex"
+     ],
+     "light": [
+      211,
+      155,
+      21
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       164,
+       328,
+       78,
+       37
+      ],
+      [
+       64,
+       184,
+       74,
+       49
+      ]
+     ]
+    },
+    {
+     "id": "chest_35",
+     "kind": "chest",
+     "px": 50,
+     "pxW": 62,
+     "style": "tech",
+     "tags": [
+      "pyramid"
+     ],
+     "light": [
+      127,
+      55,
+      203
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       660,
+       128,
+       62,
+       50
+      ],
+      [
+       62,
+       128,
+       70,
+       54
+      ]
+     ]
+    },
+    {
+     "id": "chest_36",
+     "kind": "chest",
+     "px": 34,
+     "pxW": 62,
+     "style": "tech",
+     "tags": [
+      "small"
+     ],
+     "light": [
+      206,
+      119,
+      21
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       640,
+       328,
+       62,
+       34
+      ],
+      [
+       292,
+       283,
+       54,
+       42
+      ]
+     ]
+    },
+    {
+     "id": "chest_37",
+     "kind": "chest",
+     "px": 36,
+     "pxW": 82,
+     "style": "tech",
+     "tags": [
+      "long"
+     ],
+     "light": [
+      150,
+      189,
+      57
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       390,
+       328,
+       82,
+       36
+      ],
+      [
+       882,
+       235,
+       82,
+       43
+      ]
+     ]
+    },
+    {
+     "id": "chest_38",
+     "kind": "chest",
+     "px": 38,
+     "pxW": 54,
+     "style": "tech",
+     "tags": [
+      "small"
+     ],
+     "light": [
+      18,
+      79,
+      222
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       66,
+       328,
+       54,
+       38
+      ],
+      [
+       0,
+       283,
+       64,
+       43
+      ]
+     ]
+    },
+    {
+     "id": "chest_39",
+     "kind": "chest",
+     "px": 37,
+     "pxW": 74,
+     "style": "tech",
+     "tags": [
+      "capsule"
+     ],
+     "light": [
+      134,
+      56,
+      203
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       244,
+       328,
+       74,
+       37
+      ],
+      [
+       352,
+       235,
+       74,
+       44
+      ]
+     ]
+    },
+    {
+     "id": "chest_40",
+     "kind": "chest",
+     "px": 42,
+     "pxW": 60,
+     "style": "tech",
+     "tags": [
+      "tall"
+     ],
+     "light": [
+      190,
+      29,
+      22
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       348,
+       283,
+       60,
+       42
+      ],
+      [
+       54,
+       235,
+       70,
+       46
+      ]
+     ]
+    },
+    {
+     "id": "chest_41",
+     "kind": "chest",
+     "px": 28,
+     "pxW": 74,
+     "style": "tech",
+     "tags": [
+      "long"
+     ],
+     "light": [
+      44,
+      202,
+      225
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       0,
+       368,
+       74,
+       28
+      ],
+      [
+       938,
+       328,
+       70,
+       31
+      ]
+     ]
+    },
+    {
+     "id": "chest_42",
+     "kind": "chest",
+     "px": 49,
+     "pxW": 44,
+     "style": "tech",
+     "tags": [
+      "tall"
+     ],
+     "light": [
+      194,
+      45,
+      37
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       140,
+       184,
+       44,
+       49
+      ],
+      [
+       186,
+       184,
+       48,
+       48
+      ]
+     ]
+    },
+    {
+     "id": "chest_43",
+     "kind": "chest",
+     "px": 43,
+     "pxW": 44,
+     "style": "tech",
+     "tags": [
+      "orb"
+     ],
+     "light": [
+      48,
+      189,
+      48
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       66,
+       283,
+       44,
+       43
+      ],
+      [
+       236,
+       184,
+       48,
+       48
+      ]
+     ]
+    },
+    {
+     "id": "chest_44",
+     "kind": "chest",
+     "px": 35,
+     "pxW": 78,
+     "style": "tech",
+     "tags": [
+      "hex"
+     ],
+     "light": [
+      209,
+      157,
+      34
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       474,
+       328,
+       78,
+       35
+      ],
+      [
+       428,
+       235,
+       74,
+       44
+      ]
+     ]
+    },
+    {
+     "id": "chest_45",
+     "kind": "chest",
+     "px": 46,
+     "pxW": 44,
+     "style": "tech",
+     "tags": [
+      "tall"
+     ],
+     "light": [
+      149,
+      57,
+      207
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       126,
+       235,
+       44,
+       46
+      ],
+      [
+       286,
+       184,
+       54,
+       48
+      ]
+     ]
+    },
+    {
+     "id": "chest_46",
+     "kind": "chest",
+     "px": 34,
+     "pxW": 76,
+     "style": "tech",
+     "tags": [
+      "long"
+     ],
+     "light": [
+      68,
+      193,
+      229
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       704,
+       328,
+       76,
+       34
+      ],
+      [
+       740,
+       283,
+       74,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "chest_47",
+     "kind": "chest",
+     "px": 43,
+     "pxW": 72,
+     "style": "tech",
+     "tags": [
+      "saucer"
+     ],
+     "light": [
+      180,
+      38,
+      23
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       112,
+       283,
+       72,
+       43
+      ],
+      [
+       342,
+       184,
+       72,
+       48
+      ]
+     ]
+    },
+    {
+     "id": "chest_48",
+     "kind": "chest",
+     "px": 37,
+     "pxW": 68,
+     "style": "tech",
+     "tags": [
+      "long"
+     ],
+     "light": [
+      211,
+      159,
+      29
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       320,
+       328,
+       68,
+       37
+      ],
+      [
+       816,
+       283,
+       78,
+       40
+      ]
+     ]
+    },
+    {
+     "id": "chest_49",
+     "kind": "chest",
+     "px": 44,
+     "pxW": 74,
+     "style": "tech",
+     "tags": [
+      "hex"
+     ],
+     "light": [
+      30,
+      66,
+      201
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       504,
+       235,
+       74,
+       44
+      ],
+      [
+       580,
+       235,
+       74,
+       44
+      ]
+     ]
+    },
+    {
+     "id": "chest_50",
+     "kind": "chest",
+     "px": 34,
+     "pxW": 82,
+     "style": "tech",
+     "tags": [
+      "long"
+     ],
+     "light": [
+      101,
+      216,
+      76
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       782,
+       328,
+       82,
+       34
+      ],
+      [
+       578,
+       283,
+       80,
+       41
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/chests.webp",
+   "slice": {
+    "sprites": 103,
+    "open": 51,
+    "pairs": 51,
+    "unpaired": [
+     [
+      1083,
+      123
+     ]
+    ]
+   }
+  },
+  {
+   "id": "scatter_spikes",
+   "kind": "spike",
+   "file": "assets/sprites/scatter/spikes.png",
+   "w": 1024,
+   "h": 572,
+   "frames": 3,
+   "frameNames": [
+    "retracted",
+    "rising",
+    "extended"
+   ],
+   "objects": [
+    {
+     "id": "spikes_00",
+     "kind": "spike",
+     "px": 28,
+     "pxW": 66,
+     "style": "metal",
+     "tags": [
+      "blood"
+     ],
+     "light": [
+      179,
+      74,
+      70
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       132,
+       538,
+       66,
+       28
+      ],
+      [
+       850,
+       371,
+       62,
+       40
+      ],
+      [
+       0,
+       201,
+       66,
+       60
+      ]
+     ]
+    },
+    {
+     "id": "spikes_01",
+     "kind": "spike",
+     "px": 32,
+     "pxW": 62,
+     "style": "rust",
+     "tags": [
+      "round"
+     ],
+     "light": [
+      165,
+      87,
+      80
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       650,
+       502,
+       62,
+       32
+      ],
+      [
+       580,
+       371,
+       64,
+       44
+      ],
+      [
+       64,
+       136,
+       66,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "spikes_02",
+     "kind": "spike",
+     "px": 32,
+     "pxW": 60,
+     "style": "tech",
+     "tags": [
+      "round",
+      "orange"
+     ],
+     "light": [
+      195,
+      126,
+      58
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       714,
+       502,
+       60,
+       32
+      ],
+      [
+       786,
+       318,
+       64,
+       49
+      ],
+      [
+       414,
+       70,
+       66,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_03",
+     "kind": "spike",
+     "px": 30,
+     "pxW": 64,
+     "style": "hell",
+     "tags": [
+      "grate"
+     ],
+     "light": [
+      177,
+      77,
+      72
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       66,
+       538,
+       64,
+       30
+      ],
+      [
+       856,
+       263,
+       66,
+       51
+      ],
+      [
+       546,
+       201,
+       70,
+       56
+      ]
+     ]
+    },
+    {
+     "id": "spikes_04",
+     "kind": "spike",
+     "px": 32,
+     "pxW": 66,
+     "style": "moss",
+     "tags": [
+      "stone"
+     ],
+     "frames": [
+      [
+       776,
+       502,
+       66,
+       32
+      ],
+      [
+       384,
+       371,
+       64,
+       46
+      ],
+      [
+       274,
+       201,
+       68,
+       59
+      ]
+     ]
+    },
+    {
+     "id": "spikes_05",
+     "kind": "spike",
+     "px": 32,
+     "pxW": 62,
+     "style": "tech",
+     "tags": [
+      "round",
+      "blue",
+      "glow"
+     ],
+     "element": "lightning",
+     "light": [
+      45,
+      131,
+      218
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       844,
+       502,
+       62,
+       32
+      ],
+      [
+       192,
+       371,
+       62,
+       47
+      ],
+      [
+       410,
+       136,
+       66,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_06",
+     "kind": "spike",
+     "px": 33,
+     "pxW": 64,
+     "style": "metal",
+     "tags": [
+      "grate"
+     ],
+     "frames": [
+      [
+       584,
+       502,
+       64,
+       33
+      ],
+      [
+       924,
+       263,
+       62,
+       51
+      ],
+      [
+       132,
+       136,
+       68,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "spikes_07",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 68,
+     "style": "gothic",
+     "tags": [
+      "skull"
+     ],
+     "frames": [
+      [
+       856,
+       463,
+       68,
+       34
+      ],
+      [
+       646,
+       371,
+       66,
+       43
+      ],
+      [
+       478,
+       136,
+       68,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_08",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "wood",
+     "tags": [
+      "round"
+     ],
+     "light": [
+      158,
+      117,
+      82
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       926,
+       463,
+       62,
+       34
+      ],
+      [
+       256,
+       371,
+       62,
+       47
+      ],
+      [
+       68,
+       201,
+       66,
+       60
+      ]
+     ]
+    },
+    {
+     "id": "spikes_09",
+     "kind": "spike",
+     "px": 32,
+     "pxW": 64,
+     "style": "metal",
+     "tags": [
+      "red"
+     ],
+     "light": [
+      159,
+      81,
+      81
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       908,
+       502,
+       64,
+       32
+      ],
+      [
+       852,
+       318,
+       66,
+       49
+      ],
+      [
+       548,
+       136,
+       66,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_10",
+     "kind": "spike",
+     "px": 32,
+     "pxW": 64,
+     "style": "wood",
+     "tags": [
+      "square"
+     ],
+     "frames": [
+      [
+       0,
+       538,
+       64,
+       32
+      ],
+      [
+       320,
+       371,
+       62,
+       47
+      ],
+      [
+       344,
+       201,
+       66,
+       59
+      ]
+     ]
+    },
+    {
+     "id": "spikes_11",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "hell",
+     "tags": [
+      "rock",
+      "round"
+     ],
+     "light": [
+      167,
+      89,
+      79
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       502,
+       62,
+       34
+      ],
+      [
+       450,
+       371,
+       64,
+       46
+      ],
+      [
+       478,
+       201,
+       66,
+       57
+      ]
+     ]
+    },
+    {
+     "id": "spikes_12",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "tech",
+     "tags": [
+      "round",
+      "cyan",
+      "glow"
+     ],
+     "element": "ice",
+     "light": [
+      55,
+      181,
+      220
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       64,
+       502,
+       62,
+       34
+      ],
+      [
+       714,
+       371,
+       64,
+       43
+      ],
+      [
+       616,
+       136,
+       66,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_13",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "wood",
+     "tags": [
+      "grate"
+     ],
+     "light": [
+      165,
+      121,
+      85
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       128,
+       502,
+       62,
+       34
+      ],
+      [
+       516,
+       371,
+       62,
+       46
+      ],
+      [
+       136,
+       201,
+       68,
+       60
+      ]
+     ]
+    },
+    {
+     "id": "spikes_14",
+     "kind": "spike",
+     "px": 35,
+     "pxW": 62,
+     "style": "arcane",
+     "tags": [
+      "purple",
+      "glow"
+     ],
+     "element": "void",
+     "light": [
+      149,
+      89,
+      190
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       728,
+       463,
+       62,
+       35
+      ],
+      [
+       920,
+       318,
+       64,
+       49
+      ],
+      [
+       206,
+       201,
+       66,
+       60
+      ]
+     ]
+    },
+    {
+     "id": "spikes_15",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 66,
+     "style": "metal",
+     "tags": [
+      "square"
+     ],
+     "frames": [
+      [
+       192,
+       502,
+       66,
+       34
+      ],
+      [
+       64,
+       371,
+       62,
+       48
+      ],
+      [
+       684,
+       136,
+       64,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_16",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 64,
+     "style": "moss",
+     "tags": [
+      "round"
+     ],
+     "frames": [
+      [
+       66,
+       463,
+       64,
+       36
+      ],
+      [
+       456,
+       318,
+       64,
+       50
+      ],
+      [
+       482,
+       70,
+       66,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_17",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "rust",
+     "tags": [
+      "square"
+     ],
+     "light": [
+      167,
+      111,
+      84
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       260,
+       502,
+       62,
+       34
+      ],
+      [
+       128,
+       371,
+       62,
+       48
+      ],
+      [
+       202,
+       136,
+       66,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "spikes_18",
+     "kind": "spike",
+     "px": 38,
+     "pxW": 64,
+     "style": "hell",
+     "tags": [
+      "metal",
+      "runes"
+     ],
+     "light": [
+      183,
+      82,
+      77
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       66,
+       422,
+       64,
+       38
+      ],
+      [
+       946,
+       201,
+       64,
+       53
+      ],
+      [
+       348,
+       0,
+       66,
+       65
+      ]
+     ]
+    },
+    {
+     "id": "spikes_19",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 64,
+     "style": "bone",
+     "tags": [
+      "sandstone"
+     ],
+     "light": [
+      159,
+      115,
+      84
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       132,
+       463,
+       64,
+       36
+      ],
+      [
+       0,
+       318,
+       66,
+       51
+      ],
+      [
+       620,
+       0,
+       70,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_20",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 68,
+     "style": "flesh",
+     "tags": [
+      "blood"
+     ],
+     "light": [
+      170,
+      87,
+      78
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       466,
+       422,
+       68,
+       37
+      ],
+      [
+       684,
+       201,
+       64,
+       55
+      ],
+      [
+       692,
+       0,
+       72,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_21",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 64,
+     "style": "metal",
+     "tags": [
+      "grate"
+     ],
+     "frames": [
+      [
+       198,
+       463,
+       64,
+       36
+      ],
+      [
+       0,
+       263,
+       62,
+       53
+      ],
+      [
+       766,
+       0,
+       68,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_22",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 62,
+     "style": "lava",
+     "tags": [
+      "glow"
+     ],
+     "element": "fire",
+     "light": [
+      201,
+      140,
+      51
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       536,
+       422,
+       62,
+       37
+      ],
+      [
+       412,
+       201,
+       64,
+       58
+      ],
+      [
+       0,
+       0,
+       68,
+       68
+      ]
+     ]
+    },
+    {
+     "id": "spikes_23",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 66,
+     "style": "hell",
+     "tags": [
+      "grate",
+      "dark"
+     ],
+     "frames": [
+      [
+       600,
+       422,
+       66,
+       37
+      ],
+      [
+       68,
+       318,
+       62,
+       51
+      ],
+      [
+       750,
+       136,
+       70,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_24",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 62,
+     "style": "rust",
+     "tags": [
+      "round",
+      "bronze"
+     ],
+     "light": [
+      163,
+      107,
+      77
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       264,
+       463,
+       62,
+       36
+      ],
+      [
+       522,
+       318,
+       64,
+       50
+      ],
+      [
+       836,
+       0,
+       66,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_25",
+     "kind": "spike",
+     "px": 40,
+     "pxW": 64,
+     "style": "arcane",
+     "tags": [
+      "round",
+      "purple",
+      "glow"
+     ],
+     "element": "void",
+     "light": [
+      140,
+      80,
+      192
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       914,
+       371,
+       64,
+       40
+      ],
+      [
+       460,
+       263,
+       64,
+       52
+      ],
+      [
+       416,
+       0,
+       66,
+       65
+      ]
+     ]
+    },
+    {
+     "id": "spikes_26",
+     "kind": "spike",
+     "px": 35,
+     "pxW": 62,
+     "style": "metal",
+     "tags": [
+      "studded"
+     ],
+     "frames": [
+      [
+       792,
+       463,
+       62,
+       35
+      ],
+      [
+       526,
+       263,
+       62,
+       52
+      ],
+      [
+       280,
+       0,
+       66,
+       66
+      ]
+     ]
+    },
+    {
+     "id": "spikes_27",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 64,
+     "style": "bone",
+     "tags": [
+      "stone"
+     ],
+     "light": [
+      165,
+      114,
+      84
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       328,
+       463,
+       64,
+       36
+      ],
+      [
+       590,
+       263,
+       66,
+       52
+      ],
+      [
+       138,
+       0,
+       70,
+       67
+      ]
+     ]
+    },
+    {
+     "id": "spikes_28",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "hell",
+     "tags": [
+      "metal",
+      "red"
+     ],
+     "light": [
+      184,
+      77,
+      75
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       324,
+       502,
+       62,
+       34
+      ],
+      [
+       588,
+       318,
+       60,
+       50
+      ],
+      [
+       550,
+       70,
+       64,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_29",
+     "kind": "spike",
+     "px": 38,
+     "pxW": 66,
+     "style": "ice",
+     "tags": [
+      "round",
+      "blue",
+      "glow"
+     ],
+     "element": "ice",
+     "light": [
+      65,
+      138,
+      214
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       132,
+       422,
+       66,
+       38
+      ],
+      [
+       618,
+       201,
+       64,
+       56
+      ],
+      [
+       70,
+       0,
+       66,
+       68
+      ]
+     ]
+    },
+    {
+     "id": "spikes_30",
+     "kind": "spike",
+     "px": 38,
+     "pxW": 66,
+     "style": "wood",
+     "tags": [
+      "square"
+     ],
+     "light": [
+      160,
+      116,
+      83
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       200,
+       422,
+       66,
+       38
+      ],
+      [
+       658,
+       263,
+       64,
+       52
+      ],
+      [
+       616,
+       70,
+       68,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_31",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 66,
+     "style": "moss",
+     "tags": [
+      "bone"
+     ],
+     "light": [
+      160,
+      102,
+      80
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       668,
+       422,
+       66,
+       37
+      ],
+      [
+       650,
+       318,
+       66,
+       50
+      ],
+      [
+       270,
+       136,
+       68,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "spikes_32",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "tech",
+     "tags": [
+      "red"
+     ],
+     "light": [
+      191,
+      61,
+      43
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       388,
+       502,
+       62,
+       34
+      ],
+      [
+       132,
+       318,
+       64,
+       51
+      ],
+      [
+       822,
+       136,
+       66,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_33",
+     "kind": "spike",
+     "px": 38,
+     "pxW": 64,
+     "style": "metal",
+     "tags": [
+      "round"
+     ],
+     "frames": [
+      [
+       268,
+       422,
+       64,
+       38
+      ],
+      [
+       64,
+       263,
+       64,
+       53
+      ],
+      [
+       686,
+       70,
+       66,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_34",
+     "kind": "spike",
+     "px": 38,
+     "pxW": 66,
+     "style": "rust",
+     "tags": [
+      "grate"
+     ],
+     "light": [
+      161,
+      104,
+      78
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       334,
+       422,
+       66,
+       38
+      ],
+      [
+       750,
+       201,
+       62,
+       54
+      ],
+      [
+       340,
+       136,
+       68,
+       62
+      ]
+     ]
+    },
+    {
+     "id": "spikes_35",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 64,
+     "style": "metal",
+     "tags": [
+      "pyramid"
+     ],
+     "frames": [
+      [
+       394,
+       463,
+       64,
+       36
+      ],
+      [
+       718,
+       318,
+       66,
+       50
+      ],
+      [
+       904,
+       0,
+       70,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_36",
+     "kind": "spike",
+     "px": 39,
+     "pxW": 64,
+     "style": "poison",
+     "tags": [
+      "green",
+      "glow"
+     ],
+     "element": "poison",
+     "light": [
+      78,
+      200,
+      71
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       0,
+       422,
+       64,
+       39
+      ],
+      [
+       724,
+       263,
+       64,
+       52
+      ],
+      [
+       210,
+       0,
+       68,
+       67
+      ]
+     ]
+    },
+    {
+     "id": "spikes_37",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 68,
+     "style": "metal",
+     "tags": [
+      "grate"
+     ],
+     "frames": [
+      [
+       460,
+       463,
+       68,
+       36
+      ],
+      [
+       198,
+       318,
+       62,
+       51
+      ],
+      [
+       890,
+       136,
+       68,
+       61
+      ]
+     ]
+    },
+    {
+     "id": "spikes_38",
+     "kind": "spike",
+     "px": 38,
+     "pxW": 62,
+     "style": "gold",
+     "tags": [
+      "octagon"
+     ],
+     "light": [
+      173,
+      133,
+      79
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       402,
+       422,
+       62,
+       38
+      ],
+      [
+       814,
+       201,
+       64,
+       54
+      ],
+      [
+       0,
+       70,
+       66,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_39",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 62,
+     "style": "hell",
+     "tags": [
+      "red",
+      "glow"
+     ],
+     "element": "fire",
+     "light": [
+      212,
+      63,
+      64
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       736,
+       422,
+       62,
+       37
+      ],
+      [
+       790,
+       263,
+       64,
+       52
+      ],
+      [
+       68,
+       70,
+       70,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_40",
+     "kind": "spike",
+     "px": 41,
+     "pxW": 68,
+     "style": "flesh",
+     "tags": [
+      "bone",
+      "round"
+     ],
+     "light": [
+      163,
+      108,
+      83
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       780,
+       371,
+       68,
+       41
+      ],
+      [
+       130,
+       263,
+       70,
+       53
+      ],
+      [
+       754,
+       70,
+       70,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_41",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 62,
+     "style": "metal",
+     "tags": [
+      "grate"
+     ],
+     "frames": [
+      [
+       530,
+       463,
+       62,
+       36
+      ],
+      [
+       202,
+       263,
+       62,
+       53
+      ],
+      [
+       826,
+       70,
+       66,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_42",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 62,
+     "style": "lava",
+     "tags": [
+      "round",
+      "orange",
+      "glow"
+     ],
+     "element": "fire",
+     "light": [
+      204,
+      106,
+      54
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       800,
+       422,
+       62,
+       37
+      ],
+      [
+       880,
+       201,
+       64,
+       54
+      ],
+      [
+       484,
+       0,
+       68,
+       65
+      ]
+     ]
+    },
+    {
+     "id": "spikes_43",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 64,
+     "style": "bone",
+     "tags": [
+      "sandstone"
+     ],
+     "light": [
+      163,
+      117,
+      85
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       864,
+       422,
+       64,
+       37
+      ],
+      [
+       266,
+       263,
+       64,
+       53
+      ],
+      [
+       140,
+       70,
+       68,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_44",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 66,
+     "style": "arcane",
+     "tags": [
+      "grate",
+      "purple",
+      "glow"
+     ],
+     "element": "void",
+     "light": [
+      147,
+      80,
+      185
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       930,
+       422,
+       66,
+       37
+      ],
+      [
+       262,
+       318,
+       64,
+       51
+      ],
+      [
+       894,
+       70,
+       70,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_45",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 62,
+     "style": "wood",
+     "tags": [
+      "square"
+     ],
+     "light": [
+      164,
+      116,
+      85
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       594,
+       463,
+       62,
+       36
+      ],
+      [
+       332,
+       263,
+       60,
+       53
+      ],
+      [
+       210,
+       70,
+       62,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_46",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 62,
+     "style": "hell",
+     "tags": [
+      "red",
+      "glow",
+      "dark"
+     ],
+     "element": "fire",
+     "light": [
+      213,
+      57,
+      56
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       452,
+       502,
+       62,
+       34
+      ],
+      [
+       0,
+       371,
+       62,
+       49
+      ],
+      [
+       0,
+       136,
+       62,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "spikes_47",
+     "kind": "spike",
+     "px": 36,
+     "pxW": 68,
+     "style": "moss",
+     "tags": [
+      "square"
+     ],
+     "frames": [
+      [
+       658,
+       463,
+       68,
+       36
+      ],
+      [
+       328,
+       318,
+       64,
+       51
+      ],
+      [
+       274,
+       70,
+       68,
+       64
+      ]
+     ]
+    },
+    {
+     "id": "spikes_48",
+     "kind": "spike",
+     "px": 37,
+     "pxW": 64,
+     "style": "tech",
+     "tags": [
+      "round",
+      "blue",
+      "glow"
+     ],
+     "element": "lightning",
+     "light": [
+      68,
+      138,
+      213
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       0,
+       463,
+       64,
+       37
+      ],
+      [
+       394,
+       318,
+       60,
+       51
+      ],
+      [
+       554,
+       0,
+       64,
+       65
+      ]
+     ]
+    },
+    {
+     "id": "spikes_49",
+     "kind": "spike",
+     "px": 34,
+     "pxW": 66,
+     "style": "metal",
+     "tags": [
+      "square"
+     ],
+     "frames": [
+      [
+       516,
+       502,
+       66,
+       34
+      ],
+      [
+       394,
+       263,
+       64,
+       53
+      ],
+      [
+       344,
+       70,
+       68,
+       64
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/spike_traps.webp",
+   "slice": {
+    "rowCuts": [
+     76.0,
+     148.0,
+     220.5,
+     297.0,
+     374.0,
+     451.5,
+     527.0,
+     601.5,
+     675.5
+    ],
+    "stripsWithOtherSpriteCount": []
+   }
+  }
  ]
 }

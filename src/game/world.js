@@ -9,6 +9,7 @@ import { SpriteBatcher, MODE } from './spritebatch.js';
 import { clamp } from '../core/math.js';
 import { fx } from '../core/rng.js';
 import { Gore } from './gore.js';
+import { Scatter } from './scatter.js';
 
 // physics constants
 const RAIL_CLIP = 1.9;       // edge rails block actors whose feet are below the floor + this (no hopping over)
@@ -57,6 +58,7 @@ export class World {
     this.doorByCell = new Map(this.doors.map((d) => [d.cell, d]));
     this.buildPhysics();
     this.gore = new Gore(this);   // blood particles, gibs, decals (src/game/gore.js)
+    this.scatter = new Scatter(game, this);   // pillars, explosives, pedestals, spike traps (src/game/scatter.js)
   }
 
   // ------------------------------------------------------------------ setup
@@ -90,6 +92,7 @@ export class World {
     });
     renderer.setWorldMesh(mesh.verts, mesh.indices);
     this.doorMeshDirty = true;
+    this.scatter.bind(content);
   }
 
   // ------------------------------------------------------------------ physics

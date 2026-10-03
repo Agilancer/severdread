@@ -28,14 +28,22 @@ for (const theme of THEMES) {
     if (g.edge[i]) railed++;
     if (g.flags[i] & F.PIT) pits++;
   }
+  // most walkable floor must be reachable from the start (no cut-off wings)
+  const dist = g.bfs([g.idx(Math.floor(L.start.x), Math.floor(L.start.z))], { jumpGap: L.jumpGap || 0 });
+  let walk = 0, reach = 0;
+  for (let i = 0; i < g.w * g.h; i++) {
+    if (!g.type[i] || (g.flags[i] & (F.VOID | F.PIT | F.OBSTACLE | F.HAZARD)) || g.ceil[i] - g.floor[i] < 1.7) continue;
+    walk++; if (dist[i] >= 0) reach++;
+  }
   for (const b of L.deco?.boxes || []) {
     if (typeof b.tex === 'number') slots.add(b.tex);
     else for (const v of Object.values(b.tex)) slots.add(v);
   }
-  const m = { theme: theme.id, arch: theme.archetype, slots: slots.size, narrowPct: +(100 * narrow / open).toFixed(1), tallPct: +(100 * tall / open).toFixed(1), stairs, railed, pits, boxes: L.deco?.boxes?.length || 0 };
+  const m = { theme: theme.id, arch: theme.archetype, reachPct: +(100 * reach / walk).toFixed(1), slots: slots.size, narrowPct: +(100 * narrow / open).toFixed(1), tallPct: +(100 * tall / open).toFixed(1), stairs, railed, pits, boxes: L.deco?.boxes?.length || 0 };
   rows.push(m);
   const problems = [];
   if (m.slots < 6) problems.push(`only ${m.slots} texture roles in use`);
+  if (reach / walk < 0.85) problems.push(`only ${m.reachPct}% of the walkable floor is reachable`);
   const lim = NARROW_LIMIT[theme.archetype] ?? 0.12;
   if (narrow / open > lim) problems.push(`narrow passages ${m.narrowPct}% > ${lim * 100}%`);
   if (problems.length) { failures++; console.log('FAIL', theme.id, problems.join(', ')); }

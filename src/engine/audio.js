@@ -155,7 +155,7 @@ function makeDistortion(k) {
   return c;
 }
 
-const RATE_LIMIT = { smg: 0.045, minigun: 0.035, flame: 0.08, zap: 0.06, hit: 0.03, hit_metal: 0.03, pickup_credits: 0.05, footstep: 0.18, explosion: 0.05, monster_pain: 0.12, gib: 0.05, splat: 0.06 };
+const RATE_LIMIT = { spike_warn: 0.07, spike_trap: 0.07, smg: 0.045, minigun: 0.035, flame: 0.08, zap: 0.06, hit: 0.03, hit_metal: 0.03, pickup_credits: 0.05, footstep: 0.18, explosion: 0.05, monster_pain: 0.12, gib: 0.05, splat: 0.06 };
 
 // Sound effect recipes: (audio, time, destination, pitch)
 const SFX = {
@@ -240,6 +240,9 @@ const SFX = {
   boss_roar(a, t, o, p) { a._tone(o, t, 1.4, { type: 'sawtooth', freq: 70 * p, freqEnd: 45, gain: 0.45, dist: 'hard', attack: 0.15 }); a._noise(o, t, 1.3, { type: 'bandpass', freq: 300, q: 0.7, gain: 0.5, attack: 0.15 }); },
   shockwave(a, t, o, p) { a._tone(o, t, 0.8, { freq: 60 * p, freqEnd: 30, gain: 0.8 }); a._noise(o, t, 0.6, { type: 'lowpass', freq: 600, freqEnd: 80, gain: 0.5 }); },
   barrel(a, t, o, p) { SFX.explosion(a, t, o, p * 1.2); },
+  // spike traps: a mechanical click as they start rising, a metallic shing when they snap up
+  spike_warn(a, t, o, p) { a._tone(o, t, 0.05, { type: 'square', freq: 520 * p, freqEnd: 300, gain: 0.1 }); a._noise(o, t + 0.06, 0.05, { type: 'bandpass', freq: 1400 * p, q: 3, gain: 0.18 }); },
+  spike_trap(a, t, o, p) { a._noise(o, t, 0.18, { type: 'highpass', freq: 3500 * p, freqEnd: 1800, gain: 0.35 }); a._tone(o, t, 0.22, { type: 'sawtooth', freq: 1900 * p, freqEnd: 2600, gain: 0.07 }); a._noise(o, t, 0.06, { type: 'lowpass', freq: 500, gain: 0.35 }); },
 };
 
 // ------------------------------------------------------------ music

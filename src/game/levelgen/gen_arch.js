@@ -48,7 +48,7 @@ const LIGHT_COL = { lava: [1, 0.45, 0.15], poison: [0.5, 1, 0.3], water: [0.3, 0
 // ------------------------------------------------------------------ main
 export function genArch(rng, theme, depth, opt = {}) {
   const p = theme.params || {};
-  const style = styleOf(theme);
+  const style = { ...styleOf(theme), ...(opt.style || {}) };
   const size = Math.round(clamp(58 + depth * 0.9, 58, 96) * (p.size || 1) * (opt.scale || 1));
   const W = size, H = Math.round(size * rng.float(0.78, 0.95));
   const g = newGrid(W, H, 10);
@@ -58,18 +58,22 @@ export function genArch(rng, theme, depth, opt = {}) {
   // ---- BSP into big leaves
   const leaves = [];
   const minLeaf = 12;
+  let bigMade = false;  // opt.bigLeaf {minW,minH,maxW,maxH}: keep one large leaf unsplit (signature room)
   (function split(n, d) {
     const area = n.w * n.h;
     const canH = n.w >= minLeaf * 2, canV = n.h >= minLeaf * 2;
+    const bl = opt.bigLeaf;
+    if (bl && !bigMade && d >= 1 && n.w >= bl.minW && n.h >= bl.minH && n.w <= bl.maxW && n.h <= bl.maxH) { bigMade = true; leaves.push({ id: leaves.length, ...n, big: true }); return; }
+    const two = (a, b) => { if (bl && !bigMade && rng.chance(0.5)) { split(b, d + 1); split(a, d + 1); } else { split(a, d + 1); split(b, d + 1); } };
     const stop = (!canH && !canV) || (d >= 2 && area < 520 && rng.chance(0.35)) || (d >= 3 && area < 360 && rng.chance(0.5));
     if (stop) { leaves.push({ id: leaves.length, ...n }); return; }
     const horiz = canH && (!canV || n.w > n.h * 1.2 || (n.h <= n.w * 1.2 && rng.chance(0.5)));
     if (horiz) {
       const cut = rng.int(Math.max(minLeaf, Math.floor(n.w * 0.32)), Math.min(n.w - minLeaf, Math.ceil(n.w * 0.68)));
-      split({ x: n.x, z: n.z, w: cut, h: n.h }, d + 1); split({ x: n.x + cut, z: n.z, w: n.w - cut, h: n.h }, d + 1);
+      two({ x: n.x, z: n.z, w: cut, h: n.h }, { x: n.x + cut, z: n.z, w: n.w - cut, h: n.h });
     } else {
       const cut = rng.int(Math.max(minLeaf, Math.floor(n.h * 0.32)), Math.min(n.h - minLeaf, Math.ceil(n.h * 0.68)));
-      split({ x: n.x, z: n.z, w: n.w, h: cut }, d + 1); split({ x: n.x, z: n.z + cut, w: n.w, h: n.h - cut }, d + 1);
+      two({ x: n.x, z: n.z, w: n.w, h: cut }, { x: n.x, z: n.z + cut, w: n.w, h: n.h - cut });
     }
   })({ x: 1, z: 1, w: W - 2, h: H - 2 }, 0);
 
@@ -100,11 +104,12 @@ export function genArch(rng, theme, depth, opt = {}) {
   for (const e of adj) { nbrs[e.i].push(e); nbrs[e.j].push(e); }
 
   // ---- start, boss, spanning tree, zones
-  const start = rooms.reduce((b, r) => (r.cx + r.cz < b.cx + b.cz ? r : b), rooms[0]);
+  const startPool = rooms.filter((r) => !r.leaf.big).length ? rooms.filter((r) => !r.leaf.big) : rooms;
+  const start = startPool.reduce((b, r) => (r.cx + r.cz < b.cx + b.cz ? r : b), startPool[0]);
   const gd = graphDist(start.id);
   let boss = null, bs = -1;
   for (const r of rooms) {
-    if (r === start || gd[r.id] < 0) continue;
+    if (r === start || gd[r.id] < 0 || (opt.forceBig && r.leaf.big)) continue;
     const sc = gd[r.id] * 3 + Math.min(r.area, 500) / 30 + (r.area >= 150 ? 6 : 0);
     if (sc > bs) { bs = sc; boss = r; }
   }
@@ -171,9 +176,9 @@ export function genArch(rng, theme, depth, opt = {}) {
   // ---- templates
   const big = (r) => r.w >= 14 && r.h >= 14;
   for (const r of rooms) {
-    if (r === boss) { r.template = 'arena'; continue; }
-    if (r === start) { r.template = r.area > 160 && rng.chance(0.5) ? 'hall' : 'entry'; continue; }
-    const opts = [
+    if (r === boss) { r.template = opt.arenaTemplate || 'arena'; continue; }
+    if (r === start) { r.template = opt.startTemplate ? opt.startTemplate(r, rng) : r.area > 160 && rng.chance(0.5) ? 'hall' : 'entry'; continue; }
+    const base = [
       ['hall', r.w >= 10 && r.h >= 10 ? 2 : 0.4],
       ['atrium', big(r) ? 3 : 0],
       ['pitroom', r.w >= 11 && r.h >= 11 ? 3 : 0],
@@ -186,7 +191,15 @@ export function genArch(rng, theme, depth, opt = {}) {
       ['reactor', (style.family === 'tech' || style.family === 'industrial') && r.w >= 13 && r.h >= 13 ? 1.4 : 0],
       ['pools', r.area >= 90 ? 1.0 : 0],
     ].filter((o) => o[1] > 0);
+    // opt.roomOpts(room, weightedList, style): generators built on this one re-weight / add templates
+    const opts = opt.roomOpts ? opt.roomOpts(r, base, style).filter((o) => o[1] > 0) : base;
     r.template = rng.weighted(opts, (o) => o[1])[0];
+  }
+  // opt.forceBig: the largest non-start, non-boss room gets this (signature) template
+  if (opt.forceBig) {
+    const cand = rooms.filter((r) => r !== start && r !== boss);
+    const sig = cand.find((r) => r.leaf.big) || cand.reduce((b, r) => (r.area > b.area ? r : b), cand[0]);
+    if (sig) { sig.template = opt.forceBig; sig.signature = true; }
   }
 
   // ---- connection geometry (positions, widths, heights) before carving
@@ -194,8 +207,8 @@ export function genArch(rng, theme, depth, opt = {}) {
   for (const e of edges) {
     if (e.skip) continue;
     const A = rooms[e.lo], B = rooms[e.hi];       // lo is on the -axis side
-    const door = e.gate || (!e.loop && rng.chance(0.18)) || e.len < 4;
-    const width = door ? 1 : Math.min(e.len - 1, rng.pick([2, 2, 3, 3, 4]));
+    const door = e.gate || (!e.loop && rng.chance(opt.doorChance ?? 0.18)) || e.len < 4;
+    const width = door ? 1 : Math.min(e.len - 1, rng.pick(opt.connWidths || [2, 2, 3, 3, 4]));
     const pos = rng.int(e.a0, e.a1 - width);
     conns.push({ ...e, A, B, door, width, pos });
   }
@@ -215,24 +228,57 @@ export function genArch(rng, theme, depth, opt = {}) {
       if (!c.flightIn) c.mode = 'skip';
     }
   }
-  // exits + reserved areas inside rooms
-  for (const c of conns) {
-    if (c.mode === 'skip') continue;
-    for (const side of ['A', 'B']) {
-      const r = c[side];
-      const into = side === 'A' ? -1 : 1;         // direction from the wall into the room along the axis
-      const wallCell = c.axis === 'x' ? (side === 'A' ? c.line - 1 : c.line) : (side === 'A' ? c.line - 1 : c.line);
-      const firstIn = wallCell + into;            // first room cell along the axis
-      const flightHere = c.mode === 'flight' && c.flightIn === side;
-      const depthRes = flightHere ? c.n + 3 : 3;
-      const cells = [];
-      for (let k = -1; k <= c.width; k++) for (let d = 0; d < depthRes; d++) {
-        const a = firstIn + into * d, b = c.pos + k;
-        const x = c.axis === 'x' ? a : b, z = c.axis === 'x' ? b : a;
-        if (x >= r.x && x < r.x + r.w && z >= r.z && z < r.z + r.h) { r.reserved.add(g.idx(x, z)); cells.push(g.idx(x, z)); }
-      }
-      r.exits.push({ conn: c, side, firstIn, into, flight: flightHere });
+  // exits + reserved areas inside rooms. Plain exits reserve first; flights then
+  // look for a position (or the other room) whose stair run does not collide
+  // with another exit's area - overlapping flights would overwrite each other.
+  const resCells = (c, side, pos, depthRes) => {
+    const r = c[side];
+    const into = side === 'A' ? -1 : 1;
+    const firstIn = (side === 'A' ? c.line - 1 : c.line) + into;
+    const cells = [];
+    for (let k = -1; k <= c.width; k++) for (let d = 0; d < depthRes; d++) {
+      const a = firstIn + into * d, b = pos + k;
+      const x = c.axis === 'x' ? a : b, z = c.axis === 'x' ? b : a;
+      if (x >= r.x && x < r.x + r.w && z >= r.z && z < r.z + r.h) cells.push(g.idx(x, z));
     }
+    return cells;
+  };
+  const addExit = (c, side, depthRes, flightHere) => {
+    const r = c[side];
+    for (const i of resCells(c, side, c.pos, depthRes)) r.reserved.add(i);
+    const into = side === 'A' ? -1 : 1;
+    r.exits.push({ conn: c, side, firstIn: (side === 'A' ? c.line - 1 : c.line) + into, into, flight: flightHere });
+  };
+  for (const c of conns) {
+    if (c.mode === 'skip' || c.mode === 'flight') continue;
+    addExit(c, 'A', 3, false); addExit(c, 'B', 3, false);
+  }
+  for (const c of conns) {
+    if (c.mode !== 'flight') continue;
+    const sides = [c.flightIn, c.flightIn === 'A' ? 'B' : 'A'];
+    let placed = false;
+    for (const side of sides) {
+      const r = c[side];
+      if ((c.axis === 'x' ? r.w : r.h) < c.n + 4) continue;
+      const positions = [c.pos];
+      for (let p = c.a0; p <= c.a1 - c.width; p++) if (p !== c.pos) positions.push(p);
+      for (const pos of positions) {
+        const other = side === 'A' ? 'B' : 'A';
+        const clash = resCells(c, side, pos, c.n + 3).some((i) => c[side].reserved.has(i)) || resCells(c, other, pos, 3).some((i) => c[other].reserved.has(i));
+        if (clash) continue;
+        c.pos = pos; c.flightIn = side; placed = true; break;
+      }
+      if (placed) break;
+    }
+    if (!placed) {
+      // loops can go; required links fall back to a steep stair inside the doorway
+      if (c.loop) { c.mode = 'skip'; continue; }
+      c.mode = 'passage';
+      addExit(c, 'A', 3, false); addExit(c, 'B', 3, false);
+      continue;
+    }
+    addExit(c, 'A', c.flightIn === 'A' ? c.n + 3 : 3, c.flightIn === 'A');
+    addExit(c, 'B', c.flightIn === 'B' ? c.n + 3 : 3, c.flightIn === 'B');
   }
 
   // ---- carve rooms (base box) then apply templates
@@ -241,8 +287,8 @@ export function genArch(rng, theme, depth, opt = {}) {
     r.light = clamp(baseLight + rng.float(-lightVar, lightVar), 0.2, 1.15);
     r.ceilH = { hall: rng.pick([6, 7, 8]), atrium: rng.pick([9, 10, 12]), pitroom: rng.pick([6, 7, 8]), split: rng.pick([6, 7]), industrial: rng.pick([7, 8, 9]),
       storage: rng.pick([4, 5, 6]), control: rng.pick([4, 4.5, 5]), courtyard: 12, chapel: rng.pick([8, 9, 11]), reactor: rng.pick([9, 11, 13]), pools: rng.pick([4.5, 5, 6]),
-      arena: rng.pick([9, 10, 12]), entry: rng.pick([4, 5]), plain: 4 }[r.template] || 4;
-    r.sky = r.template === 'courtyard';
+      arena: rng.pick([9, 10, 12]), entry: rng.pick([4, 5]), plain: 4 }[r.template] || (opt.ceilH?.[r.template] ? rng.pick(opt.ceilH[r.template]) : 4);
+    r.sky = r.template === 'courtyard' || !!opt.skyTemplates?.includes(r.template);
     r.wallSlot = r === boss ? TS.ACCENT : rng.chance(0.35) ? TS.WALL2 : TS.WALL;
     r.floorSlot = rng.chance(0.3) ? TS.FLOOR2 : TS.FLOOR;
     r.ceilSlot = r.ceilH >= 6 ? TS.CEIL2 : TS.CEIL;

@@ -10,7 +10,7 @@ const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`); });
 page.on('pageerror', (e) => errors.push('[pageerror] ' + e.message + '\n' + e.stack));
-await page.goto('http://localhost:8080/index.html');
+await page.goto((process.env.SEVERDREAD_URL || 'http://localhost:8080') + '/index.html');   // SEVERDREAD_URL=http://127.0.0.1:8121 for another server
 await page.waitForFunction(() => window.SEVERDREAD && document.getElementById('boot').classList.contains('hidden'), null, { timeout: 120000 });
 await page.evaluate(() => localStorage.clear());
 await page.click('[data-a=new]');
