@@ -5,7 +5,8 @@
 // Drawn on a low-res canvas with nearest-neighbour upscaling so it matches the
 // game's pixel art.
 
-const PX = 3;                       // CSS pixels per blood pixel
+const PX = 2;                       // CSS pixels per blood pixel (fine droplets)
+const G = 1.5;                      // speed scale so drops fall as fast on screen as with 3px blood pixels
 const COL = {
   outline: '#1c0002', dark: '#4a0005', body: '#7a0a0e', mid: '#a3141a', hi: '#ff5a50', spec: '#ffd0c8',
 };
@@ -99,15 +100,15 @@ export class TitleBlood {
     const x = Math.round(this.lx + p[0] * this.lw), y = Math.round(this.ly + p[1] * this.lh);
     if (p[2] < 0.5) {
       // seep: a slow run down the face of the logo
-      this.runs.push({ x, y0: y, y, v: 2 + Math.random() * 5, len: 4 + Math.random() * (10 + p[3] * 2), w: Math.random() < 0.3 ? 2 : 1, t: 0, life: 6 + Math.random() * 6 });
+      this.runs.push({ x, y0: y, y, v: 2 + Math.random() * 5, len: 6 + Math.random() * (14 + p[3] * 3), w: Math.random() < 0.3 ? 2 : 1, t: 0, life: 6 + Math.random() * 6 });
       return;
     }
     // avoid stacking two drips on the same spot
     for (const d of this.drips) if (Math.abs(d.x - x) < 2 && Math.abs(d.y0 - y) < 3) return;
     const big = Math.min(1, p[3] / 10);
     this.drips.push({
-      x, y0: y, y, r: 0.6, rMax: 1.6 + big * 2 + Math.random() * 1.4, phase: 0,
-      swell: 0.5 + Math.random() * 1.6, sag: 0, vy: 0, maxNeck: 5 + Math.random() * 18 + big * 10, t: 0,
+      x, y0: y, y, r: 0.5, rMax: 0.9 + big * 0.8 + Math.random() * 0.7, phase: 0,
+      swell: 0.5 + Math.random() * 1.6, sag: 0, vy: 0, maxNeck: 4 + Math.random() * 12 + big * 6, t: 0,
     });
   }
 
@@ -129,16 +130,16 @@ export class TitleBlood {
     // spawn profusely (scaled to logo width), with a burst on the first second
     const rate = (this.lw / 240) * (this.age < 1.2 ? 26 : 9);
     this.spawnAcc += rate * dt;
-    while (this.spawnAcc > 1) { this.spawnAcc--; if (this.drips.length < 80) this._spawn(); }
+    while (this.spawnAcc > 1) { this.spawnAcc--; if (this.drips.length < 110) this._spawn(); }
     // every few seconds a gush: a cluster of neighbouring drips lets go at once
     this.gushT = (this.gushT ?? 1.5) - dt;
     if (this.gushT <= 0 && this.points.length) {
       this.gushT = 2 + Math.random() * 3;
       const strong = this.points.filter((q) => q[2] >= 0.6);
       const c0 = strong[Math.floor(Math.random() * strong.length)];
-      if (c0) for (const q of strong) if (Math.abs(q[0] - c0[0]) < 0.05 && this.drips.length < 95) {
+      if (c0) for (const q of strong) if (Math.abs(q[0] - c0[0]) < 0.05 && this.drips.length < 130) {
         const x = Math.round(this.lx + q[0] * this.lw), y = Math.round(this.ly + q[1] * this.lh);
-        this.drips.push({ x, y0: y, y, r: 1, rMax: 2.2 + Math.random() * 1.8, phase: 0, swell: 0.15 + Math.random() * 0.3, sag: 0, vy: 0, maxNeck: 8 + Math.random() * 26, t: 0 });
+        this.drips.push({ x, y0: y, y, r: 0.6, rMax: 1.3 + Math.random() * 1.0, phase: 0, swell: 0.15 + Math.random() * 0.3, sag: 0, vy: 0, maxNeck: 6 + Math.random() * 16, t: 0 });
       }
     }
 
@@ -150,7 +151,7 @@ export class TitleBlood {
         d.r = Math.min(d.rMax, d.r + (d.rMax / d.swell) * dt);
         if (d.r >= d.rMax) d.phase = 1;
       } else if (d.phase === 1) {                // sagging on a neck, viscous then accelerating
-        d.vy += (6 + d.rMax * 4) * dt;
+        d.vy += (6 + d.rMax * 4) * G * dt;
         d.y += d.vy * dt * (0.6 + (d.y - d.y0) / d.maxNeck);
         if (d.y - d.y0 > d.maxNeck) {
           // let go: the head falls, the neck snaps back into a small bead
@@ -160,36 +161,36 @@ export class TitleBlood {
       } else {                                   // neck retracting; bead may grow again
         d.neck = Math.max(0, d.neck - 60 * dt);
         if (d.neck <= 0 && d.t > 0.25) {
-          if (Math.random() < 0.55) { d.phase = 0; d.r = d.rMax * 0.4; d.swell = 0.6 + Math.random() * 1.6; d.vy = 0; d.maxNeck = 5 + Math.random() * 20; d.t = 0; }
+          if (Math.random() < 0.55) { d.phase = 0; d.r = d.rMax * 0.4; d.swell = 0.6 + Math.random() * 1.6; d.vy = 0; d.maxNeck = 4 + Math.random() * 13; d.t = 0; }
           else this.drips.splice(i, 1);
         }
       }
     }
     for (let i = this.drops.length - 1; i >= 0; i--) {
       const d = this.drops[i];
-      d.vy = Math.min(260, d.vy + 300 * dt);
+      d.vy = Math.min(260 * G, d.vy + 300 * G * dt);
       d.y += d.vy * dt;
-      d.trail = Math.max(1.5, Math.min(14, d.vy * 0.05));
+      d.trail = Math.max(1, Math.min(9, d.vy * 0.025));
       const ix = Math.max(0, Math.min(W - 1, Math.round(d.x)));
       const surface = floorY - (this.pool ? this.pool[ix] : 0);
       if (d.y >= surface) {
         // splash + feed the pool
-        const vol = d.r * d.r * 0.9;
-        for (let k = -2; k <= 2; k++) { const j = ix + k; if (j >= 0 && j < W) this.pool[j] = Math.min(9, this.pool[j] + vol * (k === 0 ? 0.35 : 0.15)); }
-        const n = 2 + Math.floor(Math.random() * 4 + d.r);
-        for (let k = 0; k < n; k++) this.specks.push({ x: d.x, y: surface - 1, vx: (Math.random() - 0.5) * 50, vy: -20 - Math.random() * 50, life: 0.4 + Math.random() * 0.5 });
+        const vol = d.r * d.r * 1.4;
+        for (let k = -2; k <= 2; k++) { const j = ix + k; if (j >= 0 && j < W) this.pool[j] = Math.min(12, this.pool[j] + vol * (k === 0 ? 0.35 : 0.15)); }
+        const n = 1 + Math.floor(Math.random() * 3 + d.r);
+        for (let k = 0; k < n; k++) this.specks.push({ x: d.x, y: surface - 1, vx: (Math.random() - 0.5) * 50 * G, vy: (-20 - Math.random() * 50) * G, life: 0.4 + Math.random() * 0.5 });
         this.drops.splice(i, 1);
       }
     }
     for (let i = this.specks.length - 1; i >= 0; i--) {
       const s = this.specks[i];
-      s.vy += 220 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+      s.vy += 220 * G * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
       if (s.life <= 0 || s.y > floorY) this.specks.splice(i, 1);
     }
     for (let i = this.runs.length - 1; i >= 0; i--) {
       const r = this.runs[i];
       r.t += dt;
-      if (r.y - r.y0 < r.len) r.y += r.v * dt * (1 - (r.y - r.y0) / (r.len * 1.4));
+      if (r.y - r.y0 < r.len) r.y += r.v * G * dt * (1 - (r.y - r.y0) / (r.len * 1.4));
       if (r.t > r.life) this.runs.splice(i, 1);
     }
     // the puddle spreads sideways a little and creeps up to its cap
