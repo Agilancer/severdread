@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SEVERDREAD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SEVERDREAD">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="SEVERDREAD - a procedurally generated looter shooter.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/ui/icon.png">
+  <link rel="apple-touch-icon" href="assets/ui/icon.png">
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="gl"></canvas>
+    <canvas id="hud"></canvas>
+    <div id="touch" class="hidden"></div>
+    <div id="ui"></div>
+    <div id="rotate" class="hidden">
+      <div class="rotate-icon"></div>
+      <p>ROTATE YOUR DEVICE</p>
+      <small>SEVERDREAD is played in landscape</small>
+    </div>
+    <div id="boot">
+      <div class="logo drip">SEVERDREAD</div>
+      <div id="boot-status">LOADING...</div>
+      <div class="boot-bar"><div id="boot-bar-fill"></div></div>
+    </div>
+  </div>
+  <noscript>SEVERDREAD needs JavaScript and WebGL2.</noscript>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "severdread",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SEVERDREAD - a DOOM-styled procedurally generated looter shooter for mobile and desktop browsers.",
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes http-server -c-1 -p 8080 .",
+    "art": "python3 tools/process_art.py",
+    "test": "node tests/levelgen.test.js && node tests/items.test.js",
+    "play": "node tests/play.mjs tests/out",
+    "catalog": "python3 tools/catalog_textures.py && python3 tools/catalog_weapons.py"
+  },
+  "license": "UNLICENSED"
+}
