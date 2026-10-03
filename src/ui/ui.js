@@ -9,6 +9,7 @@ import { Rng } from '../core/rng.js';
 import { fmt } from '../core/math.js';
 import { audio } from '../engine/audio.js';
 import { input, requestLock, releaseLock } from '../engine/input.js';
+import { TitleBlood, loadTitleBlood } from './title.js';
 
 const SLOT_LABELS = { weapon0: '1', weapon1: '2', weapon2: '3', weapon3: '4', head: 'HEAD', body: 'BODY', legs: 'LEGS', ring0: 'RING', ring1: 'RING', ring2: 'RING', ring3: 'RING' };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -37,7 +38,10 @@ export class UI {
     el.addEventListener('click', (e) => { if (e.target.closest('button,.slot,.tab')) this.click(); });
     return el;
   }
-  close() { if (this.layer) { this.layer.remove(); this.layer = null; } }
+  close() {
+    if (this.titleBlood) { this.titleBlood.stop(); this.titleBlood = null; }
+    if (this.layer) { this.layer.remove(); this.layer = null; }
+  }
   closeAll() {
     this.close();
     const g = this.game;
@@ -60,10 +64,35 @@ export class UI {
   }
 
   // ------------------------------------------------------------------ title / loading
+  // Pre-title credits plaque on black, until any key / click / touch. The
+  // gesture also unlocks audio on iOS.
+  showSplash(next) {
+    const el = this.open(`
+      <img class="splash-img" src="assets/ui/credits.webp" alt="Directed, produced, curated, prompted and game concept by Jamie Herrington of Blastorama Gaming. All art assets and programming were created by AI.">
+      <div class="splash-hint blink">PRESS ANY KEY</div>`, 'screen splash');
+    const hint = el.querySelector('.splash-hint');
+    if (matchMedia('(pointer: coarse)').matches) hint.textContent = 'TAP TO CONTINUE';
+    let done = false;
+    const go = (e) => {
+      if (done) return;
+      done = true;
+      if (e) e.preventDefault?.();
+      audio.unlock();
+      window.removeEventListener('keydown', go, true);
+      el.removeEventListener('pointerdown', go);
+      el.removeEventListener('touchstart', go);
+      el.classList.add('out');
+      setTimeout(() => next(), 450);
+    };
+    window.addEventListener('keydown', go, true);
+    el.addEventListener('pointerdown', go);
+    el.addEventListener('touchstart', go, { passive: false });
+  }
+
   showTitle() {
     const g = this.game;
     const el = this.open(`
-      <div class="logo drip">SEVERDREAD</div>
+      <img class="logo-img title-logo" src="assets/ui/logo.webp" alt="SEVERDREAD">
       <div class="tagline">ORBIT · DESCEND · LOOT · DIE · REPEAT</div>
       <div class="menu">
         ${g.hasSave() ? '<button class="btn red" data-a="continue">Continue</button>' : ''}
@@ -80,6 +109,14 @@ export class UI {
     });
     el.querySelector('[data-a=settings]').addEventListener('click', () => this.showSettings(() => this.showTitle()));
     el.querySelector('[data-a=help]').addEventListener('click', () => this.showHelp(() => this.showTitle()));
+    // blood pouring off the logo
+    const logo = el.querySelector('.title-logo');
+    const startBlood = async () => {
+      const data = await loadTitleBlood();
+      if (this.layer !== el) return;
+      this.titleBlood = new TitleBlood(el, logo, data);
+    };
+    if (logo.complete && logo.naturalWidth) startBlood(); else logo.addEventListener('load', startBlood, { once: true });
   }
 
   async startGame(fresh) {

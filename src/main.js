@@ -98,7 +98,7 @@ async function boot() {
 
   bootStatus('READY', 1);
   $('boot').classList.add('hidden');
-  ui.showTitle();
+  ui.showSplash(() => ui.showTitle());
   // clicking the canvas while playing re-captures the mouse
   glCanvas.addEventListener('click', () => { if (game.state === 'playing' && input.mode === 'keyboard' && !input.locked) requestLock(); });
   // keep the UI from scrolling the page on iOS
