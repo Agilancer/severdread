@@ -4366,6 +4366,15 @@
      "element": "fire",
      "archetype": "plasma"
     }
+   ],
+   "colBounds": [
+    99,
+    179,
+    252,
+    342,
+    420,
+    493,
+    569
    ]
   },
   {
@@ -5143,6 +5152,15 @@
      "element": "physical",
      "archetype": "rocket"
     }
+   ],
+   "colBounds": [
+    120,
+    221,
+    320,
+    423,
+    520,
+    617,
+    719
    ]
   },
   {
@@ -5218,6 +5236,15 @@
      "element": "lightning",
      "archetype": "lightning"
     }
+   ],
+   "colBounds": [
+    89,
+    165,
+    239,
+    317,
+    393,
+    468,
+    547
    ]
   },
   {
@@ -6076,7 +6103,17 @@
      "element": "plasma",
      "archetype": "spreader"
     }
-   ]
+   ],
+   "colBounds": [
+    147,
+    287,
+    428,
+    568,
+    709,
+    853
+   ],
+   "cols": 7,
+   "fpFrames": 6
   },
   {
    "id": "w_epic_02",
@@ -6661,6 +6698,15 @@
      "element": "plasma",
      "archetype": "plasma"
     }
+   ],
+   "colBounds": [
+    135,
+    260,
+    380,
+    495,
+    612,
+    728,
+    852
    ]
   },
   {
@@ -6706,6 +6752,15 @@
      "element": "fire",
      "archetype": "plasma"
     }
+   ],
+   "colBounds": [
+    127,
+    251,
+    374,
+    506,
+    621,
+    732,
+    854
    ]
   },
   {
@@ -6856,6 +6911,15 @@
      "element": "fire",
      "archetype": "blade"
     }
+   ],
+   "colBounds": [
+    107,
+    205,
+    335,
+    438,
+    518,
+    592,
+    676
    ]
   },
   {
@@ -7095,24 +7159,18 @@
     },
     {
      "id": "w_rare_07_2",
-     "name": "Ion Reactor Gun",
-     "element": "plasma",
+     "name": "Cinder Reactor Gun",
+     "element": "fire",
      "archetype": "plasma"
     },
     {
      "id": "w_rare_07_3",
-     "name": "Blaze Grenade Launcher",
-     "element": "fire",
+     "name": "Bile Grenade Launcher",
+     "element": "poison",
      "archetype": "grenade"
     },
     {
      "id": "w_rare_07_4",
-     "name": "Sun Plasma Caster",
-     "element": "holy",
-     "archetype": "plasma"
-    },
-    {
-     "id": "w_rare_07_5",
      "name": "Mystic Beam Rifle",
      "element": "arcane",
      "archetype": "rail"
@@ -7582,7 +7640,17 @@
      "element": "fire",
      "archetype": "plasma"
     }
-   ]
+   ],
+   "colBounds": [
+    145,
+    286,
+    427,
+    566,
+    708,
+    853
+   ],
+   "cols": 7,
+   "fpFrames": 6
   },
   {
    "id": "w_rare_17",
@@ -7599,8 +7667,8 @@
    "weapons": [
     {
      "id": "w_rare_17_0",
-     "name": "Null Sword",
-     "element": "void",
+     "name": "Inferno Axe",
+     "element": "fire",
      "archetype": "blade"
     },
     {
@@ -7611,20 +7679,50 @@
     },
     {
      "id": "w_rare_17_2",
-     "name": "Inferno Sword",
-     "element": "fire",
+     "name": "Rime Labrys",
+     "element": "ice",
      "archetype": "blade"
     },
     {
      "id": "w_rare_17_3",
-     "name": "Iron Sword",
-     "element": "physical",
+     "name": "Venom Hatchet",
+     "element": "poison",
      "archetype": "blade"
     },
     {
      "id": "w_rare_17_4",
-     "name": "Abyss Sword",
+     "name": "Abyss Axe",
      "element": "void",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_17_5",
+     "name": "Gilded Labrys",
+     "element": "holy",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_17_6",
+     "name": "Tempest Axe",
+     "element": "lightning",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_17_7",
+     "name": "Rockbreaker Axe",
+     "element": "physical",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_17_8",
+     "name": "Tide Cleaver",
+     "element": "plasma",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_17_9",
+     "name": "Blood Reaver",
+     "element": "blood",
      "archetype": "blade"
     }
    ]
@@ -7719,34 +7817,73 @@
    "weapons": [
     {
      "id": "w_rare_19_0",
-     "name": "Ember Blade",
+     "name": "Ember Dagger",
      "element": "fire",
      "archetype": "blade"
     },
     {
      "id": "w_rare_19_1",
-     "name": "Seraph Cleaver",
-     "element": "holy",
+     "name": "Frost Dirk",
+     "element": "ice",
      "archetype": "blade"
     },
     {
      "id": "w_rare_19_2",
-     "name": "Rust Axe",
-     "element": "physical",
+     "name": "Volt Kris",
+     "element": "lightning",
      "archetype": "blade"
     },
     {
      "id": "w_rare_19_3",
-     "name": "Frost Edge",
-     "element": "ice",
+     "name": "Venom Dirk",
+     "element": "poison",
      "archetype": "blade"
     },
     {
      "id": "w_rare_19_4",
-     "name": "Rime Blade",
+     "name": "Null Kris",
+     "element": "void",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_19_5",
+     "name": "Seraph Dagger",
+     "element": "holy",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_19_6",
+     "name": "Tide Fang",
      "element": "ice",
      "archetype": "blade"
+    },
+    {
+     "id": "w_rare_19_7",
+     "name": "Dune Kris",
+     "element": "physical",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_19_8",
+     "name": "Rime Stiletto",
+     "element": "plasma",
+     "archetype": "blade"
+    },
+    {
+     "id": "w_rare_19_9",
+     "name": "Eclipse Fang",
+     "element": "void",
+     "archetype": "blade"
     }
+   ],
+   "colBounds": [
+    112,
+    212,
+    335,
+    455,
+    520,
+    595,
+    672
    ]
   },
   {
@@ -7822,7 +7959,17 @@
      "element": "physical",
      "archetype": "blade"
     }
-   ]
+   ],
+   "colBounds": [
+    130,
+    263,
+    391,
+    523,
+    651,
+    772
+   ],
+   "cols": 7,
+   "fpFrames": 6
   },
   {
    "id": "w_uncommon_02",
@@ -8047,6 +8194,15 @@
      "element": "physical",
      "archetype": "mace"
     }
+   ],
+   "colBounds": [
+    130,
+    225,
+    345,
+    440,
+    525,
+    588,
+    678
    ]
   },
   {
@@ -8932,6 +9088,15 @@
      "element": "physical",
      "archetype": "sniper"
     }
+   ],
+   "colBounds": [
+    116,
+    225,
+    330,
+    427,
+    530,
+    631,
+    725
    ]
   },
   {

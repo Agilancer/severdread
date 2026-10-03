@@ -148,6 +148,8 @@ export class UI {
           <span>Invert look Y</span><input type="checkbox" data-c="invertY" ${s.invertY ? 'checked' : ''}><span></span>
           <span>16-bit colour dither</span><input type="checkbox" data-c="quantize" ${s.quantize ? 'checked' : ''}><span></span>
           <span>Damage numbers</span><input type="checkbox" data-c="damageNumbers" ${s.damageNumbers ? 'checked' : ''}><span></span>
+          <span>Gore</span><select data-s="gore">${['Off', 'Low', 'High'].map((n, i) => `<option value="${i}" ${(s.gore ?? 2) === i ? 'selected' : ''}>${n}</option>`).join('')}</select><span></span>
+          <span>Blood on lens</span><input type="checkbox" data-c="lensBlood" ${s.lensBlood !== false ? 'checked' : ''}><span></span>
         </div>
         <div style="margin-top:10px;text-align:right"><button class="btn red" data-a="back">Done</button></div>
       </div>`);
@@ -157,6 +159,7 @@ export class UI {
       g.saveSettings();
     }));
     el.querySelectorAll('input[type=checkbox]').forEach((inp) => inp.addEventListener('change', () => { s[inp.dataset.c] = inp.checked; g.saveSettings(); }));
+    el.querySelectorAll('select[data-s]').forEach((sel) => sel.addEventListener('change', () => { s[sel.dataset.s] = parseInt(sel.value, 10); g.saveSettings(); if (s.gore === 0) g.lens?.clear(); }));
     el.querySelector('[data-a=back]').onclick = back;
   }
 

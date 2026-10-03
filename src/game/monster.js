@@ -6,11 +6,11 @@
 //   bosses  : charge, shockwave, nova rings, summons, gravity pull
 import { MONSTERS, VARIANTS, CATEGORIES } from '../data/monsters.js';
 import * as B from '../data/balance.js';
-import { F } from './grid.js';
+import { F, HAZ } from './grid.js';
 import { fx } from '../core/rng.js';
 import { clamp, wrapAngle, lerp } from '../core/math.js';
 import { MODE } from './spritebatch.js';
-import { damagePlayer, fireEnemyProjectile, damageMonster } from './combat.js';
+import { damagePlayer, fireEnemyProjectile, damageMonster, killMonster } from './combat.js';
 import { ELEMENTS, STATUS } from '../data/elements.js';
 
 const ACT = { idle: 0, walk: 1, windup: 5, attack: 6, recover: 7 };
@@ -66,6 +66,7 @@ export class Monster {
     this.sprite = game.content.monsterSprite(this.id);
     this.distToPlayer = 99;
     this.losT = 0; this.canSee = false;
+    this.detourT = 0; this.hazT = 0; this.pitT = 0; this.onGround = false;
     this.burstLeft = 0; this.burstT = 0; this.breathT = 0;
     this.name = (this.elite ? 'Elite ' : '') + (v.prefix ? v.prefix + ' ' : '') + def.name;
     // tint / palette
@@ -154,10 +155,16 @@ export class Monster {
       }
     }
 
-    // movement goal
+    // movement goal: straight at the player when it is visible and near, the
+    // flow field otherwise - and also for walkers whose direct route is blocked
+    // (detourT) or, for melee, when the player is up / down a level (stairs)
     let goal = null;
     const pref = this.def.preferredRange || (atk?.type === 'melee' ? 0 : 7);
-    if (this.canSee && dist < 16) {
+    const walker = !this.def.flying;
+    this.detourT -= dt;
+    const levelGap = walker && atk?.type === 'melee' && Math.abs(p.y - this.floorY) > 1.2;
+    const direct = this.canSee && dist < 16 && !(walker && (this.detourT > 0 || levelGap));
+    if (direct) {
       if (atk?.type !== 'melee' && dist < pref - 2) goal = { x: this.x - dx, z: this.z - dz };            // back off
       else if (atk?.type !== 'melee' && dist < pref + 2) {                                                // strafe
         this.strafeT -= dt;
@@ -176,7 +183,10 @@ export class Monster {
         this.yaw = turnToward(this.yaw, wantYaw, 8 * dt);
         const step = spd * dt;
         const mx = (gx / gl) * step, mz = (gz / gl) * step;
+        const ox = this.x, oz = this.z;
         moved = this.move(mx, mz);
+        // walking into a wall / ledge on the direct route: follow the flow field for a while
+        if (direct && walker && this.mode === 'floor' && Math.abs(this.x - ox) + Math.abs(this.z - oz) < step * 0.3) this.detourT = 1.5;
       }
     } else this.yaw = turnToward(this.yaw, toYaw, 6 * dt);
     this.moving = moved;
@@ -199,7 +209,8 @@ export class Monster {
   }
 
   groundY() { return this.mode === 'ceiling' ? this.ceilY() : this.floorY; }
-  ceilY() { return this.game.world.ceilingOver(this.x, this.z, this.radius); }
+  // ceiling for crawlers: low boxes (tables, beams near the floor) don't count
+  ceilY() { return this.game.world.ceilingOver(this.x, this.z, this.radius, this.floorY + 1.7); }
 
   // movement in the current mode; returns true if moved
   move(mx, mz) {
@@ -219,10 +230,22 @@ export class Monster {
       const feet = flying ? this.floorY : this.y - this.lift;
       const a = { x: this.x, z: this.z, y: feet, radius: this.radius, height: Math.min(this.height, 1.6) };
       const blocked = w.moveActor(a, mx, mz, stepH);
+      if (!flying) {
+        // never step from safe ground into the void, a pit or a damaging floor
+        // on our own (knockback can still push us in)
+        const gr = w.grid, i0 = gr.cellAt(ox, oz), i1 = gr.cellAt(a.x, a.z);
+        if (i1 !== i0 && !w.cellDanger(i0) && w.cellDanger(i1)) {
+          const sb = w.surfaceBelow(a.x, a.y + 0.6, a.z);
+          const base = i1 < 0 || (gr.flags[i1] & F.VOID) ? w.level.voidY : gr.floorAtPos(i1, a.x, a.z);
+          if (sb === null || sb <= base + 0.01) { this.detourT = 1.5; return false; }   // no bridge / crate over it
+        }
+        if (a.y > feet) this.y += a.y - feet;   // climbed stairs during the move
+      }
       this.x = a.x; this.z = a.z;
-      // hop up ledges the flow field says are climbable
+      // hop up ledges / onto crates the flow field says are climbable
       if (blocked && !flying && this.vy === 0 && this.onGround) {
-        const ahead = w.floorAt(this.x + Math.sign(mx) * (this.radius + 0.3), this.z + Math.sign(mz) * (this.radius + 0.3));
+        const ax = this.x + Math.sign(mx) * (this.radius + 0.3), az = this.z + Math.sign(mz) * (this.radius + 0.3);
+        const ahead = w.surfaceBelow(ax, feet + 1.2, az);
         if (ahead !== null && ahead > feet + 0.5 && ahead < feet + 1.15) { this.vy = 6; this.onGround = false; }
       }
     }
@@ -234,16 +257,17 @@ export class Monster {
     const w = this.game.world;
     const ground = w.groundUnder(this.x, this.z, this.radius, (this.mode === 'floor' ? this.y - this.lift : this.floorY) + 0.6, 0);
     if (ground > -Infinity) this.floorY = ground;
+    else if (this.mode !== 'ceiling' && !this.def.flying && (w.cellFlags(this.x, this.z) & F.VOID)) this.floorY = (w.level.voidY ?? -30) - 10;   // nothing below: fall
     if (this.mode === 'ceiling') {
       const c = this.ceilY();
-      if (c > 60) { this.startTransition('floor'); return; }
+      if (c > 60 || c - this.floorY > 7) { this.startTransition('floor'); return; }
       this.y = c - this.height;
       return;
     }
     if (this.def.flying) {
       const target = this.floorY + this.def.flying + Math.sin(this.animT * 2) * 0.15;
       this.y = lerp(this.y, target, Math.min(1, dt * 3));
-      const c = w.ceilingOver(this.x, this.z, this.radius);
+      const c = w.ceilingOver(this.x, this.z, this.radius, this.y);
       if (this.y + this.height > c) this.y = c - this.height;
       return;
     }
@@ -251,19 +275,49 @@ export class Monster {
     const wantLift = this.mode === 'wall' ? 0.9 : 0;
     this.lift = lerp(this.lift, wantLift, Math.min(1, dt * 4));
     const feet = this.y - this.lift;
+    const wasGround = this.onGround;
     this.vy -= 22 * dt;
     let ny = feet + this.vy * dt;
-    if (ny <= this.floorY) { ny = this.floorY; this.vy = 0; this.onGround = true; } else this.onGround = false;
-    if (ny < (this.game.world.level.voidY ?? -30) + 2) { this.hp = 0; this.dead = true; this.game.monsterKilled(this); return; }
+    if (ny <= this.floorY) { ny = this.floorY; this.vy = 0; this.onGround = true; }
+    else if (wasGround && this.vy <= 0 && ny - this.floorY < 0.6) { ny = this.floorY; this.vy = 0; this.onGround = true; }   // walk down steps / stairs
+    else this.onGround = false;
+    if (ny < (w.level.voidY ?? -30) + 2) { this.hp = 0; killMonster(this.game, this, { noCorpse: true }); return; }
     this.y = ny + this.lift;
+    this.hazardTick(dt);
+  }
+
+  // Damaging floors hurt monsters too (resistances apply); a monster stuck at
+  // the bottom of a deep pit dies after a while (keys / loot still drop).
+  hazardTick(dt) {
+    const w = this.game.world, gr = w.grid;
+    const i = gr.cellAt(this.x, this.z);
+    let haz = HAZ.NONE, pit = false;
+    if (this.onGround && i >= 0 && gr.type[i] && Math.abs(this.floorY - gr.floorAtPos(i, this.x, this.z)) < 0.06) {
+      haz = w.hazAt(i);
+      pit = (gr.flags[i] & F.PIT) !== 0 && !(gr.flags[i] & F.BRIDGE);
+    }
+    if (haz === HAZ.LAVA || haz === HAZ.POISON || haz === HAZ.SPIKES) {
+      this.hazT -= dt;
+      if (this.hazT <= 0) {
+        this.hazT = 0.5;
+        const pct = (haz === HAZ.POISON ? 0.04 : 0.06) * (this.boss ? 0.3 : 1);
+        damageMonster(this.game, this, Math.max(1, this.maxHp * pct), { element: haz === HAZ.LAVA ? 'fire' : haz === HAZ.POISON ? 'poison' : 'physical', isDot: true, trueDamage: true, noProc: true });
+      }
+    } else this.hazT = 0;
+    if (pit && !this.dead) {
+      this.pitT += dt;
+      if (this.pitT > 2) { this.hp = 0; killMonster(this.game, this, {}); }
+    } else this.pitT = 0;
   }
 
   applyKnock(dt) {
     if (Math.abs(this.kx) + Math.abs(this.kz) < 0.01) return;
     if (this.mode === 'ceiling') { this.kx = this.kz = 0; return; }
     const a = { x: this.x, z: this.z, y: this.y - this.lift, radius: this.radius, height: Math.min(this.height, 1.6) };
+    const feet = a.y;
     this.game.world.moveActor(a, this.kx * dt * 6, this.kz * dt * 6, 0.6);
     this.x = a.x; this.z = a.z;
+    if (!this.def.flying && a.y > feet) this.y += a.y - feet;
     const k = Math.max(0, 1 - dt * 6);
     this.kx *= k; this.kz *= k;
   }
@@ -383,8 +437,8 @@ export class Monster {
       if (kind === 'close') { const a = fx.float(0, Math.PI * 2), r = fx.float(2.2, 4); x = p.x + Math.cos(a) * r; z = p.z + Math.sin(a) * r; }
       else { const a = this.yaw + Math.PI / 2 * fx.sign() + fx.float(-0.5, 0.5), r = fx.float(2, range); x = this.x + Math.cos(a) * r; z = this.z + Math.sin(a) * r; }
       const i = gr.cellAt(x, z);
-      if (i < 0 || !gr.type[i] || (gr.flags[i] & (F.VOID | F.HAZARD)) || w.doorByCell.has(i)) continue;
-      const f = gr.floor[i];
+      if (i < 0 || !gr.type[i] || (gr.flags[i] & (F.VOID | F.HAZARD | F.PIT | F.STAIR | F.OBSTACLE)) || w.doorByCell.has(i)) continue;
+      const f = gr.floorAtPos(i, x, z);
       if (!w.canOccupy(x, z, this.radius, f, Math.min(this.height, 1.6), 0.3)) continue;
       if (!w.los(x, f + 1, z, p.x, p.y + 1, p.z)) continue;
       return { x, z, y: f };
@@ -419,7 +473,7 @@ export class Monster {
     const bias = this.def.ceilingBias ?? 0.4;
     const r = fx.next();
     const ceil = this.ceilY();
-    const canCeil = ceil < 30 && ceil - this.floorY > 1.6;
+    const canCeil = ceil < 30 && ceil - this.floorY > 1.6 && ceil - this.floorY < 7;   // no absurd leaps to tall ceilings
     if (this.mode === 'floor') {
       if (canCeil && r < bias && dist > 2.5) this.startTransition('ceiling');
       else if (r < bias + 0.3 && this.adjacentWall()) this.mode = 'wall';
@@ -446,7 +500,7 @@ export class Monster {
   startTransition(to) {
     const from = this.mode;
     const ceil = this.ceilY();
-    if (to === 'ceiling' && ceil > 30) return;
+    if (to === 'ceiling' && (ceil > 30 || ceil - this.floorY > 7)) return;
     this.trans = { from, to, t: 0, dur: 0.55, y0: this.y, y1: to === 'ceiling' ? ceil - this.height : this.floorY };
     this.mode = 'floor';
     this.game.sfx('jump', { dist: this.distToPlayer, pitch: 0.7 });
@@ -540,7 +594,9 @@ export class Monster {
           const el = id === 'burn' ? 'fire' : id === 'poison' ? 'poison' : 'blood';
           damageMonster(g, this, s.dps * STATUS[id].tick, { element: el, isDot: true, trueDamage: true });
           if (id === 'bleed' && STATUS.bleed.lifesteal) g.player.heal(s.dps * STATUS[id].tick * STATUS.bleed.lifesteal);
-          if (fx.chance(0.6)) g.world.burst(this.x, this.y + this.height * 0.6, this.z, ELEMENTS[el].light, 3, { speed: 1, up: 1.5, gravity: -1 });
+          // bleeding / poisoned monsters drip blood (leaving a trail); burn and poison keep their coloured puff
+          if ((id === 'bleed' || id === 'poison') && g.world.gore) g.world.gore.drip(this, id === 'bleed' ? fx.int(1, 2) : 1);
+          if (id !== 'bleed' && fx.chance(0.6)) g.world.burst(this.x, this.y + this.height * 0.6, this.z, ELEMENTS[el].light, 3, { speed: 1, up: 1.5, gravity: -1 });
         }
       }
       if (s.t <= 0) delete this.status[id];
@@ -550,6 +606,7 @@ export class Monster {
 
   // ---------------------------------------------------------------- rendering
   submit(batcher, cam) {
+    if (this.gibbed) return;          // exploded into gore (see gore.js)
     const info = this.sprite;
     if (!info.handle.ready) return;
     const g = this.game;
@@ -581,7 +638,7 @@ export class Monster {
     if (this.boss && this.awake) { const k = 0.05 + 0.04 * Math.sin(g.time * 3); glow = [glow[0] + k, glow[1] + k * 0.2, glow[2] + k * 0.1]; }
     const flash = this.flash > 0 ? 0.65 : 0;
     let dissolve = 0;
-    if (this.dead) dissolve = Math.min(1, this.deathT / 0.9);
+    if (this.dead) dissolve = Math.min(1, this.deathT / 0.9) * (this.goreDissolve ? -1 : 1);   // negative: blood-red edges
     if (this.state === 'tp_out') dissolve = 1 - this.stateT / 0.22;
     if (this.state === 'tp_in') dissolve = this.stateT / 0.22;
     let x = this.x, y = this.y, z = this.z, rot = 0;

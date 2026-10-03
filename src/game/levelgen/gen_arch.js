@@ -41,6 +41,7 @@ export function styleOf(theme) {
 }
 
 const HAZ_OF = { lava: HAZ.LAVA, poison: HAZ.POISON, spikes: HAZ.SPIKES, water: HAZ.WATER };
+const FACE_SIDES_TOP = 31; // FACE.SIDES | FACE.TOP
 const HAZ_TEX = { lava: TS.LAVA, poison: TS.POISON, spikes: TS.PITWALL, water: TS.WATER };
 const LIGHT_COL = { lava: [1, 0.45, 0.15], poison: [0.5, 1, 0.3], water: [0.3, 0.6, 1], spikes: [1, 0.9, 0.8] };
 
@@ -871,14 +872,56 @@ const TEMPLATES = {
         deco.pillar(cx, cz, 0.7, r.floor + 0.6, r.floor + 3.4, { tex: TS.PILLAR });
       }
     }
+    const fam = ctx.style.family;
     for (let k = 0; k < Math.floor(r.area / 30); k++) {
       const x = rng.int(r.x + 1, r.x + r.w - 3), z = rng.int(r.z + 1, r.z + r.h - 3);
       if (!freeRect(ctx, x, z, 2, 2, 0) || Math.abs(x - cx) < 3 || Math.abs(z - cz) < 3) continue;
-      if (rng.chance(0.6)) deco.planter(x, z, r.floor, 2, 2);
+      if (fam === 'military') {
+        // sandbag / concrete barricades and supply crates
+        if (rng.chance(0.5)) deco.barrier(x, z + 0.5, x + 2, z + 0.5, r.floor, TS.SIDE);
+        else deco.crateStack(x + 1, z + 1, r.floor);
+      } else if (fam === 'industrial' || fam === 'tech') {
+        if (rng.chance(0.5)) deco.container(x, z, r.floor, rng.chance(0.5), { length: 2 });
+        else deco.crateStack(x + 1, z + 1, r.floor);
+      } else if (fam === 'hell') {
+        // bone pillars and spike clusters
+        deco.box(x + 0.6, r.floor, z + 0.6, x + 1.4, r.floor + rng.float(2, 4), z + 1.4, TS.PILLAR, { solid: true });
+      } else if (rng.chance(0.6)) deco.planter(x, z, r.floor, 2, 2);
       else tree(ctx, x + 1, z + 1);
     }
-    // lamps at the path ends
-    for (const [x, z] of [[cx - 1.5, r.z + 1.5], [cx + 0.5, r.z + r.h - 1.5]]) if (inRoom(r, Math.floor(x), Math.floor(z))) deco.streetLamp(x, z, r.floor, { height: 3.6, armX: 0.5 });
+    // perimeter: battlements for castles, floodlight masts for bases
+    if (fam === 'gothic' || fam === 'hell') {
+      for (let z = r.z - 1; z <= r.z + r.h; z++) for (let x = r.x - 1; x <= r.x + r.w; x++) {
+        if (!g.in(x, z)) continue;
+        const i = g.idx(x, z);
+        if (g.type[i] || (x + z) % 2) continue;
+        const ring = x === r.x - 1 || x === r.x + r.w || z === r.z - 1 || z === r.z + r.h;
+        if (!ring) continue;
+        const top = g.floor[i];
+        deco.box(x + 0.15, top, z + 0.15, x + 0.85, top + 0.9, z + 0.85, g.wallTex[i] || TS.WALL, { faces: FACE_SIDES_TOP });
+      }
+      // corner towers rising above the walls
+      for (const [tx, tz] of [[r.x - 1, r.z - 1], [r.x + r.w, r.z - 1], [r.x - 1, r.z + r.h], [r.x + r.w, r.z + r.h]]) {
+        if (!g.in(tx, tz) || g.type[g.idx(tx, tz)]) continue;
+        const top = g.floor[g.idx(tx, tz)];
+        deco.box(tx - 0.6, top, tz - 0.6, tx + 1.6, top + 3.5, tz + 1.6, g.wallTex[g.idx(tx, tz)] || TS.WALL, { faces: FACE_SIDES_TOP });
+        for (let k = 0; k < 3; k++) deco.box(tx - 0.6 + k * 0.45, top + 3.5 + k * 0.6, tz - 0.6 + k * 0.45, tx + 1.6 - k * 0.45, top + 4.1 + k * 0.6, tz + 1.6 - k * 0.45, TS.ROOF, { faces: FACE_SIDES_TOP });
+      }
+      if (fam === 'hell' && freeRect(ctx, r.x + 1, r.z + 1, 3, 3, 0)) makePit(ctx, r.x + 1, r.z + 1, 3, 3, 'lava', 2.5);
+    }
+    if (fam === 'military' || fam === 'industrial' || fam === 'tech') {
+      for (const [x, z] of [[r.x + 0.7, r.z + 0.7], [r.x + r.w - 0.7, r.z + r.h - 0.7]]) deco.streetLamp(x, z, r.floor, { height: 6, armX: 0, armZ: 0, radius: 9, color: [1, 0.95, 0.85] });
+      if (fam === 'military' && r.w >= 9 && r.h >= 9) {
+        // helipad marking
+        deco.box(cx - 2, r.floor + 0.004, cz - 2, cx + 2, r.floor + 0.02, cz - 1.7, TS.PAINT, { uv: 'fit', faces: 16 });
+        deco.box(cx - 2, r.floor + 0.004, cz + 1.7, cx + 2, r.floor + 0.02, cz + 2, TS.PAINT, { uv: 'fit', faces: 16 });
+        deco.box(cx - 2, r.floor + 0.004, cz - 2, cx - 1.7, r.floor + 0.02, cz + 2, TS.PAINT, { uv: 'fit', faces: 16 });
+        deco.box(cx + 1.7, r.floor + 0.004, cz - 2, cx + 2, r.floor + 0.02, cz + 2, TS.PAINT, { uv: 'fit', faces: 16 });
+      }
+    } else {
+      // lamps at the path ends
+      for (const [x, z] of [[cx - 1.5, r.z + 1.5], [cx + 0.5, r.z + r.h - 1.5]]) if (inRoom(r, Math.floor(x), Math.floor(z))) deco.streetLamp(x, z, r.floor, { height: 3.6, armX: 0.5 });
+    }
     r.lit = true;
   },
 
@@ -1025,3 +1068,6 @@ function scatterProps(ctx, density) {
     else deco.crateStack(x + 1, z + 1, r.floor, { count: rng.int(1, 3) });
   }
 }
+
+// shared with the maze / hall generators (mazekit.js, hall_templates.js)
+export { TEMPLATES, makePit, bridge, freeRect, eachCell, inRoom, scatterProps, wallConsoles, tree, pickHaz, HAZ_OF, HAZ_TEX, LIGHT_COL };

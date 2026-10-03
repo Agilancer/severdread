@@ -240,6 +240,10 @@ void main() {
   vec3 up = iExtra.w > 0.5 ? uCamUp : vec3(0.0, 1.0, 0.0);
   if (iExtra.w < 0.5) {   // cylindrical: right vector stays horizontal
     right = normalize(vec3(right.x, 0.0, right.z));
+  } else if (iExtra.w > 1.5) {   // fixed-axis decals: 2 floor, 3 wall facing +-x, 4 wall facing +-z
+    if (iExtra.w < 2.5) { right = vec3(1.0, 0.0, 0.0); up = vec3(0.0, 0.0, 1.0); }
+    else if (iExtra.w < 3.5) { right = vec3(0.0, 0.0, 1.0); up = vec3(0.0, 1.0, 0.0); }
+    else { right = vec3(1.0, 0.0, 0.0); up = vec3(0.0, 1.0, 0.0); }
   }
   float c = cos(iParams.y), s = sin(iParams.y);
   vec2 local = vec2(aCorner.x * iSize.x, (aCorner.y - iParams.z) * iSize.y);
@@ -301,11 +305,12 @@ void main() {
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
   col = mix(vec3(lum), col, vExtra.y);
   col *= vTint.rgb;
-  // dissolve (death / teleport)
-  if (vExtra.x > 0.0) {
+  // dissolve (death / teleport); negative = gory dissolve with blood-red edges
+  if (vExtra.x != 0.0) {
+    float dv = abs(vExtra.x);
     float n = h21(floor(vLocal * 48.0));
-    if (n < vExtra.x) discard;
-    if (n < vExtra.x + 0.08) col = mix(col, vGlow.rgb * 2.0 + vec3(1.0, 0.5, 0.2), 0.8);
+    if (n < dv) discard;
+    if (n < dv + 0.08) col = vExtra.x < 0.0 ? mix(col, vec3(0.42, 0.0, 0.0), 0.9) : mix(col, vGlow.rgb * 2.0 + vec3(1.0, 0.5, 0.2), 0.8);
   }
   if (uMode == 0) {
     float light = vParams.w > 0.5 ? 1.0 : vExtra.z * clamp(1.3 - vDist * 0.045, 0.28, 1.0) + uAmbient;
@@ -345,7 +350,7 @@ uniform sampler2D uTex;
 uniform vec4 uTint;
 uniform vec3 uAdd;
 uniform float uHue;
-uniform int uAdditive;
+uniform int uAdditive;     // 0 cutout, 1 additive, 2 alpha blend
 in vec2 vUV;
 out vec4 outColor;
 vec3 hueShift(vec3 col, float h) {
@@ -359,10 +364,12 @@ vec3 hueShift(vec3 col, float h) {
 void main() {
   vec4 t = texture(uTex, vUV);
   if (uAdditive == 0 && t.a < 0.4) discard;
+  if (uAdditive == 2 && t.a < 0.01) discard;
   vec3 c = t.rgb;
   if (uHue != 0.0) c = hueShift(c, uHue);
   c = c * uTint.rgb + uAdd * t.a;
   if (uAdditive == 1) outColor = vec4(c * t.a * uTint.a, 1.0);
+  else if (uAdditive == 2) outColor = vec4(c, t.a * uTint.a);   // alpha blend (lens blood, overlays)
   else outColor = vec4(c, 1.0);
 }`;
 

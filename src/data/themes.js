@@ -6,6 +6,12 @@
 //   sky, fog, light, grade, hazard, void, props, monster bias, music mood
 //
 // 44 themes from the design brief + 31 originals = 75 themes.
+//
+//   family / family2 - texture families (station, industrial, hell, castle, city,
+//                nature, ice, desert, heaven, cyber, organic): game/leveltextures.js
+//                fills every role slot with tiles of these families (data/texroles.js)
+//   railStyle  - hand / guard rail look: metal | stone | wood | glass | iron | neon
+import { THEME_FAMILY } from './texroles.js';
 
 // ---------------------------------------------------------- texture presets
 const T = (tags, ph) => ({ tags, ph });
@@ -190,3 +196,24 @@ export const HUB_THEME = th('hub', 'Orbital Station AEGIS-9', 'hub', {
   tex: tex({ wall: TP.metal, wall2: TP.screens, floor: TP.hex, floor2: TP.grate, ceil: TP.metalDark, accent: TP.hazardStripe, special: T(['teleporter'], { type: 'teleporter', base: '#202830', accent: '#40e0ff' }) }),
   sky: 'space', light: 0.9, lightVar: 0.1, fog: [0, 0, 0], fogDensity: 0.01, ambient: 0.08, music: 'hub',
 });
+
+// ---------------------------------------------------------- texture families + rail style
+// Rails must match the architecture: steel in stations and factories, stone
+// balustrades in castles and temples, wrought iron in hell and graveyards, wooden
+// rails in mansions and the wilds, glass in labs and malls, neon in cyberspace.
+const RAIL_STYLE = {
+  metal: 'possessed_station mars_base venus_base lunar_colony frozen_outpost crashed_starship cave_base orbital_elevator space_duel space_train space_freighter large_freighter blackhole_observatory volcano_base clockwork_foundry oil_rig semi_trucks subway_trains sewer_labyrinth meat_plant prison_complex military_base possessed_military ruined_military asteroid_mines mosh_pit arctic_rail ruined_city ruined_town downtown subway_tunnels abandoned_hospital backrooms movie_theater hub',
+  glass: 'huge_station bio_lab department_store skyscraper_tops',
+  iron: 'hell volcano flesh_cathedral throne_of_bones infernal_foundry clocktower graveyard storm_spire',
+  stone: 'castle necropolis sunken_temple sky_fortress concert_hall deserted_ruins jungle_ruins heaven afterlife dream_maze',
+  wood: 'haunted_mansion ruined_village caves toxic_swamp crystal_caverns mountain_top mountain_climb glacier_caves desert canyon canyon_bridges carnival blood_harbor',
+  neon: 'cyber_castle cyber_mountain digital_void neon_arcade cyber_traffic data_core',
+};
+const RAIL_OF = {};
+for (const [style, ids] of Object.entries(RAIL_STYLE)) for (const id of ids.split(' ')) RAIL_OF[id] = style;
+for (const t of [...THEMES, HUB_THEME]) {
+  const [f1, f2] = (THEME_FAMILY[t.id] || 'station').split(' ');
+  t.family ??= f1;
+  if (f2) t.family2 ??= f2;
+  t.railStyle ??= RAIL_OF[t.id] || 'metal';
+}

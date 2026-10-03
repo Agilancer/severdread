@@ -543,6 +543,441 @@ export const TEXGEN = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Role placeholders (data/texroles.js PH): objects and fittings that no
+// uploaded tile depicts - spike metal, light fixtures, neon tubes, glazing,
+// stair treads, road paint, carpets, crates, consoles, bookshelves, altars,
+// arcade cabinets, rune tablets, cinema screens, tent canvas.
+const carpetPlain = TEXGEN.carpet, screenPlain = TEXGEN.screen_wall;
+const radial = (x, y, cx, cy, r) => Math.max(0, 1 - Math.hypot(x - cx, y - cy) / r);
+
+Object.assign(TEXGEN, {
+  // metal for 3D spike pyramids: the tip is at the top of the tile (v = 0)
+  spikes(pal, seed) {
+    const r = new Rng(seed), base = rgb(pal.base || '#9a9ea6'), p = new PixelCanvas(S, S);
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const t = y / (S - 1);
+      const ridge = Math.max(0, 1 - Math.abs(x - 31.5) / 3) * 0.3 * (1 - t * 0.5);
+      const side = x < 32 ? 0.1 : -0.12;
+      const streak = (tnoise(x / 1.3, y / 14, 64 / 1.3, seed) - 0.5) * 0.3;
+      p.set(x, y, shade(base, 0.3 - t * 0.6 + ridge + side + streak));
+    }
+    for (let k = 0; k < 12; k++) {
+      const x = r.int(6, 57), y = r.int(10, 58), l = r.int(3, 8);
+      for (let i = 0; i < l; i++) p.set(x + (i >> 2), y + i, shade(base, 0.5), 150);
+    }
+    for (let y = 40; y < S; y++) for (let x = 0; x < S; x++) {
+      if (tnoise(x / 3, y / 3, 64 / 3, seed + 5) > 0.6 + (S - y) / 70) p.set(x, y, [92, 50, 24], 160);
+    }
+    if (pal.accent) { const ac = rgb(pal.accent); for (let y = 0; y < S; y++) { p.set(31, y, shade(ac, 0.3)); p.set(32, y, ac); } }
+    const blood = pal.blood ?? 0.6;
+    if (blood > 0) {
+      const bc = [118, 6, 10];
+      const capH = 6 + Math.round(blood * 10);
+      for (let y = 0; y < capH; y++) {
+        const hw = 3 + y * 0.9;
+        for (let x = Math.floor(32 - hw); x <= Math.ceil(32 + hw); x++) {
+          if (tnoise(x / 2, y / 2, 32, seed + 9) > 0.25 + y / capH * 0.5) p.set(x, y, shade(bc, (tnoise(x, y, 64, seed) - 0.5) * 0.3), 235);
+        }
+      }
+      const drips = 2 + Math.round(blood * 4);
+      for (let k = 0; k < drips; k++) {
+        const x = r.int(22, 42), len = r.int(10, 18 + Math.round(blood * 28)), w = r.chance(0.4) ? 2 : 1;
+        for (let i = 0; i < len; i++) { p.rect(x, i, w, 1, shade(bc, -0.1 * (i / len)), 225); if (i % 5 === 1) p.set(x, i, shade(bc, 0.35), 160); }
+        p.circle(x + w / 2, len, 1.6, bc, 230);
+      }
+    }
+    return p;
+  },
+
+  // emissive light fixtures (used with uv 'fit' on lamp boxes)
+  light_panel(pal, seed) {
+    const r = new Rng(seed), glow = rgb(pal.base || '#f2f6ff'), frame = rgb(pal.frame || '#8a9098'), p = new PixelCanvas(S, S);
+    const kind = pal.kind || 'panel';
+    const hot = mix(glow, [255, 255, 255], 0.6);
+    if (kind === 'fluor') {
+      p.fill(frame);
+      bevelRect(p, 0, 0, S, S, frame, 2);
+      for (let y = 5; y < 59; y++) for (let x = 5; x < 59; x++) p.set(x, y, shade(glow, -0.3 + 0.08 * Math.sin(y / 54 * Math.PI)));
+      for (const cy of [18, 44]) for (let y = cy - 4; y <= cy + 4; y++) {
+        const d = Math.abs(y - cy) / 4;
+        for (let x = 9; x < 55; x++) p.set(x, y, mix(hot, glow, d * 0.8));
+        p.rect(6, y, 3, 1, shade(frame, -0.2)); p.rect(55, y, 3, 1, shade(frame, -0.2));
+      }
+      for (const x of [21, 42]) p.rect(x, 5, 1, 54, shade(frame, 0.15), 140);
+    } else if (kind === 'panel') {
+      p.fill(frame);
+      for (let y = 3; y < 61; y++) for (let x = 3; x < 61; x++) p.set(x, y, mix(glow, hot, radial(x, y, 32, 32, 40) * 0.8));
+      p.rect(31, 3, 2, 58, shade(frame, 0.1)); p.rect(3, 31, 58, 2, shade(frame, 0.1));
+      for (let i = 0; i < 64; i++) { p.set(i, 0, shade(frame, 0.3)); p.set(0, i, shade(frame, 0.2)); p.set(i, 63, shade(frame, -0.4)); p.set(63, i, shade(frame, -0.3)); }
+    } else if (kind === 'lantern') {
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const flick = (tnoise(x / 6, y / 9, 64 / 6, seed) - 0.5) * 0.25;
+        const f = radial(x, y * 1.2, 32, 38 * 1.2, 30);
+        p.set(x, y, shade(mix(glow, [255, 250, 210], f * 0.9), -0.25 + f * 0.25 + flick));
+      }
+      p.ellipse(32, 36, 3, 6, [255, 255, 235]);
+      for (let k = 0; k < 64; k++) for (const o of [0, 32]) { p.setWrap(k + o, k, shade(frame, 0.2), 180); p.setWrap(o - k, k, shade(frame, 0.2), 180); }
+      for (const x of [0, 30, 61]) p.rect(x, 0, 3, S, frame);
+      for (const y of [0, 61]) p.rect(0, y, S, 3, frame);
+      p.rect(0, 0, S, 6, shade(frame, 0.15)); p.rect(0, 6, S, 1, shade(frame, -0.4));
+    } else if (kind === 'fire') {
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const n = tfbm(x / 10, y / 7 + tnoise(x / 9, 0, 64 / 9, seed) * 2, 6.4, seed, 4);
+        const t = Math.min(1, Math.max(0, n * 1.6 - 0.25 + (y / S) * 0.4));
+        p.set(x, y, t > 0.75 ? mix(glow, [255, 240, 160], (t - 0.75) * 4) : mix([60, 8, 2], glow, t / 0.75));
+      }
+      for (let k = 0; k < S; k += 16) { p.rect(k, 0, 2, S, frame); p.rect(0, k, S, 2, frame); }
+    } else if (kind === 'orb') {
+      noiseFill(p, frame, 0.4, seed, 5);
+      for (let k = 0; k < 5; k++) {
+        const cx = r.int(8, 56), cy = r.int(8, 56), rad = r.int(6, 11);
+        for (let y = -rad - 4; y <= rad + 4; y++) for (let x = -rad - 4; x <= rad + 4; x++) {
+          const d = Math.hypot(x, y) / rad;
+          if (d < 1) p.setWrap(cx + x, cy + y, mix(hot, glow, d));
+          else if (d < 1.4) p.setWrap(cx + x, cy + y, glow, Math.round(160 * (1.4 - d) / 0.4));
+        }
+      }
+    } else if (kind === 'bulbs') {
+      noiseFill(p, frame, 0.2, seed, 4);
+      for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) {
+        const cx = 11 + i * 21, cy = 11 + j * 21;
+        p.circle(cx, cy, 8, shade(frame, -0.5));
+        for (let y = -7; y <= 7; y++) for (let x = -7; x <= 7; x++) { const d = Math.hypot(x, y) / 7; if (d < 1) p.set(cx + x, cy + y, mix(hot, glow, d * d)); }
+      }
+    } else { // 'lamp': a glowing fabric shade
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const pleat = Math.sin(x / 4 * Math.PI) * 0.06;
+        p.set(x, y, shade(mix(glow, hot, y / S * 0.6), pleat - 0.15 + (y / S) * 0.15));
+      }
+      p.rect(0, 0, S, 4, frame); p.rect(0, 58, S, 6, hot);
+    }
+    return p;
+  },
+
+  // neon tubes on a dark wall (emissive slot: the wall stays dark, the tube glows)
+  neon_strip(pal, seed) {
+    const base = rgb(pal.base || '#0c0814'), ac = rgb(pal.accent || '#ff2bd6'), p = new PixelCanvas(S, S);
+    noiseFill(p, base, 0.35, seed, 6);
+    for (const cy of [20, 44]) for (let y = cy - 10; y <= cy + 10; y++) {
+      const d = Math.abs(y - cy);
+      for (let x = 0; x < S; x++) {
+        if (d === 0) p.set(x, y, mix(ac, [255, 255, 255], 0.75));
+        else if (d === 1) p.set(x, y, mix(ac, [255, 255, 255], 0.35));
+        else if (d <= 3) p.set(x, y, ac);
+        else p.set(x, y, ac, Math.round(120 * (1 - (d - 3) / 8)));
+      }
+    }
+    for (const cx of [10, 42]) for (const cy of [20, 44]) { p.rect(cx, cy - 4, 3, 9, [34, 34, 42]); p.set(cx, cy - 4, [90, 90, 100]); }
+    return p;
+  },
+
+  // neon sign (uv 'fit' on sign boards): a tube border around tube "lettering"
+  neon_sign(pal, seed) {
+    const r = new Rng(seed), base = rgb(pal.base || '#0c0814'), ac = rgb(pal.accent || '#ff2bd6'), a2 = rgb(pal.alt || '#2bd6ff'), p = new PixelCanvas(S, S);
+    noiseFill(p, base, 0.3, seed, 6);
+    const tube = (pts, c) => {
+      for (let i = 0; i + 1 < pts.length; i++) {
+        const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+        for (let o = -3; o <= 3; o++) if (o) { p.line(x0 + o, y0, x1 + o, y1, c, 34); p.line(x0, y0 + o, x1, y1 + o, c, 34); }
+        p.line(x0, y0, x1, y1, c); p.line(x0 + 1, y0, x1 + 1, y1, c);
+        p.line(x0, y0 + 1, x1, y1 + 1, mix(c, [255, 255, 255], 0.7));
+      }
+    };
+    tube([[5, 6], [58, 6], [58, 57], [5, 57], [5, 6]], ac);
+    // three abstract glyphs
+    for (let k = 0; k < 3; k++) {
+      const x = 12 + k * 15, y = 18, w = 10, h = 26;
+      const g = r.int(0, 3);
+      if (g === 0) tube([[x, y + h], [x, y], [x + w, y], [x + w, y + h]], a2);
+      else if (g === 1) tube([[x + w, y], [x, y], [x, y + h / 2], [x + w, y + h / 2], [x + w, y + h], [x, y + h]], a2);
+      else if (g === 2) tube([[x, y], [x, y + h], [x + w, y + h]], a2);
+      else tube([[x, y + h], [x + w / 2, y], [x + w, y + h]], a2);
+    }
+    return p;
+  },
+
+  // solid worn road / floor paint (uv 'fit' on thin marking strips)
+  paint(pal, seed) {
+    const base = rgb(pal.base || '#e8e4d8'), under = rgb(pal.dark || '#3a3a3e'), p = new PixelCanvas(S, S);
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const n = tnoise(x / 3, y / 3, 64 / 3, seed), wear = tnoise(x / 9, y / 9, 64 / 9, seed + 4);
+      p.set(x, y, n < 0.2 && wear < 0.45 ? shade(under, (n - 0.1) * 0.5) : shade(base, (n - 0.5) * 0.16 - (1 - wear) * 0.08));
+    }
+    return p.grain(10, seed);
+  },
+
+  // glazing: plain (rail infill, skylights) or framed (windows, glass rail panels)
+  glass(pal, seed) {
+    const base = rgb(pal.base || '#86b0c8'), p = new PixelCanvas(S, S);
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      let c = shade(base, 0.16 - (y / S) * 0.3 + (tnoise(x / 8, y / 8, 8, seed) - 0.5) * 0.06);
+      const u = (x + y * 0.7) % 64;
+      if (u > 8 && u < 15) c = shade(c, 0.32);
+      else if (u > 19 && u < 22) c = shade(c, 0.22);
+      p.set(x, y, c);
+    }
+    if (pal.framed) {
+      const fr = rgb(pal.frame || '#9aa0a8');
+      for (let k = 0; k < 3; k++) {
+        const c = k === 0 ? shade(fr, 0.25) : k === 2 ? shade(fr, -0.35) : fr;
+        p.rect(k, k, S - 2 * k, 1, c); p.rect(k, k, 1, S - 2 * k, c);
+        p.rect(k, S - 1 - k, S - 2 * k, 1, shade(c, -0.2)); p.rect(S - 1 - k, k, 1, S - 2 * k, shade(c, -0.2));
+      }
+      if (pal.mullions) { p.rect(31, 3, 2, 58, fr); p.rect(3, 31, 58, 2, fr); }
+    }
+    return p;
+  },
+
+  // diamond-plate stair tread
+  tread(pal, seed) {
+    const base = rgb(pal.base || '#8a8e94'), p = new PixelCanvas(S, S);
+    noiseFill(p, base, 0.14, seed, 5);
+    for (let j = 0; j < 8; j++) for (let i = 0; i < 8; i++) {
+      const cx = i * 8 + (j % 2 ? 4 : 0), cy = j * 8 + 4, dir = (i + j) % 2;
+      for (let k = -2; k <= 2; k++) {
+        const x = cx + k, y = cy + (dir ? k : -k);
+        p.setWrap(x + 1, y + 1, shade(base, -0.4)); p.setWrap(x, y, shade(base, 0.38));
+      }
+    }
+    stains(p, new Rng(seed), shade(base, -0.5), 2, 45);
+    return p.grain(10, seed);
+  },
+
+  // worn road paint on asphalt (stripes run along v like the uploaded lane tiles)
+  road_paint(pal, seed) {
+    const r = new Rng(seed), base = rgb(pal.base || '#2c2c30'), white = rgb(pal.lines || '#e6e6de'), yellow = rgb(pal.accent || '#e8c030'), p = new PixelCanvas(S, S);
+    noiseFill(p, base, 0.25, seed, 2);
+    p.grain(24, seed);
+    const paint = (x0, y0, w, h, c) => {
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const n = tnoise((x0 + x) / 2, (y0 + y) / 2, 32, seed + 3);
+        if (n > 0.16) p.setWrap(x0 + x, y0 + y, shade(c, (n - 0.5) * 0.18));
+      }
+    };
+    const kind = pal.kind || 'double';
+    if (kind === 'double') { paint(25, 0, 4, 64, yellow); paint(35, 0, 4, 64, yellow); }
+    else if (kind === 'dash') paint(29, 0, 6, 34, white);
+    else if (kind === 'edge') paint(29, 0, 6, 64, white);
+    else for (const x0 of [3, 19, 35, 51]) paint(x0, 0, 10, 64, white);   // crosswalk
+    crack(p, r, base, 1, 14);
+    return p;
+  },
+
+  // carpets: kind ornate | theater | arcade | office (no kind = old diamond carpet)
+  carpet(pal, seed) {
+    if (!pal.kind) return carpetPlain(pal, seed);
+    const r = new Rng(seed), base = rgb(pal.base || '#5a1a24'), alt = rgb(pal.alt || '#a8862c'), p = new PixelCanvas(S, S);
+    const pile = (x, y) => (tnoise(x, y, 64, seed) - 0.5) * 0.16;
+    if (pal.kind === 'ornate') {
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const dx = Math.abs(((x + 16) % 32) - 16), dy = Math.abs(((y + 16) % 32) - 16), d = dx + dy;
+        let c = base;
+        if (d === 14 || d === 15) c = alt;
+        else if (d < 4) c = shade(alt, -0.1);
+        else if (d === 8) c = shade(base, 0.22);
+        else if (d > 15 && (dx === 16 || dy === 16)) c = shade(base, -0.25);
+        p.set(x, y, shade(c, pile(x, y)));
+      }
+    } else if (pal.kind === 'theater') {
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const lx = x % 16, ly = y % 16, ox = (Math.floor(y / 16) % 2) * 8;
+        const mx = (x + ox) % 16, my = ly;
+        let c = base;
+        if ((mx === 8 && my > 4 && my < 12) || (my === 8 && mx > 4 && mx < 12)) c = alt;
+        else if (Math.abs(mx - 8) + Math.abs(my - 8) === 5) c = shade(alt, -0.25);
+        else if (lx === 0 && ly === 0) c = shade(alt, -0.35);
+        p.set(x, y, shade(c, pile(x, y)));
+      }
+    } else if (pal.kind === 'arcade') {
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) p.set(x, y, shade(base, pile(x, y)));
+      const cols = [alt, rgb(pal.accent || '#40e0ff'), [255, 220, 60], [120, 255, 120]];
+      for (let k = 0; k < 9; k++) {
+        const c = cols[k % cols.length], x0 = r.int(0, 63), y0 = r.int(0, 63), shape = k % 3;
+        if (shape === 0) for (let i = 0; i < 18; i++) p.setWrap(x0 + i, y0 + Math.round(Math.sin(i / 2.5) * 3), c);
+        else if (shape === 1) for (let a = 0; a < 24; a++) p.setWrap(x0 + Math.round(Math.cos(a / 24 * 6.283) * 4), y0 + Math.round(Math.sin(a / 24 * 6.283) * 4), c);
+        else for (let i = 0; i < 7; i++) { p.setWrap(x0 + i, y0 + 6, c); p.setWrap(x0 + Math.floor(i / 2), y0 + 6 - i, c); p.setWrap(x0 + 6 - Math.floor(i / 2), y0 + 6 - i, c); }
+      }
+    } else { // office: flat low pile, speckles and damp stains
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const sp = tnoise(x * 1.7, y * 1.7, 108.8, seed + 2) > 0.7;
+        p.set(x, y, shade(sp ? alt : base, pile(x, y) * 1.2));
+      }
+      stains(p, r, shade(base, -0.4), 4, 70);
+    }
+    return p;
+  },
+
+  // one crate face (uv 'fit'): wood | metal | cardboard
+  crate(pal, seed) {
+    const r = new Rng(seed), kind = pal.kind || 'wood', p = new PixelCanvas(S, S);
+    if (kind === 'wood') {
+      const base = rgb(pal.base || '#7a5430');
+      for (let y = 0; y < S; y++) {
+        const plank = Math.floor(y / 16), b = shade(base, ((plank * 37) % 5) / 30 - 0.06);
+        for (let x = 0; x < S; x++) {
+          const g = Math.sin(x * 0.45 + tnoise(x / 16, y / 3, 4, seed + plank) * 5) * 0.07;
+          p.set(x, y, y % 16 === 15 ? shade(base, -0.65) : shade(b, g + (tnoise(x / 6, y / 2, 64 / 6, seed) - 0.5) * 0.12));
+        }
+      }
+      const board = shade(base, 0.12);
+      const fillBoard = (pts) => p.polygon(pts, board);
+      fillBoard([[0, 0], [64, 0], [64, 7], [0, 7]]); fillBoard([[0, 57], [64, 57], [64, 64], [0, 64]]);
+      fillBoard([[0, 0], [7, 0], [7, 64], [0, 64]]); fillBoard([[57, 0], [64, 0], [64, 64], [57, 64]]);
+      fillBoard([[7, 51], [13, 57], [57, 13], [51, 7]]);
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const px = p.get(x, y);
+        if (px[0] === board[0] && px[1] === board[1] && px[2] === board[2]) p.set(x, y, shade(board, (tnoise(x / 5, y / 5, 64 / 5, seed + 7) - 0.5) * 0.18));
+      }
+      for (const v of [7, 57]) { p.rect(0, v - 1, S, 1, shade(base, -0.6)); p.rect(v - 1, 0, 1, S, shade(base, -0.6)); }
+      p.line(7, 50, 50, 7, shade(base, 0.35)); p.line(13, 57, 57, 13, shade(base, -0.55));
+      for (const [x, y] of [[3, 3], [60, 3], [3, 60], [60, 60], [10, 52], [52, 10]]) { p.set(x, y, [30, 26, 22]); p.set(x - 1, y - 1, [150, 140, 120]); }
+    } else if (kind === 'metal') {
+      const base = rgb(pal.base || '#5a6068'), ac = rgb(pal.accent || '#e0b020');
+      noiseFill(p, base, 0.14, seed, 4);
+      bevelRect(p, 0, 0, S, S, base, 2);
+      bevelRect(p, 8, 8, 48, 48, shade(base, -0.12), 1, -0.35, 0.2);
+      for (let y = 12; y < 52; y += 6) { p.hline(10, 53, y, shade(base, 0.18)); p.hline(10, 53, y + 1, shade(base, -0.3)); }
+      for (const [x, y] of [[0, 0], [52, 0], [0, 52], [52, 52]]) { p.rect(x, y, 12, 12, shade(base, -0.25)); rivet(p, x + 4, y + 4, base); }
+      for (let x = 0; x < 18; x++) for (let y = 0; y < 7; y++) p.set(40 + x, 44 + y, ((x + y) % 6) < 3 ? ac : [20, 20, 20]);
+      for (let i = 0; i < 4; i++) p.rect(12 + i * 4, 12, 3, 5, [220, 220, 210]);
+    } else { // cardboard
+      const base = rgb(pal.base || '#a07848');
+      noiseFill(p, base, 0.12, seed, 3);
+      p.grain(8, seed);
+      p.rect(0, 0, S, 2, shade(base, -0.35)); p.rect(0, 31, S, 1, shade(base, -0.25));
+      for (let y = 0; y < S; y++) for (let x = 26; x < 38; x++) p.set(x, y, shade(base, 0.22 + (x === 27 || x === 36 ? 0.1 : 0)));
+      const ink = [40, 30, 22];
+      for (const ax of [8, 16]) { p.vline(ax, 40, 52, ink); p.line(ax - 3, 43, ax, 40, ink); p.line(ax + 3, 43, ax, 40, ink); }
+      p.rect(44, 44, 14, 12, [230, 226, 212]);
+      for (let k = 0; k < 4; k++) p.hline(46, 46 + r.int(5, 9), 46 + k * 3, ink);
+    }
+    return p;
+  },
+
+  // control console front (machine role, sci-fi / industrial)
+  console(pal, seed) {
+    const r = new Rng(seed), base = rgb(pal.base || '#3a3e48'), ac = rgb(pal.accent || '#30d8ff'), p = new PixelCanvas(S, S);
+    noiseFill(p, base, 0.15, seed, 4);
+    bevelRect(p, 0, 0, S, S, base, 2);
+    p.rect(5, 4, 54, 24, [8, 10, 14]);
+    p.rect(6, 5, 52, 22, shade(ac, -0.78));
+    for (let y = 8; y < 24; y += 3) p.hline(8, 8 + r.int(10, 40), y, shade(ac, -0.15));
+    for (let x = 8; x < 56; x++) p.set(x, 22 - Math.round((Math.sin(x / 3 + seed) + 1) * 3), ac);
+    const cols = [ac, [255, 80, 60], [255, 200, 40], [80, 255, 120]];
+    for (let row = 0; row < 2; row++) for (let i = 0; i < 8; i++) {
+      const x = 7 + i * 6, y = 32 + row * 7, c = shade(r.pick(cols), r.float(-0.45, 0.05));
+      p.rect(x, y, 4, 4, c); p.set(x, y, shade(c, 0.5)); p.rect(x, y + 4, 4, 1, shade(base, -0.5));
+    }
+    for (let i = 0; i < 4; i++) { const x = 9 + i * 7; p.rect(x, 47, 2, 12, [12, 12, 14]); p.rect(x - 1, 48 + r.int(0, 8), 4, 3, shade(base, 0.4)); }
+    for (let y = 47; y < 59; y += 3) { p.hline(38, 57, y, shade(base, -0.45)); p.hline(38, 57, y + 1, shade(base, 0.12)); }
+    return p;
+  },
+
+  // bookshelf front (castle / mansion "machine")
+  bookshelf(pal, seed) {
+    const r = new Rng(seed), wood = rgb(pal.base || '#4a2e18'), p = new PixelCanvas(S, S);
+    p.fill(shade(wood, -0.6));
+    const books = ['#6a1a14', '#1a3a22', '#1a2448', '#4a3018', '#202020', '#7a5a1a', '#4a1a3a', '#5a4a3a'].map(rgb);
+    for (let row = 0; row < 4; row++) {
+      const top = row * 16, floor = top + 13;
+      let x = 4;
+      while (x < 59) {
+        if (r.chance(0.08)) { x += r.int(3, 6); continue; }
+        const w = r.int(2, 5), h = r.int(8, 12), c = shade(r.pick(books), r.float(-0.15, 0.15));
+        const bw = Math.min(w, 59 - x);
+        p.rect(x, floor - h, bw, h, c);
+        p.rect(x, floor - h, 1, h, shade(c, 0.25));
+        if (h > 9) { p.rect(x, floor - h + 2, bw, 1, [190, 150, 60]); p.rect(x, floor - 3, bw, 1, [190, 150, 60]); }
+        x += w + (r.chance(0.2) ? 1 : 0);
+      }
+      if (r.chance(0.3)) { const sx = r.int(10, 48); p.rect(sx, floor - 5, 5, 5, [214, 204, 180]); p.set(sx + 1, floor - 3, [30, 20, 10]); p.set(sx + 3, floor - 3, [30, 20, 10]); }
+      for (let y = floor; y < top + 16; y++) for (let xx = 0; xx < S; xx++) p.set(xx, y, shade(wood, (y === floor ? 0.2 : -0.1) + (tnoise(xx / 6, y, 64 / 6, seed) - 0.5) * 0.15));
+    }
+    for (const x0 of [0, 60]) for (let y = 0; y < S; y++) for (let x = x0; x < x0 + 4; x++) p.set(x, y, shade(wood, (x === x0 ? 0.15 : 0) + (tnoise(x, y / 6, 64, seed + 4) - 0.5) * 0.2));
+    return p;
+  },
+
+  // carved altar / shrine block with a glowing sigil (heaven, nature, desert "machine")
+  altar(pal, seed) {
+    const base = rgb(pal.base || '#6a6660'), ac = rgb(pal.accent || '#60ff90'), p = new PixelCanvas(S, S);
+    noiseFill(p, base, 0.22, seed, 5);
+    for (let k = 0; k < 64; k++) { for (const v of [5, 58]) { p.set(k, v, shade(base, -0.4)); p.set(v, k, shade(base, -0.4)); p.set(k, v + 1, shade(base, 0.2)); p.set(v + 1, k, shade(base, 0.2)); } }
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const d = Math.hypot(x - 31.5, y - 29.5);
+      if (Math.abs(d - 14) < 1.2) p.set(x, y, ac);
+      else if (Math.abs(d - 14) < 3) p.set(x, y, ac, 90);
+    }
+    const star = [[32, 17], [43, 37], [20, 37]];
+    for (let i = 0; i < 3; i++) p.line(star[i][0], star[i][1], star[(i + 1) % 3][0], star[(i + 1) % 3][1], ac);
+    p.circle(32, 30, 2.5, mix(ac, [255, 255, 255], 0.6));
+    for (let i = 0; i < 6; i++) { const x = 10 + i * 8; p.vline(x, 49, 53, shade(ac, -0.35)); p.hline(x - 1, x + 2, 49 + (i % 3), shade(ac, -0.35)); }
+    return p;
+  },
+
+  // arcade cabinet front (neon arcade machines)
+  arcade_cabinet(pal, seed) {
+    const r = new Rng(seed), body = rgb(pal.base || '#16121e'), ac = rgb(pal.accent || '#ff40c0'), p = new PixelCanvas(S, S);
+    noiseFill(p, body, 0.2, seed, 4);
+    for (let y = 0; y < S; y++) for (const x0 of [0, 59]) for (let x = x0; x < x0 + 5; x++) p.set(x, y, ((x + y) % 8) < 4 ? ac : shade(ac, -0.5));
+    p.rect(7, 2, 50, 10, mix(ac, [255, 255, 255], 0.3));
+    for (let i = 0; i < 6; i++) p.rect(11 + i * 7, 5, 5, 4, shade(ac, -0.55));
+    p.rect(9, 14, 46, 24, [30, 30, 36]);
+    p.rect(11, 16, 42, 20, [6, 6, 20]);
+    const cols = [[255, 220, 60], [80, 255, 120], [255, 80, 80], [80, 200, 255], ac];
+    for (let k = 0; k < 14; k++) p.rect(r.int(12, 49), r.int(17, 33), 2, 2, r.pick(cols));
+    p.polygon([[30, 33], [34, 33], [32, 29]], [240, 240, 255]);
+    p.rect(7, 40, 50, 8, shade(body, 0.35));
+    p.rect(15, 41, 2, 4, [60, 60, 60]); p.circle(16, 41, 2.2, [220, 30, 30]);
+    for (let i = 0; i < 4; i++) p.circle(30 + i * 6, 44, 1.8, cols[i]);
+    p.rect(26, 51, 12, 10, [70, 70, 78]);
+    p.rect(28, 54, 3, 4, [255, 140, 30]); p.rect(33, 54, 3, 4, [255, 140, 30]);
+    return p;
+  },
+
+  // displays: kind runes (low-tech glowing tablet) | cinema (projected picture); no kind = monitor wall
+  screen_wall(pal, seed) {
+    if (!pal.kind) return screenPlain(pal, seed);
+    const r = new Rng(seed), base = rgb(pal.base || '#14121a'), ac = rgb(pal.accent || '#60c0ff'), p = new PixelCanvas(S, S);
+    if (pal.kind === 'runes') {
+      noiseFill(p, base, 0.35, seed, 5);
+      bevelRect(p, 0, 0, S, S, shade(base, 0.25), 2);
+      for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) {
+        const cx = 12 + i * 20, cy = 12 + j * 20;
+        for (let s = 0; s < 3; s++) {
+          const x0 = cx + r.int(-5, 5), y0 = cy + r.int(-6, 6), x1 = cx + r.int(-5, 5), y1 = cy + r.int(-6, 6);
+          p.line(x0 + 1, y0, x1 + 1, y1, ac, 70); p.line(x0, y0 + 1, x1, y1 + 1, ac, 70);
+          p.line(x0, y0, x1, y1, mix(ac, [255, 255, 255], 0.4));
+        }
+      }
+    } else { // cinema
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const sky = mix([250, 196, 130], [150, 186, 236], 1 - y / 40);
+        const ridge = 34 + Math.round((tfbm(x / 16, 0, 4, seed, 3) - 0.5) * 22);
+        let c = y < ridge ? sky : mix([60, 70, 96], [30, 34, 52], (y - ridge) / 30);
+        const sun = radial(x, y, 44, 26, 7);
+        if (sun > 0 && y < ridge) c = mix(c, [255, 246, 210], Math.min(1, sun * 2));
+        const vig = Math.min(1, Math.hypot(x - 31.5, y - 31.5) / 46);
+        c = shade(c, -vig * vig * 0.45 + (y % 2 ? -0.03 : 0));
+        p.set(x, y, c);
+      }
+    }
+    return p;
+  },
+
+  // canvas stripes (circus tents, awnings)
+  stripes(pal, seed) {
+    const a = rgb(pal.base || '#c81c1c'), b = rgb(pal.alt || '#f0e6d8'), w = pal.width || 8, p = new PixelCanvas(S, S);
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const c = Math.floor(x / w) % 2 ? b : a;
+      const fold = Math.sin(((x % (w * 2)) / (w * 2)) * Math.PI * 2) * 0.1;
+      p.set(x, y, shade(c, fold + (tnoise(x / 2, y / 8, 32, seed) - 0.5) * 0.1 + (x % w === 0 ? -0.2 : 0)));
+    }
+    for (let y = 2; y < S; y += 4) for (let x = w - 1; x < S; x += w) p.set(x, y, shade(b, -0.4));
+    return p;
+  },
+});
+
 export function generateTexture(spec, seed) {
   const fn = TEXGEN[spec.type] || TEXGEN.concrete;
   return fn(spec, seed).toCanvas();

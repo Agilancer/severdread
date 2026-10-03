@@ -438,3 +438,6 @@ export function generateMonsterAtlas(kind, pal) {
   }
   return { canvas: c, frameW: MF, frameH: MF, footY: 61 };
 }
+
+// gore atlas (blood, gibs, decals, lens) lives in its own module
+export { generateGoreAtlas } from './gore_gen.js';

@@ -12,6 +12,7 @@ import {
   generateReagentIcon, generateChest, generateKeycard, generateCredit, generatePortalFrames, generateProp,
   generateFxAtlas, generateMonsterAtlas, PROP_SIZE,
 } from '../art/sprites_gen.js';
+import { generateGoreAtlas } from '../art/gore_gen.js';
 
 export class Content {
   constructor(renderer, store, manifest) {
@@ -57,6 +58,7 @@ export class Content {
     this.energyProjPool = [...this.sprites.values()].filter((s) => ENERGY_PROJ_SHEETS.includes(s.set.id));
     // fx + world object textures (procedural)
     this.fx = this.store.fromCanvas('fx', generateFxAtlas());
+    this.gore = this.store.fromCanvas('gore', generateGoreAtlas());   // blood, gibs, decals, lens (data/gore.js GC)
     this.chestClosed = this.store.fromCanvas('chest0', generateChest(false));
     this.chestOpen = this.store.fromCanvas('chest1', generateChest(true));
     this.credit = this.store.fromCanvas('credit', generateCredit());
@@ -229,15 +231,18 @@ export class Content {
   // ---------------------------------------------------------------- weapons
   _buildWeaponBases() {
     const bases = [];
-    const realArchetypes = new Set();
+    const realCount = {};
     for (const set of this.manifest.weaponSets) {
       for (const w of set.weapons) {
-        realArchetypes.add(w.archetype);
-        bases.push({ id: w.id, name: w.name, archetype: w.archetype, element: w.element || 'physical', flavor: w.flavor, rarity: w.rarity || null, real: true, set, row: w.row });
+        // rows the art tool could not slice cleanly (fp.bad) never drop
+        const ok = !w.fp?.bad;
+        if (ok) realCount[w.archetype] = (realCount[w.archetype] || 0) + 1;
+        bases.push({ id: w.id, name: w.name, archetype: w.archetype, element: w.element || 'physical', flavor: w.flavor, rarity: w.rarity || null, real: true, set, row: w.row, fp: w.fp || null, enabled: ok });
       }
     }
+    // procedural placeholders fill archetypes with too little clean real art
     for (const b of PLACEHOLDER_BASES) {
-      bases.push({ ...b, real: false, enabled: !realArchetypes.has(b.archetype) });
+      bases.push({ ...b, real: false, enabled: (realCount[b.archetype] || 0) < 2 });
     }
     for (const b of bases) {
       if (b.enabled === undefined) b.enabled = true;
@@ -247,17 +252,29 @@ export class Content {
     this.weaponBases = bases;
   }
 
-  weaponFP(baseId) {
-    const b = this.baseById.get(baseId);
-    if (!b) return null;
+  // First-person sprite of a weapon base: atlas handle + frame layout + `meta`,
+  // the per-weapon placement data written by tools/process_art.py (frame
+  // pixels): art box {top, bottom, artL, artR}, gripX (where the arm leaves
+  // the bottom edge), hands, muzzle [x, y], flashFrame, frames and seq (the
+  // fire frames to play).
+  weaponFP(baseId, archetype) {
+    let b = this.baseById.get(baseId);
+    if (!b) {
+      // unknown base (old save / removed art): draw a placeholder of the archetype
+      b = PLACEHOLDER_BASES.find((p) => p.archetype === archetype) || PLACEHOLDER_BASES[0];
+      b = this.baseById.get(b.id) || b;
+    }
     if (b.real) {
       const s = b.set;
-      return { handle: this.store.fromURL(s.fpFile), frameW: s.fpW, frameH: s.fpH, frames: s.fpFrames, row: b.row, rows: s.weapons.length, muzzle: s.muzzle };
+      const nf = s.fpFrames;
+      const meta = b.fp || { top: 0, bottom: s.fpH, gripX: s.fpW / 2, artL: 0, artR: s.fpW, hands: 'center', muzzle: [s.fpW * s.muzzle[0], s.fpH * s.muzzle[1]], flashFrame: 1, frames: nf };
+      return { key: b.id, handle: this.store.fromURL(s.fpFile), frameW: s.fpW, frameH: s.fpH, frames: nf, row: b.row, rows: s.weapons.length, meta };
     }
     const key = 'fp_' + b.id;
     let h = this.store.get(key);
     if (!h) h = this.store.fromCanvas(key, generateWeaponFP(b.archetype, b.pal, b.id.length * 31));
-    return { handle: h, frameW: FP_W, frameH: FP_H, frames: 7, row: 0, rows: 1, muzzle: [0.5, 0.05] };
+    if (!b.fpMeta) b.fpMeta = measureFPStrip(h.image, FP_W, FP_H, 7, !!ARCHETYPES[b.archetype]?.melee);
+    return { key: b.id, handle: h, frameW: FP_W, frameH: FP_H, frames: 7, row: 0, rows: 1, meta: b.fpMeta };
   }
 
   // GL texture + uv for the dropped-in-world look (8th frame)
@@ -362,4 +379,34 @@ function hueName([r, g, b]) {
   if (h < 200) return 'cyan';
   if (h < 250) return 'blue';
   return 'purple';
+}
+
+// Placement metadata for a procedural first-person strip (same fields the art
+// tool writes for uploaded sheets): art box and grip from frame 0, muzzle from
+// the bright flash pixels frame 1 adds.
+function measureFPStrip(canvas, fw, fh, frames, melee) {
+  const meta = { top: Math.round(fh * 0.2), bottom: fh, gripX: fw / 2, artL: Math.round(fw * 0.15), artR: Math.round(fw * 0.85), hands: melee ? 'right' : 'two', muzzle: melee ? null : [fw / 2, 4], flashFrame: melee ? null : 1, frames };
+  let px;
+  try { px = canvas.getContext('2d').getImageData(0, 0, fw * 2, fh).data; } catch (e) { return meta; }
+  const W = fw * 2, solid = (x, y) => px[(y * W + x) * 4 + 3] >= 128;
+  let top = fh, bottom = 0, l = fw, r = 0, gx = 0, gn = 0;
+  for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
+    if (!solid(x, y)) continue;
+    top = Math.min(top, y); bottom = Math.max(bottom, y + 1); l = Math.min(l, x); r = Math.max(r, x + 1);
+  }
+  if (bottom <= top) return meta;
+  for (let y = Math.max(0, bottom - Math.round(fh * 0.1)); y < bottom; y++) for (let x = 0; x < fw; x++) if (solid(x, y)) { gx += x; gn++; }
+  Object.assign(meta, { top, bottom, artL: l, artR: r, gripX: gn ? gx / gn : (l + r) / 2 });
+  if (!melee) {
+    let mx = 0, my = 0, n = 0;
+    for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
+      const i1 = (y * W + fw + x) * 4, i0 = (y * W + x) * 4;
+      if (px[i1 + 3] < 128 || (px[i1] + px[i1 + 1] + px[i1 + 2]) / 3 < 185) continue;
+      if (px[i0 + 3] >= 128 && Math.abs(px[i1] - px[i0]) + Math.abs(px[i1 + 1] - px[i0 + 1]) + Math.abs(px[i1 + 2] - px[i0 + 2]) < 150) continue;
+      mx += x; my += y; n++;
+    }
+    if (n > 12) meta.muzzle = [mx / n, my / n];
+    else meta.muzzle = [(l + r) / 2, top];
+  }
+  return meta;
 }

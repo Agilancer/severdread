@@ -18,13 +18,14 @@ import { ELEMENTS } from '../data/elements.js';
 import { REAGENTS, CHEST_POOL } from '../data/reagents.js';
 import { RARITY } from '../data/rarities.js';
 import { MONSTERS } from '../data/monsters.js';
+import { LensBlood } from './gore.js';
 import * as B from '../data/balance.js';
 
 const SAVE_KEY = 'severdread_save_v1';
 const SETTINGS_KEY = 'severdread_settings_v1';
 
 export function defaultSettings() {
-  return { master: 0.8, sfx: 0.9, music: 0.45, sens: 1, touchSens: 1, invertY: false, fov: 80, res: 240, quantize: true, shake: 1, damageNumbers: true, brightness: 1.1 };
+  return { master: 0.8, sfx: 0.9, music: 0.45, sens: 1, touchSens: 1, invertY: false, fov: 80, res: 240, quantize: true, shake: 1, damageNumbers: true, brightness: 1.1, gore: 2, lensBlood: true };
 }
 
 export function newSave() {
@@ -35,6 +36,9 @@ export function newSave() {
     shop: null, created: Date.now(),
   };
 }
+
+// share of the screen height the idle weapon art fills, per archetype
+const WEAPON_SCREEN_SHARE = { pistol: 0.38, revolver: 0.4, smg: 0.42, shuriken: 0.4, javelin: 0.42, blade: 0.46, club: 0.46, mace: 0.46, minigun: 0.48, rocket: 0.48, super_shotgun: 0.46 };
 
 export class Game {
   constructor(renderer, store, content, hud, ui, touch) {
@@ -50,6 +54,7 @@ export class Game {
     this.world = null;
     this.player = null;
     this.post = { flash: [0, 0, 0, 0], levelUp: 0, warp: 0, lowHealth: 0, vignette: 0.9 };
+    this.lens = new LensBlood(this);   // blood on the camera lens (gore.js)
     this.shakeAmt = 0;
     this.noiseT = 0;
     this.timeScale = 1; this.slowT = 0;
@@ -168,6 +173,7 @@ export class Game {
     await this.content.preloadDoors();
     this.world.buildGraphics(this.renderer, this.content);
     this.damageNumbers = []; this.shockwaves = []; this.singularities = [];
+    this.lens.clear();
     this.prompt = null;
     if (this.touch) this.touch.setWeapon(this.player.weaponIndex);
   }
@@ -263,7 +269,7 @@ export class Game {
   addSingularity(x, y, z, dmg) { this.singularities.push({ x, y, z, t: 1.6, dmg, tick: 0 }); }
   summonMonster(id, x, z) {
     const w = this.world, g = w.grid, i = g.cellAt(x, z);
-    if (i < 0 || !g.type[i] || (g.flags[i] & (F.VOID | F.HAZARD))) return;
+    if (i < 0 || !g.type[i] || (g.flags[i] & (F.VOID | F.HAZARD | F.PIT | F.OBSTACLE))) return;
     if (!MONSTERS[id]) return;
     const m = new Monster(this, { monster: id, x, z, variant: 'normal' }, w.depth, { summoned: true, alerted: true, hpMult: 0.6 });
     w.monsters.push(m);
@@ -299,6 +305,8 @@ export class Game {
     this.updateShockwaves(dt);
     this.updateInteractions(dt);
     w.updateEffects(dt);
+    w.gore.update(dt);
+    this.lens.update(dt);
     if (w.portal) w.portal.t += dt;
     // timers / post fx
     this.levelUpT = Math.max(0, this.levelUpT - dt);
@@ -337,15 +345,17 @@ export class Game {
         pk.vy -= 14 * dt;
         pk.x += pk.vx * dt; pk.z += pk.vz * dt; pk.y += pk.vy * dt;
         if (!w.canOccupy(pk.x, pk.z, 0.1, pk.y, 0.2, 0.3)) { pk.x -= pk.vx * dt; pk.z -= pk.vz * dt; pk.vx *= -0.4; pk.vz *= -0.4; }
-        const f = w.floorAt(pk.x, pk.z);
+        const f = w.surfaceBelow(pk.x, pk.y - pk.vy * dt - 0.2, pk.z);   // floors, stairs, crate tops
         const floorY = f === null ? pk.y - 1 : f;
         if (pk.y < floorY + 0.25) {
           pk.y = floorY + 0.25;
           if (Math.abs(pk.vy) < 1.5) { pk.settled = true; pk.vy = 0; } else { pk.vy *= -0.35; pk.vx *= 0.6; pk.vz *= 0.6; }
         }
-        if (f !== null && (w.cellFlags(pk.x, pk.z) & F.VOID) && pk.y < floorY + 2) {
-          // never lose loot into the void: snap back to the player
-          pk.x = p.x; pk.z = p.z; pk.y = p.y + 1; pk.vx = pk.vz = 0;
+        if (f !== null) {
+          // never lose loot into the void, a deep pit or a damaging floor: snap back to the player
+          const ci = w.grid.cellAt(pk.x, pk.z), cf = w.grid.flags[ci];
+          const onFloor = (cf & F.VOID) ? pk.y < floorY + 2 : pk.y < floorY + 0.3 && Math.abs(floorY - w.grid.floorAtPos(ci, pk.x, pk.z)) < 0.01;
+          if (onFloor && w.cellDanger(ci)) { pk.x = p.x; pk.z = p.z; pk.y = p.y + 1; pk.vx = pk.vz = 0; pk.vy = 0; pk.settled = false; }
         }
       }
       const dx = p.x - pk.x, dz = p.z - pk.z, dy = (p.y + 0.6) - pk.y;
@@ -510,10 +520,12 @@ export class Game {
     for (const m of w.monsters) if (Math.hypot(m.x - cam.x, m.z - cam.z) < 60) m.submit(b, cam);
     this.submitWorldSprites(b, cam);
     submitProjectiles(this, b);
+    w.gore.submit(b, c, cam);
     w.submitEffects(b, c, cam);
     r.drawSprites(b.finish());
     // first-person weapon
     if (!p.dead) this.drawWeapon();
+    this.lens.draw(r, c.gore, c.fx);
     r.endFrame({ ...this.post, quantize: s.quantize, brightness: s.brightness });
   }
 
@@ -538,7 +550,7 @@ export class Game {
       if (!info.handle.ready) continue;
       const rel = Math.atan2(cam.z - n.z, cam.x - n.x) - n.yaw;
       const dir = ((Math.round(-Math.atan2(Math.sin(rel), Math.cos(rel)) / (Math.PI / 4)) % 8) + 8) % 8;
-      const qh = 1.1 * info.frameH / info.footY, qw = qh * info.frameW / info.frameH;
+      const qh = 1.75 * info.frameH / info.footY, qw = qh * info.frameW / info.frameH;   // vendors stand tall behind their counters
       const pal = n.palette || {};
       const anim = Math.floor((t + n.animT) * 1.5) % 6 === 0 ? 5 : 0;
       b.add(info.handle, MODE.CUTOUT, n.x, w.floorAt(n.x, n.z) ?? 0, n.z, qw, qh, { uv: c.monsterUV(info, dir, anim), tint: pal.tint, sat: pal.sat ?? 1, glow: pal.glow ? [...pal.glow, 0] : undefined, anchorY: (info.frameH - info.footY) / info.frameH, light: 1 });
@@ -603,18 +615,40 @@ export class Game {
     const fp = this.content.weaponFP(wpn.base);
     if (!fp || !fp.handle.ready) return;
     const H = r.lowH, W = r.lowW;
-    const view = p.weaponView(H);
-    const frame = Math.min(view.frame, fp.frames - 1);
-    const scale = (H * 0.5) / fp.frameH * (fp.frameH > 140 ? 1 : 1);
-    const dw = fp.frameW * scale, dh = fp.frameH * scale;
-    const x = W / 2 - dw / 2 + view.ox + W * 0.04, y = H - dh + view.oy + 2;
+    // placement from the art metadata: scale the real art box (not the padded
+    // cell) to an archetype-specific share of the screen, anchor the hand/grip
+    // at the bottom edge, one-handed weapons sit right of centre (DOOM style)
+    const m = fp.meta || { top: 0, bottom: fp.frameH, gripX: fp.frameW / 2, artL: 0, artR: fp.frameW, hands: 'center', muzzle: null, flashFrame: 1 };
+    const nF = fp.frames;
+    const melee = /blade|mace|club/.test(wpn.archetype), thrown = /shuriken|javelin/.test(wpn.archetype);
+    const artH = Math.max(8, m.bottom - m.top), artW = Math.max(8, m.artR - m.artL);
+    const K = WEAPON_SCREEN_SHARE[wpn.archetype] ?? 0.44;
+    const s = Math.min((K * H) / artH, (0.58 * W) / artW);
+    const bias = m.hands === 'right' ? 0.11 : m.hands === 'left' ? -0.06 : 0.035;
+    const seq = [];
+    for (let f = 1; f < nF; f++) seq.push(f);
+    const view = p.weaponView(H, seq);
+    const frame = Math.min(view.frame, nF - 1);
+    const over = Math.ceil(H * 0.06);                // overscan so the cut-off arm never shows
+    const oy = Math.max(view.oy, -over + 1);
+    const dyf = (m.dy && m.dy[frame]) || 0;
+    const x = Math.round(W * 0.5 + bias * H - m.gripX * s + view.ox);
+    const y = Math.round(H + over - (m.bottom - dyf) * s + oy);
+    const dw = fp.frameW * s, dh = fp.frameH * s;
     const aw = fp.frameW * fp.frames, ah = fp.frameH * fp.rows;
     const uv = [(frame * fp.frameW + 0.5) / aw, (fp.row * fp.frameH + 0.5) / ah, ((frame + 1) * fp.frameW - 0.5) / aw, ((fp.row + 1) * fp.frameH - 0.5) / ah];
+    // remember where the muzzle is on screen so shots leave from it
+    if (m.muzzle && !melee) {
+      const mx0 = Math.round(W * 0.5 + bias * H - m.gripX * s) + m.muzzle[0] * s, my0 = Math.round(H + over - m.bottom * s) + m.muzzle[1] * s;
+      p.muzzleNDC = [(mx0 / W) * 2 - 1, 1 - (my0 / H) * 2];
+    } else p.muzzleNDC = null;
+    const flashF = m.flashFrame ?? 1;
+    const flashing = view.frame > 0 && !melee && !thrown && (view.frame === flashF || view.frame === flashF + 1);
     // lighting: sector light + muzzle flash + damage flash
     const w = this.world;
     const cell = w.grid.cellAt(p.x, p.z);
     let light = cell >= 0 ? clamp(w.grid.light[cell] * 1.05 + 0.15, 0.35, 1.25) : 1;
-    if (view.frame === 1 || view.frame === 2) light = 1.5;
+    if (flashing) light = 1.5;
     const el = wpn.element;
     const ec = el !== 'physical' ? this.elemLight(el) : null;
     const pulse = 0.5 + 0.5 * Math.sin(this.time * 4);
@@ -626,8 +660,8 @@ export class Game {
     }
     r.drawQuad(fp.handle.tex, x, y, dw, dh, uv, { tint: [light, light * (p.hurtT > 0 ? 0.6 : 1), light * (p.hurtT > 0 ? 0.6 : 1), 1], add });
     // muzzle flare glow
-    if ((view.frame === 1 || view.frame === 2) && !wpn.archetype.match(/blade|mace|club/)) {
-      const mx = x + dw * (fp.muzzle?.[0] ?? 0.5), my = y + dh * (fp.muzzle?.[1] ?? 0.1);
+    if (flashing && m.muzzle) {
+      const mx = x + m.muzzle[0] * s, my = y + m.muzzle[1] * s;
       const col = ec || [1, 0.75, 0.35];
       const fxh = this.content.fx;
       const sz = H * 0.28;

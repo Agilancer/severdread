@@ -155,7 +155,7 @@ function makeDistortion(k) {
   return c;
 }
 
-const RATE_LIMIT = { smg: 0.045, minigun: 0.035, flame: 0.08, zap: 0.06, hit: 0.03, hit_metal: 0.03, pickup_credits: 0.05, footstep: 0.18, explosion: 0.05, monster_pain: 0.12 };
+const RATE_LIMIT = { smg: 0.045, minigun: 0.035, flame: 0.08, zap: 0.06, hit: 0.03, hit_metal: 0.03, pickup_credits: 0.05, footstep: 0.18, explosion: 0.05, monster_pain: 0.12, gib: 0.05, splat: 0.06 };
 
 // Sound effect recipes: (audio, time, destination, pitch)
 const SFX = {
@@ -204,6 +204,15 @@ const SFX = {
   alien(a, t, o, p) { a._tone(o, t, 0.5, { type: 'triangle', freq: 400 * p, freqEnd: 900, gain: 0.2 }); a._tone(o, t, 0.5, { type: 'triangle', freq: 420 * p, freqEnd: 300, gain: 0.15 }); },
   monster_pain(a, t, o, p) { a._noise(o, t, 0.15, { type: 'bandpass', freq: 700 * p, q: 2, gain: 0.35 }); },
   monster_death(a, t, o, p) { a._tone(o, t, 0.6, { type: 'sawtooth', freq: 200 * p, freqEnd: 40, gain: 0.25, dist: true }); a._noise(o, t, 0.5, { type: 'lowpass', freq: 1200, freqEnd: 150, gain: 0.5 }); },
+  gib(a, t, o, p) {
+    // wet burst + body thump + squelch + spatter tail
+    a._noise(o, t, 0.3, { type: 'lowpass', freq: 1100 * p, freqEnd: 140, gain: 0.85 });
+    a._tone(o, t, 0.2, { freq: 120 * p, freqEnd: 38, gain: 0.75 });
+    a._noise(o, t + 0.015, 0.16, { type: 'bandpass', freq: 1800 * p, freqEnd: 420, q: 3, gain: 0.5 });
+    a._noise(o, t + 0.08, 0.26, { type: 'bandpass', freq: 650 * p, freqEnd: 240, q: 2.2, gain: 0.4 });
+    for (let i = 0; i < 3; i++) a._noise(o, t + 0.12 + i * 0.05 + Math.random() * 0.03, 0.06, { type: 'bandpass', freq: (900 + Math.random() * 700) * p, q: 3, gain: 0.22 });
+  },
+  splat(a, t, o, p) { a._noise(o, t, 0.1, { type: 'bandpass', freq: 800 * p, freqEnd: 280, q: 2.5, gain: 0.42 }); a._tone(o, t, 0.06, { freq: 170 * p, freqEnd: 70, gain: 0.2 }); },
   robot_death(a, t, o, p) { a._tone(o, t, 0.5, { type: 'square', freq: 600 * p, freqEnd: 50, gain: 0.15 }); SFX.explosion(a, t, o, 1.6); },
   player_hurt(a, t, o, p) { a._tone(o, t, 0.2, { type: 'sawtooth', freq: 180 * p, freqEnd: 110, gain: 0.25 }); a._noise(o, t, 0.15, { type: 'bandpass', freq: 900, gain: 0.3 }); },
   player_death(a, t, o, p) { a._tone(o, t, 1.6, { type: 'sawtooth', freq: 160 * p, freqEnd: 30, gain: 0.35, dist: true }); a._noise(o, t, 1.2, { type: 'lowpass', freq: 800, freqEnd: 60, gain: 0.6 }); },

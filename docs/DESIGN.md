@@ -29,13 +29,30 @@
 ## Level generation (src/game/levelgen)
 
 The world is a height-field grid (floor/ceiling per cell, sky cells, voids,
-hazards, bridges). Generators by archetype: `rooms` (BSP), `caves` (cellular
-automata), `city`, `rooftops`/`islands` (platforms over a void), `convoy`
-(vehicles, scrolling road), `canyon`, `hall`, `maze` (+ Back Rooms), `mountain`,
-`castle`. Population then fortifies the boss arena with a single gate, puts
-locked doors on chokepoints, guarantees each key is reachable before its door,
-and places monsters, chests, props and lights. `npm test` checks every theme
-at several depths for solvability.
+deep pits with lava / poison / spikes / water, bridges, real stair cells,
+railed cell edges) plus detail geometry (`level.deco`: textured boxes, sloped
+hand rails, AABB colliders, light fixtures). See `docs/ARCHITECTURE.md`.
+
+- `gen_arch.js` (stations, bases, labs, castles, mansions, foundries): the
+  map is split into large spaces, each given a room template - colonnaded
+  halls with beams and a dais, atriums with railed balconies, pit rooms with
+  bridges over lava / poison / spikes, split levels joined by staircases,
+  industrial catwalks over toxic floors, storage bays, control rooms,
+  courtyards (castle battlements, military yards...), chapels, reactors and
+  the boss arena. Spaces connect through wide openings or doorways in thick
+  walls; height differences get grand staircases with hand rails. Zones
+  separated by single doorways give clean chokepoints for keyed doors.
+- `gen_city.js`: avenues with lane paint and crosswalks, curbed sidewalks with
+  street lamps, skyscrapers with setbacks and rooftop machinery, enterable
+  lobbies and shops, plazas, parking decks, canals with railed bridges,
+  craters, harbours, villages and cemeteries, and a walled boss plaza.
+- Caves, canyons, mountains, mazes, halls, rooftops, sky islands and convoys
+  have their own generators built on the same toolkit.
+
+Population then places locked doors on chokepoints, guarantees each key is
+reachable before its door, and places monsters, chests, props and lights.
+`npm test` checks every theme at several depths for solvability, mesh winding,
+physics and level quality (texture-role variety, narrow passages).
 
 ## Rendering
 

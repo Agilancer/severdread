@@ -342,13 +342,18 @@ def fit_regular(values, weights, k, lo=None, hi=None):
 
 
 def grid_assign(arr, region, rows, cols, alpha_threshold, strict_threshold=180,
-                min_big=0.15, col_centers=None, row_centers=None):
+                min_big=0.15, col_centers=None, row_centers=None, col_bounds=None, row_bounds=None):
     """Find every sprite in `region` and sort its pixels into a rows x cols grid.
 
     Sprites are located from their solid cores (alpha >= strict_threshold) so
     the faint haze that often joins neighbouring frames doesn't merge them.
     Every visible pixel (alpha >= alpha_threshold) is then given to the cell of
     the nearest solid core pixel.
+
+    col_bounds: optional cols-1 sheet x positions of the lines between
+    columns, for sheets whose columns are not evenly spaced (pixels are then
+    given to the column between those lines instead of the nearest centre).
+    row_bounds: the same for rows (rows-1 sheet y positions).
 
     Returns (cells, col_centers, row_centers, cell_index_image) where
     cells[r][c] is a bbox (x0, y0, x1, y1) in sheet coordinates or None.
@@ -359,6 +364,12 @@ def grid_assign(arr, region, rows, cols, alpha_threshold, strict_threshold=180,
     areas = np.array([c["area"] for c in comps])
     ref = np.median(np.sort(areas)[::-1][: rows * cols])
     big = [c for c in comps if c["area"] >= ref * min_big]
+    if col_bounds is not None:
+        cb = [float(region[0])] + [float(b) for b in col_bounds] + [float(region[2])]
+        col_centers = [(cb[i] + cb[i + 1]) / 2.0 for i in range(cols)]
+    if row_bounds is not None:
+        rb = [float(region[1])] + [float(b) for b in row_bounds] + [float(region[3])]
+        row_centers = [(rb[i] + rb[i + 1]) / 2.0 for i in range(rows)]
     if col_centers is None:
         col_centers = fit_regular([c["cx"] for c in big], [c["area"] for c in big], cols)
     if row_centers is None:
@@ -385,13 +396,23 @@ def grid_assign(arr, region, rows, cols, alpha_threshold, strict_threshold=180,
     # which case it is split pixel by pixel.
     xs_ = np.arange(x0, x1)[None, :]
     ys_ = np.arange(y0, y1)[:, None]
-    col_of = np.argmin(np.abs(xs_[..., None] - np.array(col_centers)[None, None, :]), -1)
-    row_of = np.argmin(np.abs(ys_[..., None] - np.array(row_centers)[None, None, :]), -1)
+    if col_bounds is not None:
+        col_of = np.searchsorted(np.array(col_bounds, float), xs_, side="right")
+    else:
+        col_of = np.argmin(np.abs(xs_[..., None] - np.array(col_centers)[None, None, :]), -1)
+    if row_bounds is not None:
+        row_of = np.searchsorted(np.array(row_bounds, float), ys_, side="right")
+    else:
+        row_of = np.argmin(np.abs(ys_[..., None] - np.array(row_centers)[None, None, :]), -1)
     near_cell = (row_of * cols + col_of).astype(np.int32)
     # "core" = pixels near the middle of their grid cell; used as seeds when
     # two touching frames have to be separated.
     cs = np.diff(col_centers).mean() if len(col_centers) > 1 else (x1 - x0)
     rs = np.diff(row_centers).mean() if len(row_centers) > 1 else (y1 - y0)
+    if col_bounds is not None:
+        cs = np.diff(cb)[col_of]           # per-pixel width of its own column
+    if row_bounds is not None:
+        rs = np.diff(rb)[row_of]
     dx = np.abs(xs_ - np.array(col_centers)[col_of])
     dy = np.abs(ys_ - np.array(row_centers)[row_of])
     core = (dx < cs * 0.3) & (dy < rs * 0.3)
@@ -697,6 +718,348 @@ def drop_bottom_slivers(img, box, row_bottom_guess=None):
     return out
 
 
+# --------------------------------------------------------------------------
+# first-person weapon sheets
+# --------------------------------------------------------------------------
+WEAPON_MELEE = ("blade", "mace", "club")
+WEAPON_THROWN = ("shuriken", "javelin")
+
+
+def weapon_body_mask(a, thr=128):
+    """The weapon + hands of one first-person frame: the largest solid blob,
+    the blobs touching it and big blobs reaching the arm cut at the bottom
+    (a second forearm).  Sparks, shells, smoke and detached muzzle flashes are
+    left out, so they never decide where a frame sits or how big it is."""
+    mask = a >= thr
+    lab, n = ndimage.label(mask, structure=np.ones((3, 3)))
+    if n == 0:
+        return mask
+    sizes = ndimage.sum(mask, lab, range(1, n + 1))
+    main = int(np.argmax(sizes)) + 1
+    msz = sizes[main - 1]
+    near = ndimage.binary_dilation(lab == main, iterations=3)
+    keep = {main}
+    for k in np.unique(lab[near & mask]):
+        if k and sizes[k - 1] >= 0.04 * msz:
+            keep.add(int(k))
+    for k in np.unique(lab[max(0, a.shape[0] - 3):]):
+        if k and sizes[k - 1] >= 0.08 * msz:
+            keep.add(int(k))
+    return np.isin(lab, list(keep))
+
+
+def drop_cell_leaks(img, box, cell_img, region, idx, thr):
+    """Remove pieces of a neighbouring frame (or of the icon) that the slicer
+    cut off into this cell: blobs that are not part of this frame's weapon
+    body and touch pixels the slicer gave to another cell."""
+    a = img[..., 3]
+    mask = a >= thr
+    lab, n = ndimage.label(mask, structure=np.ones((3, 3)))
+    if n < 2:
+        return img, 0
+    # this frame's own weapon: the biggest solid blob and what touches it
+    solid = a >= 128
+    slab, sn = ndimage.label(solid, structure=np.ones((3, 3)))
+    if sn == 0:
+        return img, 0
+    ssz = ndimage.sum(solid, slab, range(1, sn + 1))
+    smain = slab == int(np.argmax(ssz)) + 1
+    body = ndimage.binary_dilation(smain, iterations=3) & solid
+    x0, y0, x1, y1 = box
+    rx, ry, rx1, ry1 = region
+    X0, Y0, X1, Y1 = max(x0 - 2, rx), max(y0 - 2, ry), min(x1 + 2, rx1), min(y1 + 2, ry1)
+    win = cell_img[Y0 - ry:Y1 - ry, X0 - rx:X1 - rx]
+    oth = np.zeros((y1 - y0 + 4, x1 - x0 + 4), bool)
+    oth[Y0 - y0 + 2:Y1 - y0 + 2, X0 - x0 + 2:X1 - x0 + 2] = (win >= 0) & (win != idx)
+    oth = ndimage.binary_dilation(oth, iterations=2)[2:-2, 2:-2]
+    bsz = max(1, int(body.sum()))
+    out, removed = img.copy(), 0
+    for k in range(1, n + 1):
+        comp = lab == k
+        if (comp & body).any() or not (comp & oth).any() or comp.sum() > 0.5 * bsz:
+            continue
+        out[(ndimage.binary_dilation(comp, iterations=1) & (a < thr)) | comp] = 0
+        removed += 1
+    return out, removed
+
+
+def fp_column_bounds(arr, region, fp_cols, has_icon=True):
+    """Lines between the columns of a sheet whose frames touch: valleys of the
+    column alpha profile near an even pitch, the icon gap being the deepest
+    wide valley in the right part of the sheet."""
+    x0, y0, x1, y1 = region
+    a = arr[y0:y1, x0:x1, 3] >= 150
+    prof = ndimage.uniform_filter1d(a.sum(0).astype(float), 9)
+    on = np.where(prof > 0.5)[0]
+    left, right = int(on[0]), int(on[-1]) + 1
+    span = right - left
+    fp_end = right
+    if has_icon:
+        lo, hi = int(left + span * 0.6), int(left + span * 0.95)
+        wide = ndimage.uniform_filter1d(prof, 21)
+        fp_end = lo + int(np.argmin(wide[lo:hi]))
+    p = (fp_end - left) / float(fp_cols)
+    cuts = []
+    for k in range(1, fp_cols):
+        c = left + k * p
+        a_, b_ = int(c - p * 0.3), int(c + p * 0.3) + 1
+        cuts.append(a_ + int(np.argmin(prof[a_:b_])))
+    if has_icon:
+        cuts.append(fp_end)
+    return [x0 + c for c in cuts]
+
+
+def fp_row_bounds(arr, region, row_c, x_end=None):
+    """Lines between the rows of a first-person sheet: just below each row's
+    arm cut (the steepest drop of the row alpha profile, where all the
+    forearms end).  Anything below it - e.g. a beam or flash rising from the
+    next row's gun - belongs to the next row, which the plain nearest-centre
+    split gets wrong on tightly packed sheets."""
+    x0, y0, x1, y1 = region
+    xe = x1 if x_end is None else int(x_end)
+    a = arr[y0:y1, x0:xe, 3] >= 150
+    prof = ndimage.uniform_filter1d(a.sum(1).astype(float), 3)
+    rs = np.diff(row_c).mean() if len(row_c) > 1 else (y1 - y0)
+    out = []
+    for r in range(len(row_c) - 1):
+        lo, hi = int(row_c[r] - y0 + 0.15 * rs), int(row_c[r + 1] - y0 - 0.15 * rs)
+        mid = (row_c[r] + row_c[r + 1]) / 2.0
+        if hi <= lo + 1:
+            out.append(mid)
+            continue
+        d = prof[lo:hi] - prof[lo + 2:hi + 2]
+        k = int(np.argmax(d))
+        if d[k] >= 0.5 * max(1.0, prof[lo + k]):
+            out.append(float(y0 + lo + k + 2))
+        else:
+            out.append(mid)
+    return out
+
+
+def weapon_frame_meta(fr, fh, fw):
+    """Measurements of one atlas frame (frame pixel coordinates)."""
+    b = weapon_body_mask(fr[..., 3])
+    rows = np.where(b.sum(1) >= 3)[0]
+    if not len(rows):
+        return None
+    top, bot = int(rows[0]), int(rows[-1]) + 1
+    cols = np.where(b.sum(0) >= 2)[0]
+    if not len(cols):
+        cols = np.where(b.any(0))[0]
+    band = b[max(0, bot - max(3, int(round(0.10 * fh)))):bot]
+    ys, xs = np.where(band)
+    edge = b[max(0, bot - 2):bot].any(0)
+    ex = np.where(edge)[0]
+    segs = []
+    if len(ex):
+        s0 = p0 = int(ex[0])
+        for x in ex[1:]:
+            if x > p0 + max(3, fw * 0.06):
+                segs.append((s0, p0 + 1))
+                s0 = int(x)
+            p0 = int(x)
+        segs.append((s0, p0 + 1))
+    segs = [(int(u), int(v)) for u, v in segs if v - u >= 3]
+    # other big separate blobs: two weapons in one frame (a slicing failure),
+    # or a big detached flash / thrown weapon in a fire frame
+    lab, n = ndimage.label(fr[..., 3] >= 128, structure=np.ones((3, 3)))
+    big = 0
+    if n > 1:
+        sizes = np.sort(ndimage.sum(np.ones_like(lab), lab, range(1, n + 1)))[::-1]
+        big = int(np.sum(sizes[1:] >= 0.3 * sizes[0]))
+    return {"top": top, "bot": bot, "artL": int(cols[0]), "artR": int(cols[-1]) + 1,
+            "gripX": float(xs.mean()) if len(xs) else float((cols[0] + cols[-1]) / 2.0),
+            "segs": segs, "body": b, "extra_bodies": big, "gap": fh - bot, "area": int(b.sum())}
+
+
+def weapon_row_meta(atlas, r, fw, fh, nf, arch):
+    """Per-weapon metadata the game uses to place, scale and light the
+    first-person sprite (all values in frame pixels)."""
+    frames = [atlas[r * fh:(r + 1) * fh, c * fw:(c + 1) * fw] for c in range(nf)]
+    fm = [weapon_frame_meta(f, fh, fw) for f in frames]
+    i = fm[0]
+    bad = []
+    if i is None or i["area"] < 40:
+        return {"top": 0, "bottom": fh, "gripX": fw // 2, "artL": 0, "artR": fw, "hands": "none",
+                "muzzle": None, "flashFrame": None, "frames": nf, "bad": True, "why": ["empty idle"]}
+    w = max(1, i["artR"] - i["artL"])
+    segs = i["segs"]
+    if len(segs) >= 2 and segs[0][1] < i["artL"] + 0.5 * w and segs[-1][0] > i["artL"] + 0.45 * w:
+        hands = "two"
+    elif not segs:
+        hands = "none"
+    else:
+        cx = (segs[0][0] + segs[-1][1]) / 2.0
+        hands = "right" if cx > i["artL"] + 0.55 * w else ("left" if cx < i["artL"] + 0.4 * w else "center")
+    if i["gap"] > 0.08 * fh:
+        bad.append("idle floats %d%%" % round(100.0 * i["gap"] / fh))
+    elif not segs:
+        bad.append("no hands at the bottom edge")
+    if i["extra_bodies"]:
+        bad.append("two weapons in the idle frame")
+    warn = []
+    for c in range(1, nf):
+        if fm[c] is None:
+            bad.append("frame %d empty" % c)
+        elif fm[c]["extra_bodies"]:
+            warn.append("f%d: 2 big blobs" % c)
+    # fire sequence: a gun never leaves the hands, so fire frames that show
+    # only the projectile in flight (no arm at the bottom edge) are skipped
+    seq = list(range(1, nf))
+    if arch not in WEAPON_MELEE and arch not in WEAPON_THROWN:
+        band = slice(int(fh * 0.88), fh)
+        arm0 = i["body"][band]
+        col0 = frames[0][band][..., :3].astype(int)
+
+        def holds(c):
+            f = fm[c]
+            if f is None or not f["segs"] or f["gap"] > 0.08 * fh:
+                return False
+            if not arm0.any():
+                return True
+            # are the idle frame's forearms still there (same place +-3px,
+            # same colours)?  A projectile-in-flight frame has none of them.
+            cc, bc = frames[c][band][..., :3].astype(int), f["body"][band]
+            best = 0
+            for dy in range(-3, 4):
+                for dx in range(-3, 4):
+                    sh = np.roll(np.roll(cc, dy, 0), dx, 1)
+                    shm = np.roll(np.roll(bc, dy, 0), dx, 1)
+                    best = max(best, int((arm0 & shm & (np.abs(sh - col0).sum(-1) < 90)).sum()))
+            return best >= 0.025 * arm0.sum()
+        keep = [c for c in seq if holds(c)]
+        if len(keep) >= 2:
+            seq = keep
+    # muzzle: bright pixels a fire frame adds to the idle frame (the baked flash)
+    muzzle, flash = None, None
+    if arch not in WEAPON_MELEE:
+        f0 = frames[0].astype(float)
+        best = None
+        for c in [c for c in seq if c <= 3]:
+            if arch in WEAPON_THROWN:
+                break
+            fc = frames[c].astype(float)
+            lum = fc[..., :3].mean(-1)
+            new = (fc[..., 3] >= 128) & (lum > 185) & (
+                (f0[..., 3] < 128) | (np.abs(fc[..., :3] - f0[..., :3]).sum(-1) > 150))
+            cnt = int(new.sum())
+            if best is None or cnt > best[0]:
+                best = (cnt, c, new)
+        if best and best[0] > 12:
+            ys, xs = np.where(best[2])
+            muzzle, flash = [int(round(np.median(xs))), int(round(np.median(ys)))], best[1]
+        else:
+            # no baked flash (or a thrown weapon): the topmost point of the art
+            b = i["body"]
+            ty = i["top"]
+            xs = np.where(b[ty:ty + 3].any(0))[0]
+            muzzle = [int(round(xs.mean())) if len(xs) else fw // 2, int(ty)]
+            flash = None if arch in WEAPON_THROWN else seq[0]
+    return {"top": i["top"], "bottom": i["bot"], "gripX": int(round(i["gripX"])),
+            "artL": i["artL"], "artR": i["artR"], "hands": hands,
+            "muzzle": muzzle, "flashFrame": flash, "frames": nf,
+            "seq": seq if seq != list(range(1, nf)) else None,
+            "bad": bool(bad), "why": bad, "warn": warn}
+
+
+def _weapon_extract(sheet, arr, region, nrows, ncols, fp_cols, thr, explicit):
+    """Slice the sheet into rows x (fp frames + icon) and register the
+    first-person frames on the arm cut (the row baseline)."""
+    cc = sheet.get("colCenters") if explicit else None
+    cb = sheet.get("colBounds") if explicit else None
+    cells, col_c, row_c, lab = grid_assign(arr, region, nrows, ncols, thr, col_centers=cc,
+                                           row_centers=sheet.get("rowCenters"), col_bounds=cb)
+    # Frames that touch each other merge into one blob and the column fit
+    # collapses. Detect that (frames far wider than the sheet allows) and
+    # rebuild the columns from the valleys of the column profile.
+    widths = [c[2] - c[0] for row in cells for c in row[:fp_cols] if c]
+    W = region[2] - region[0]
+    if not (cc or cb) and widths and (
+            np.median(widths) > 1.45 * W / ncols or max(widths) > 2.2 * np.median(widths)):
+        cb = fp_column_bounds(arr, region, fp_cols, has_icon=ncols > fp_cols)
+        cells, col_c, row_c, lab = grid_assign(arr, region, nrows, ncols, thr, row_centers=row_c, col_bounds=cb)
+        print("  (touching frames: columns rebuilt from profile valleys %s)" % [int(c) for c in cb])
+    # rows: split just below each row's arm cut
+    if nrows > 1 and not sheet.get("rowCenters"):
+        x_end = (col_c[fp_cols - 1] + col_c[fp_cols]) / 2.0 if ncols > fp_cols else None
+        if cb is not None and ncols > fp_cols:
+            x_end = cb[fp_cols - 1]
+        rb = sheet.get("rowBounds") or fp_row_bounds(arr, region, row_c, x_end)
+        cells, col_c, row_c, lab = grid_assign(arr, region, nrows, ncols, thr,
+                                               col_centers=None if cb is not None else col_c,
+                                               col_bounds=cb, row_bounds=rb)
+    arr = clean_alpha(arr, thr)
+
+    # First-person frames.  Every row is registered on its baseline: the
+    # lowest point of the weapon BODY (hands/arms are cut flat at the bottom
+    # edge).  Sparks, shells and flashes below the gun don't count, so rows no
+    # longer float.  Frames whose body ends slightly above the baseline are
+    # snapped down onto it; big lifts (thrown or swung frames) are kept.
+    fp, leaks, snapped = {}, 0, 0
+    for r in range(nrows):
+        row_frames = []
+        for c in range(fp_cols):
+            if not cells[r][c]:
+                continue
+            img, box = cell_image(arr, lab, region, cells[r][c])
+            img = drop_bottom_slivers(img, box, row_bottom_guess=None)
+            img, nl = drop_cell_leaks(img, box, lab, region, cells[r][c][4], thr)
+            leaks += nl
+            body = weapon_body_mask(img[..., 3])
+            rows_ = np.where(body.sum(1) >= 3)[0]
+            if not len(rows_):
+                rows_ = np.where(img[..., 3].max(1) > 0)[0]
+            row_frames.append((c, img, box, box[1] + int(rows_[-1]) + 1, box[1] + int(rows_[0])))
+        if not row_frames:
+            continue
+        baseline = max(f[3] for f in row_frames)
+        tol = 0.08 * (baseline - min(f[4] for f in row_frames))
+        for c, img, box, bb, _ in row_frames:
+            shift = baseline - bb if 0 < baseline - bb <= tol else 0
+            snapped += shift > 0
+            fp[(r, c)] = (img, box, col_c[c], baseline, shift)
+    left = right = up = 1
+    for (img, box, cx, baseline, shift) in fp.values():
+        left = max(left, cx - box[0])
+        right = max(right, box[2] - cx)
+        up = max(up, baseline - (box[1] + shift))
+    lw, rw, fh = int(np.ceil(left)), int(np.ceil(right)), int(np.ceil(up))
+    fw = lw + rw
+    fp_atlas = np.zeros((fh * nrows, fw * fp_cols, 4), np.uint8)
+    for (r, c), (img, box, cx, baseline, shift) in fp.items():
+        px = int(round(box[0] - cx + lw))
+        py = int(round(box[1] + shift - baseline + fh))
+        h, w = img.shape[:2]
+        sy0 = max(0, -py)
+        h = min(h, fh - py)                   # nothing below the arm cut
+        if h <= sy0:
+            continue
+        src = img[sy0:h, :w]
+        dst = fp_atlas[r * fh + py + sy0:r * fh + py + h, c * fw + px:c * fw + px + w]
+        src = src[:dst.shape[0], :dst.shape[1]]
+        dst[:] = np.where(src[..., 3:4] > 0, src, dst)
+
+    # Icons (last column): trimmed, centred in a uniform cell.
+    icons = []
+    for r in range(nrows):
+        comps = cells[r][ncols - 1] if ncols > fp_cols else None
+        icons.append(cell_image(arr, lab, region, comps)[0] if comps else None)
+    return fp_atlas, fw, fh, icons, {"leaks": leaks, "snapped": snapped}
+
+
+def _icon_in_last_frame(atlas, nrows, fw, fh, fp_cols):
+    """6 frames + icon sheets sliced as 7 + icon put the side-view icon into
+    the last frame: it floats above the arm cut and is wider than tall."""
+    hits = 0
+    for r in range(nrows):
+        m = weapon_frame_meta(atlas[r * fh:(r + 1) * fh, (fp_cols - 1) * fw:fp_cols * fw], fh, fw)
+        if m is None:
+            continue
+        if m["gap"] > 0.08 * fh and (m["artR"] - m["artL"]) > (m["bot"] - m["top"]):
+            hits += 1
+    return hits >= max(1, 0.5 * nrows)
+
+
 def process_weapon_set(sheet):
     arr = load_rgba(sheet["src"])
     thr = sheet.get("alphaThreshold", 40)
@@ -712,77 +1075,15 @@ def process_weapon_set(sheet):
     nrows = len(sheet["weapons"])
     ncols = sheet.get("cols", 8)
     fp_cols = sheet.get("fpFrames", 7)
-    cells, col_c, row_c, lab = grid_assign(arr, region, nrows, ncols, thr,
-                                           col_centers=sheet.get("colCenters"),
-                                           row_centers=sheet.get("rowCenters"))
-    # Frames that touch each other merge into one blob and the column fit
-    # collapses. Detect that (frames far wider than the sheet allows) and
-    # rebuild the columns: icon column found by the widest gap on the right,
-    # the rest split evenly into the first-person frames.
-    widths = [c[2] - c[0] for row in cells for c in row[:fp_cols] if c]
-    W = region[2] - region[0]
-    if not sheet.get("colCenters") and widths and (np.median(widths) > 1.45 * W / ncols or max(widths) > 2.2 * np.median(widths)):
-        a0 = arr[region[1]:region[3], region[0]:region[2], 3] >= 150
-        prof = a0.sum(0)
-        on = np.where(prof > 0)[0]
-        left, right = int(on[0]), int(on[-1])
-        lo = int(left + (right - left) * 0.6)
-        best, run, bstart, start = 0, 0, lo, lo
-        for x in range(lo, right):
-            if prof[x] == 0:
-                if run == 0: start = x
-                run += 1
-                if run > best: best, bstart = run, start
-            else:
-                run = 0
-        icon_start = bstart + best if best else int(left + (right - left) * 0.8)
-        fp_end = bstart if best else icon_start
-        pitch = (fp_end - left) / fp_cols
-        cc = [region[0] + left + pitch * (i + 0.5) for i in range(fp_cols)]
-        cc.append(region[0] + (icon_start + right) / 2.0)
-        cells, col_c, row_c, lab = grid_assign(arr, region, nrows, ncols, thr, col_centers=cc, row_centers=row_c)
-        print("  (touching frames: rebuilt columns, pitch %.0fpx)" % pitch)
-    arr = clean_alpha(arr, thr)
+    fp_atlas, fw, fh, icons, info = _weapon_extract(sheet, arr, region, nrows, ncols, fp_cols, thr, True)
+    if "cols" not in sheet and "fpFrames" not in sheet and _icon_in_last_frame(fp_atlas, nrows, fw, fh, fp_cols):
+        # 6 first-person frames + icon: slice again with 7 columns
+        print("  (6 frames + icon layout detected)")
+        ncols, fp_cols = 7, 6
+        fp_atlas, fw, fh, icons, info = _weapon_extract(sheet, arr, region, nrows, ncols, fp_cols, thr, False)
 
-    # First-person frames: bottom of each row = the cut edge of the hands.
-    fp = {}
-    for r in range(nrows):
-        row_frames = []
-        for c in range(fp_cols):
-            if not cells[r][c]:
-                continue
-            img, box = cell_image(arr, lab, region, cells[r][c])
-            img = drop_bottom_slivers(img, box, row_bottom_guess=None)
-            row_frames.append((c, img, box))
-        bottom = max(b[3] for _, _, b in row_frames)
-        for c, img, box in row_frames:
-            fp[(r, c)] = (img, box, col_c[c], bottom)
-    left = right = up = 1
-    for (img, box, cx, bottom) in fp.values():
-        left = max(left, cx - box[0]); right = max(right, box[2] - cx)
-        up = max(up, bottom - box[1])
-    lw, rw, fh = int(np.ceil(left)), int(np.ceil(right)), int(np.ceil(up))
-    fw = lw + rw
-    fp_atlas = np.zeros((fh * nrows, fw * fp_cols, 4), np.uint8)
-    for (r, c), (img, box, cx, bottom) in fp.items():
-        px = int(round(box[0] - cx + lw)) + c * fw
-        py = int(round(box[1] - bottom + fh)) + r * fh
-        h, w = img.shape[:2]
-        dst = fp_atlas[py:py + h, px:px + w]
-        src = img[:dst.shape[0], :dst.shape[1]]
-        dst[:] = np.where(src[..., 3:4] > 0, src, dst)
-
-    # Icons (column 8): trimmed, centred in a uniform square-ish cell.
-    icons = []
-    for r in range(nrows):
-        comps = cells[r][ncols - 1] if ncols > fp_cols else []
-        if comps:
-            img, box = cell_image(arr, lab, region, comps)
-            icons.append(img)
-        else:
-            icons.append(None)
-    iw = max(i.shape[1] for i in icons if i is not None) + 4
-    ih = max(i.shape[0] for i in icons if i is not None) + 4
+    iw = max([i.shape[1] for i in icons if i is not None] or [8]) + 4
+    ih = max([i.shape[0] for i in icons if i is not None] or [8]) + 4
     icon_atlas = np.zeros((ih * nrows, iw, 4), np.uint8)
     for r, img in enumerate(icons):
         if img is None:
@@ -794,18 +1095,37 @@ def process_weapon_set(sheet):
 
     apply_erase(fp_atlas, fw, fh, sheet.get("erase", []))
 
+    # per-weapon placement metadata
+    metas = []
+    for r, w in enumerate(sheet["weapons"]):
+        arch = w.get("archetype", sheet.get("archetype", "rifle"))
+        m = weapon_row_meta(fp_atlas, r, fw, fh, fp_cols, arch)
+        if w.get("bad") is not None:          # manual override in the config
+            m["bad"] = bool(w["bad"])
+            m["why"] = (m.get("why") or []) + ["config"]
+        metas.append(m)
+    nbad = sum(1 for m in metas if m["bad"])
+
     fp_out, icon_out = sheet["outFP"], sheet["outIcons"]
     save_png(fp_atlas, fp_out)
     save_png(icon_atlas, icon_out)
-    print("  %s: %d weapons, fp %dx%d, icon %dx%d" % (sheet["id"], nrows, fw, fh, iw, ih))
+    print("  %s: %d weapons, %d frames, fp %dx%d, icon %dx%d, %d leaks removed, %d frames snapped, %d bad%s" % (
+        sheet["id"], nrows, fp_cols, fw, fh, iw, ih, info["leaks"], info["snapped"], nbad,
+        "".join("\n    row %d %s: %s" % (r, "BAD" if m["bad"] else "warn", ", ".join(m["why"] + m.get("warn", [])))
+                for r, m in enumerate(metas) if m["bad"] or m.get("warn"))))
+    weapons = []
+    for i, w in enumerate(sheet["weapons"]):
+        m = {k: v for k, v in metas[i].items() if k not in ("why", "warn") and v is not None}
+        e = dict({"archetype": sheet.get("archetype", "rifle"), "rarity": sheet.get("rarity", "common")},
+                 **{k: v for k, v in w.items() if k != "bad"}, row=i)
+        e["fp"] = m
+        weapons.append(e)
     return {
         "id": sheet["id"],
         "fpFile": fp_out, "fpW": fw, "fpH": fh, "fpFrames": fp_cols,
         "iconFile": icon_out, "iconW": iw, "iconH": ih,
         "muzzle": sheet.get("muzzle", [0.45, 0.15]),
-        "weapons": [dict({"archetype": sheet.get("archetype", "rifle"),
-                          "rarity": sheet.get("rarity", "common")}, **w, row=i)
-                    for i, w in enumerate(sheet["weapons"])],
+        "weapons": weapons,
         "source": sheet["src"],
     }
 
@@ -1223,14 +1543,19 @@ def discover_unconfigured(sheets, ignore=()):
 def main():
     with open(CONFIG) as f:
         cfg = json.load(f)
-    only = set(sys.argv[1:])
-    manifest = {"version": 1, "monsters": [], "weaponSets": [], "spriteSets": [], "textureSets": [], "doorSets": [], "animatedTextureSets": []}
-    if os.path.exists(MANIFEST):
-        with open(MANIFEST) as f:
-            manifest.update(json.load(f))
+    # usage: process_art.py [sheet ids...] [--type weapon_set] [--type ...]
+    args, types = sys.argv[1:], set()
+    while "--type" in args:
+        i = args.index("--type")
+        types.add(args[i + 1])
+        args = args[:i] + args[i + 2:]
+    only = set(args)
     cfg["sheets"] += discover_unconfigured(cfg["sheets"], cfg.get("ignore", []))
+    done = []
     for sheet in cfg["sheets"]:
         if only and sheet["id"] not in only:
+            continue
+        if types and sheet["type"] not in types:
             continue
         key, fn = PROCESSORS[sheet["type"]]
         srcs = sheet.get("srcs") or [sheet["src"]]
@@ -1239,11 +1564,26 @@ def main():
             print("[%s] %s: SKIPPED - waiting for %s" % (sheet["type"], sheet["id"], ", ".join(missing)))
             continue
         print("[%s] %s" % (sheet["type"], sheet["id"]))
-        entry = fn(sheet)
-        manifest[key] = [e for e in manifest[key] if e["id"] != entry["id"]] + [entry]
+        done.append((key, fn(sheet)))
+    # Re-read the manifest just before writing and only replace the entries
+    # processed in this run (in place, keeping their order), so a partial run
+    # never drops or reorders anything else.
+    manifest = {"version": 1, "monsters": [], "weaponSets": [], "spriteSets": [], "textureSets": [], "doorSets": [], "animatedTextureSets": []}
+    if os.path.exists(MANIFEST):
+        with open(MANIFEST) as f:
+            manifest.update(json.load(f))
+    for key, entry in done:
+        lst = manifest.setdefault(key, [])
+        idx = next((i for i, e in enumerate(lst) if e["id"] == entry["id"]), None)
+        if idx is None:
+            lst.append(entry)
+        else:
+            lst[idx] = entry
     os.makedirs(os.path.dirname(MANIFEST), exist_ok=True)
-    with open(MANIFEST, "w") as f:
+    tmp = MANIFEST + ".tmp"
+    with open(tmp, "w") as f:
         json.dump(manifest, f, indent=1)
+    os.replace(tmp, MANIFEST)
     print("wrote", os.path.relpath(MANIFEST, ROOT))
 
 

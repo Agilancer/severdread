@@ -375,6 +375,7 @@ export class Renderer {
   }
 
   // Draw a textured rect in low-res pixel coordinates (0,0 = top-left).
+  // opts: {tint, add, hue, additive (ONE/ONE), alpha (SRC_ALPHA blend)}
   drawQuad(tex, x, y, w, h, uv = [0, 0, 1, 1], opts = {}) {
     const gl = this.gl;
     const { p, u } = this.progQuad;
@@ -388,8 +389,10 @@ export class Renderer {
     gl.uniform4fv(u.uTint, opts.tint || [1, 1, 1, 1]);
     gl.uniform3fv(u.uAdd, opts.add || [0, 0, 0]);
     gl.uniform1f(u.uHue, opts.hue || 0);
-    gl.uniform1i(u.uAdditive, opts.additive ? 1 : 0);
-    if (opts.additive) { gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); } else gl.disable(gl.BLEND);
+    gl.uniform1i(u.uAdditive, opts.additive ? 1 : opts.alpha ? 2 : 0);
+    if (opts.additive) { gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); }
+    else if (opts.alpha) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); }
+    else gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tex || this.whiteTex);
     gl.uniform1i(u.uTex, 0);

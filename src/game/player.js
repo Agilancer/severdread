@@ -4,7 +4,7 @@ import { input, consume } from '../engine/input.js';
 import { ARCHETYPES } from '../data/weapons.js';
 import { computeStats } from './stats.js';
 import { firePlayerWeapon, damagePlayer, explode, damageMonster } from './combat.js';
-import { F } from './grid.js';
+import { F, HAZ } from './grid.js';
 import { clamp, lerp, approach } from '../core/math.js';
 import { fx } from '../core/rng.js';
 import * as B from '../data/balance.js';
@@ -38,6 +38,10 @@ export class Player {
     this.switchT = 0;            // weapon lower/raise
     this.shotCount = 0;
     this.lastSafe = null;
+    // recent safe spots (>= 1 s apart) for respawning after falls / pits
+    this.safeRing = [{ x: 0, z: 0, y: 0, valid: false }, { x: 0, z: 0, y: 0, valid: false }, { x: 0, z: 0, y: 0, valid: false }];
+    this.safeRingIdx = 0; this.safeRingT = -99; this.lastRescueT = -99;
+    this.hazardT = 0; this.pitT = 0; this.groundSlow = 1; this.onStair = false; this.coyote = 0;
     this.bobPhase = 0; this.bobAmt = 0;
     this.swayX = 0; this.swayY = 0;
     this.landDip = 0;
@@ -75,7 +79,10 @@ export class Player {
     this.vx = this.vy = this.vz = 0;
     this.yaw = yaw; this.pitch = 0;
     this.onGround = true;
-    this.lastSafe = { x, z, y: this.y };
+    this.lastSafe = { x, z, y: this.y, valid: true };
+    for (const s of this.safeRing) s.valid = false;
+    this.safeRingT = -99; this.lastRescueT = -99;
+    this.hazardT = 0; this.pitT = 0; this.groundSlow = 1; this.coyote = 0;
     this.dead = false;
     this.keys.clear();
     this.tempArmor = 0;
@@ -140,8 +147,7 @@ export class Player {
     const rx = -Math.sin(this.yaw), rz = Math.cos(this.yaw);
     const wishX = fx_ * my + rx * mx, wishZ = fz * my + rz * mx;
     let speed = RUN * st.moveSpeed * (this.adrenalineT > 0 ? 1 + (ab.adrenaline || 0) : 1) * (this.slowT > 0 ? 0.6 : 1);
-    const flags = w.cellFlags(this.x, this.z);
-    if (flags & F.WATER) speed *= 0.75;
+    speed *= this.groundSlow;   // water / lava underfoot (set by updateHazards)
 
     // dash
     this.dashRecharge += dt;
@@ -233,24 +239,25 @@ export class Player {
     if (this.dashT <= 0) this.vy -= grav * dt;
     this.coyote = (this.coyote || 0) - dt;
 
-    // horizontal move with collision
+    // horizontal move with collision (moveActor also follows rising stairs)
     const wasGround = this.onGround;
-    const preY = this.y;
+    const preY = this.y, preX = this.x, preZ = this.z;
     w.moveActor(this, this.vx * dt, this.vz * dt, this.onGround ? 0.55 : 0.35);
     // vertical
     const ground = w.groundUnder(this.x, this.z, this.radius, this.y, 0.55);
-    const ceil = w.ceilingOver(this.x, this.z, this.radius);
+    const gCell = w.groundHit.cell, gBox = w.groundHit.box;
+    const ceil = w.ceilingOver(this.x, this.z, this.radius, this.y);
     let ny = this.y + this.vy * dt;
     if (ny + this.height > ceil && this.vy > 0) { ny = ceil - this.height; this.vy = 0; }
+    let landed = false, fall = 0;
     if (ground > -Infinity && ny <= ground) {
-      if (!wasGround) this.onLand(this.fallStartY - ground);
+      if (!wasGround) { fall = this.fallStartY - ground; landed = true; this.onLand(fall); }
       // step up smoothly
       ny = ground;
       this.vy = 0;
       this.onGround = true;
       this.airJumpsUsed = 0;
       this.jetFuel = ab.jetpack || 0;
-      if (!(flags & (F.HAZARD | F.VOID))) this.lastSafe = { x: this.x, z: this.z, y: ground };
     } else {
       if (wasGround && ny < preY - 0.6) { this.onGround = false; this.coyote = 0.12; this.fallStartY = preY; }
       else if (ny < (ground > -Infinity ? ground : -1e9) + 0.01) { this.onGround = true; }
@@ -258,20 +265,24 @@ export class Player {
       if (wasGround && !this.onGround) this.fallStartY = this.y;
       if (!this.onGround && this.vy > 0) this.fallStartY = Math.max(this.fallStartY, ny);
     }
-    // keep glued to the ground when walking down small steps
-    if (wasGround && this.vy <= 0 && ground > -Infinity && ny - ground < 0.6 && ny > ground) { ny = ground; this.onGround = true; }
+    // keep glued to the ground when walking down small steps; on stairs the
+    // glue scales with the distance moved so running / dashing down them never
+    // turns into a string of tiny falls
+    const onStair = gCell >= 0 && w.grid.stairDir[gCell] !== 0;
+    // (rise <= 1 per cell: the floor drops at most the distance moved, plus the
+    // 0.7 r footprint still resting on the step behind)
+    const glue = onStair || this.onStair ? Math.max(0.6, Math.hypot(this.x - preX, this.z - preZ) * 1.05 + 0.25) : 0.6;
+    if (wasGround && this.vy <= 0 && ground > -Infinity && ny - ground < glue && ny > ground) { ny = ground; this.onGround = true; }
+    this.onStair = onStair && this.onGround;
+    // walked off a ledge (not a jump): allow a late jump
+    if (wasGround && !this.onGround && this.vy <= 0) this.coyote = 0.12;
     this.y = ny;
 
-    // hazards
-    const cf = w.cellFlags(this.x, this.z);
-    if ((cf & F.HAZARD) && this.onGround && this.invuln <= 0) {
-      const th = g.world.theme.hazard;
-      this.hazardT = (this.hazardT || 0) - dt;
-      if (this.hazardT <= 0) {
-        this.hazardT = 0.5;
-        if (th !== 'water') damagePlayer(g, Math.max(3, this.maxHp * 0.06), th === 'lava' ? 'fire' : 'poison');
-      }
-    }
+    // hazards, pits, safe spots
+    this.updateHazards(dt, gCell, gBox, landed, fall);
+    if (this.dead) return;
+    // stuck inside geometry that cannot be pushed out of: rescue
+    if (this.stuck > 30) { this.stuck = 0; this.rescue(0); }
     // fell into the void
     if (this.y < w.level.voidY + 3) this.fellOut();
 
@@ -308,17 +319,87 @@ export class Player {
     }
   }
 
-  fellOut() {
+  // Per-cell floor hazards (only while standing on that cell's own floor, not
+  // on a crate / bridge above it), deep-pit rescue and the last safe spot.
+  updateHazards(dt, cell, box, landed, fall) {
+    const g = this.game, w = g.world, gr = w.grid;
+    let haz = HAZ.NONE, pit = false;
+    if (this.onGround && cell >= 0 && box < 0 && Math.abs(this.y - gr.floorAtPos(cell, this.x, this.z)) < 0.05) {
+      haz = w.hazAt(cell);
+      pit = (gr.flags[cell] & F.PIT) !== 0 && !(gr.flags[cell] & F.BRIDGE);
+    }
+    this.groundSlow = haz === HAZ.WATER ? 0.75 : haz === HAZ.LAVA ? 0.6 : 1;
+    if (haz === HAZ.LAVA || haz === HAZ.POISON || haz === HAZ.SPIKES) {
+      if (landed && haz === HAZ.SPIKES && this.invuln <= 0) {
+        // impaled: the harder the fall, the worse
+        damagePlayer(g, this.maxHp * (0.1 + Math.max(0, fall) * 0.04), 'physical');
+        this.hazardT = 0.5;
+        if (this.dead) return;
+        if (pit) { this.rescue(0); return; }
+      }
+      if (this.invuln <= 0) {
+        this.hazardT -= dt;
+        if (this.hazardT <= 0) {
+          this.hazardT = 0.5;
+          if (haz === HAZ.LAVA) damagePlayer(g, Math.max(3, this.maxHp * 0.08), 'fire', { status: 'burn' });
+          else if (haz === HAZ.POISON) damagePlayer(g, Math.max(2, this.maxHp * 0.05), 'poison');
+          else damagePlayer(g, Math.max(3, this.maxHp * 0.08), 'physical');
+          if (this.dead) return;
+        }
+      }
+    } else this.hazardT = 0;
+    // deep pit: no way to climb out, pull the player back after a moment
+    if (pit) {
+      this.pitT += dt;
+      if (this.pitT > 0.8) { this.rescue(0.08, haz === HAZ.LAVA ? 'fire' : haz === HAZ.POISON ? 'poison' : 'physical'); return; }
+    } else this.pitT = 0;
+    // remember safe ground (footprint clear of void / pits / damaging floors)
+    if (this.onGround && (cell >= 0 || box >= 0) && w.safeFooting(this.x, this.z, this.radius + 0.25)) {
+      const s = this.lastSafe || (this.lastSafe = { x: 0, z: 0, y: 0, valid: true });
+      s.x = this.x; s.z = this.z; s.y = this.y; s.valid = true;
+      if (g.time - this.safeRingT >= 1) {
+        const r = this.safeRing[this.safeRingIdx];
+        r.x = s.x; r.z = s.z; r.y = s.y; r.valid = true;
+        this.safeRingIdx = (this.safeRingIdx + 1) % this.safeRing.length;
+        this.safeRingT = g.time;
+      }
+    }
+  }
+
+  // A recent safe spot that is still free. Repeated rescues in a short time
+  // walk back through older spots in case the newest one keeps failing.
+  pickSafeSpot() {
+    const w = this.game.world, ring = this.safeRing, n = ring.length;
+    const recent = this.game.time - this.lastRescueT < 3;
+    const list = [];
+    if (!recent && this.lastSafe) list.push(this.lastSafe);
+    for (let k = 1; k <= n; k++) {
+      // newest first normally, oldest first after a recent rescue
+      const idx = recent ? (this.safeRingIdx + k - 1) % n : (this.safeRingIdx - k + n * 2) % n;
+      list.push(ring[idx]);
+    }
+    if (recent && this.lastSafe) list.push(this.lastSafe);
+    for (const s of list) if (s && s.valid !== false && w.canOccupy(s.x, s.z, this.radius, s.y, this.height, 0.6)) return s;
+    const L = w.level;
+    return { x: L.start.x, z: L.start.z, y: w.floorAt(L.start.x, L.start.z) ?? 0 };
+  }
+
+  // Teleport back to safe ground (void falls, deep pits, stuck in geometry)
+  rescue(dmgPct = 0.15, element = 'physical') {
     const g = this.game;
-    if (!this.stats.abilities.featherfall) damagePlayer(g, this.maxHp * 0.15, 'physical');
+    if (dmgPct > 0 && !(element === 'physical' && this.stats.abilities.featherfall)) damagePlayer(g, this.maxHp * dmgPct, element);
     if (this.dead) return;
-    const s = this.lastSafe || { x: g.world.level.start.x, z: g.world.level.start.z, y: 0 };
-    this.x = s.x; this.z = s.z; this.y = s.y + 0.1;
+    const s = this.pickSafeSpot();
+    this.x = s.x; this.z = s.z; this.y = s.y + 0.05;
     this.vx = this.vy = this.vz = 0;
-    this.invuln = 1;
+    this.onGround = true; this.pitT = 0; this.hazardT = 0; this.coyote = 0;
+    this.invuln = Math.max(this.invuln, 1);
+    this.lastRescueT = g.time;
     g.post.warp = 0.6;
     g.sfx('teleport', { pitch: 1.5, volume: 0.6 });
   }
+
+  fellOut() { this.rescue(0.15, 'physical'); }
 
   touchingWall() {
     const w = this.game.world;
@@ -428,7 +509,10 @@ export class Player {
 
   // First-person weapon frame + screen offset (DOOM-style bob).
   // Returns {frame, ox, oy} in low-res pixels.
-  weaponView(lowH) {
+  // seq: the fire frames to play (per-weapon, from the art metadata);
+  // hold: share of the animation the first of them stays up (the flash frame
+  // of a gun has to be seen even at a high fire rate / low frame rate).
+  weaponView(lowH, seq = [1, 2, 3, 4, 5, 6], hold = 0) {
     const s = lowH / 200;
     // classic figure-eight bob: horizontal swings once per two steps, vertical dips every step
     const amp = this.bobAmt;
@@ -446,7 +530,9 @@ export class Player {
     let frame = 0;
     if (this.fireAnim >= 0) {
       const p = this.fireAnim / this.fireAnimLen;
-      frame = 1 + Math.min(5, Math.floor(p * 6));
+      const n = seq.length;
+      const k = hold > 0 && n > 1 ? (p < hold ? 0 : 1 + Math.floor(((p - hold) / (1 - hold)) * (n - 1))) : Math.floor(p * n);
+      frame = seq[Math.max(0, Math.min(n - 1, k))];
       oy += Math.sin(Math.min(1, p * 2) * Math.PI) * 3 * s; // recoil kick
       ox *= 0.4; // steady the gun while firing, like the original
     }

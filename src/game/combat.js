@@ -39,9 +39,8 @@ export function damageMonster(game, m, amount, o = {}) {
     if (o.dir && m.def.boss !== true) { m.kx += o.dir[0] * (o.knock || 0.6); m.kz += o.dir[1] * (o.knock || 0.6); }
     if (!m.def.boss && fx.chance(0.25) && m.state !== 'attack') { m.state = 'pain'; m.stateT = 0.18; }
     game.sfx(m.def.category === 'robot' || m.def.category === 'construct' ? 'hit_metal' : 'hit', { dist: m.distToPlayer, pitch: o.crit ? 1.3 : 1 });
-    const col = o.crit ? [1, 0.9, 0.2] : elemColor(el);
-    game.world.burst(m.x, m.y + m.height * 0.6, m.z, m.def.category === 'robot' ? [1, 0.75, 0.3] : [0.75, 0.05, 0.05], o.crit ? 8 : 4, { speed: 3.5, add: m.def.category === 'robot', life: 0.5 });
-    void col;
+    // blood spray (merged per monster per frame: shotgun pellets make one big spray)
+    if (game.world.gore) game.world.gore.hit(m, o);
   }
   game.damageNumber(m.x, m.y + m.height + 0.2, m.z, dmg, o.crit, o.isDot ? ELEMENTS[el]?.color : o.crit ? '#ffe040' : '#ffffff');
   // on-hit status
@@ -121,6 +120,7 @@ export function damagePlayer(game, amount, element = 'physical', o = {}) {
   game.post.flash = [0.8, 0.0, 0.0, Math.min(0.45, 0.12 + dmg / p.maxHp)];
   game.shake(Math.min(0.35, 0.05 + dmg / p.maxHp));
   game.sfx('player_hurt');
+  if (o.melee && o.source && game.lens) game.lens.onMeleeHit(o.source);
   if (o.source && st.abilities.thorns_aura && o.melee) damageMonster(game, o.source, dmg * st.abilities.thorns_aura, { trueDamage: true, noProc: true });
   if (o.source && st.thorns > 0 && o.melee) damageMonster(game, o.source, st.thorns * (1 + p.level * 0.1), { trueDamage: true, noProc: true });
   if (st.abilities.retaliation && p.retaliateCD <= 0) {
@@ -152,6 +152,7 @@ export function explode(game, x, y, z, radius, dmg, element, owner, o = {}) {
   w.flash(x, y, z, col, radius * 3.5, 0.25, 2.2);
   w.burst(x, y, z, col, o.small ? 10 : 26, { speed: radius * 4, life: 0.6, size: 0.25, gravity: 2 });
   w.burst(x, y, z, [0.35, 0.33, 0.32], o.small ? 3 : 8, { speed: radius * 1.2, life: 1.2, size: 0.6, cell: 2, add: false, gravity: -1.5, drag: 2 });
+  if (w.gore) w.gore.scorch(x, y, z, radius, o.small);
   if (!o.silent) game.sfx(o.small ? 'hit' : 'explosion', { dist: Math.hypot(x - game.player.x, z - game.player.z), pitch: o.small ? 1.5 : 1 });
   if (!o.small) game.shake(clamp(0.5 - Math.hypot(x - game.player.x, z - game.player.z) * 0.04, 0, 0.4));
   if (owner === 'player') {
@@ -159,14 +160,16 @@ export function explode(game, x, y, z, radius, dmg, element, owner, o = {}) {
       if (m.dead || m === o.skip) continue;
       const d = Math.hypot(m.x - x, (m.y + m.height * 0.5) - y, m.z - z);
       if (d > radius + m.radius) continue;
+      // no damage through walls / floors: the blast needs a line to the body or the head
+      if (!w.los(x, y, z, m.x, m.y + m.height * 0.5, m.z) && !w.los(x, y, z, m.x, m.y + m.height * 0.9, m.z)) continue;
       const k = 1 - Math.max(0, d - m.radius) / radius * 0.6;
       const dir = [(m.x - x) / (d || 1), (m.z - z) / (d || 1)];
-      damageMonster(game, m, dmg * k, { element, dir, knock: 1.5, statusChance: o.statusChance || 0.15, crit: o.crit });
+      damageMonster(game, m, dmg * k, { element, dir, knock: 1.5, statusChance: o.statusChance || 0.15, crit: o.crit, explosive: true });
     }
   } else {
     const p = game.player;
     const d = Math.hypot(p.x - x, (p.y + 0.6) - y, p.z - z);
-    if (d < radius + p.radius) damagePlayer(game, dmg * (1 - Math.max(0, d - p.radius) / radius * 0.6), element, { status: ELEMENTS[element]?.status });
+    if (d < radius + p.radius && (w.los(x, y, z, p.x, p.y + 0.8, p.z) || w.los(x, y, z, p.x, p.y + 1.4, p.z))) damagePlayer(game, dmg * (1 - Math.max(0, d - p.radius) / radius * 0.6), element, { status: ELEMENTS[element]?.status });
   }
 }
 
@@ -209,7 +212,10 @@ export function firePlayerWeapon(game, weapon) {
   const up = [-Math.cos(yaw) * Math.sin(pitch), Math.cos(pitch), -Math.sin(yaw) * Math.sin(pitch)];
   const eye = p.eyePos();
   // muzzle slightly right/below the eye
-  const mz = [eye[0] + fwd[0] * 0.35 + right[0] * 0.12 - up[0] * 0.14, eye[1] + fwd[1] * 0.35 - up[1] * 0.14, eye[2] + fwd[2] * 0.35 + right[2] * 0.12 - up[2] * 0.14];
+  // shots leave from the sprite's on-screen muzzle when known (projected 0.35 in front of the eye)
+  const ndc = p.muzzleNDC, tanV = Math.tan((((game.settings?.fov) || 80) * Math.PI) / 360), asp = game.renderer.lowW / game.renderer.lowH;
+  const mr = ndc ? Math.max(-0.4, Math.min(0.4, ndc[0] * tanV * asp * 0.35)) : 0.12, mu = ndc ? Math.max(-0.3, Math.min(0.1, ndc[1] * tanV * 0.35)) : -0.14;
+  const mz = [eye[0] + fwd[0] * 0.35 + right[0] * mr + up[0] * mu, eye[1] + fwd[1] * 0.35 + up[1] * mu, eye[2] + fwd[2] * 0.35 + right[2] * mr + up[2] * mu];
   const ab = st.abilities;
   p.shotCount++;
   let critForced = false;
@@ -231,7 +237,7 @@ export function firePlayerWeapon(game, weapon) {
       if (da > arc / 2 && d > m.radius + 0.3) continue;
       if (m.y > p.y + 1.6 || m.y + m.height < p.y - 0.4) continue;
       const crit = critForced || fx.chance(st.critChance);
-      damageMonster(game, m, baseDmg * (crit ? st.critMult * (critForced ? 2 : 1) : 1), { element: el, crit, dir: [dx / (d || 1), dz / (d || 1)], knock: (arch.melee.knockback || 2) * 0.3, statusChance: weapon.statusChance, chain: has('chain') ? 2 : 0 });
+      damageMonster(game, m, baseDmg * (crit ? st.critMult * (critForced ? 2 : 1) : 1), { element: el, crit, dir: [dx / (d || 1), dz / (d || 1)], knock: (arch.melee.knockback || 2) * 0.3, statusChance: weapon.statusChance, chain: has('chain') ? 2 : 0, melee: true });
       hits++;
     }
     if (hits) game.shake(0.08);
@@ -305,7 +311,7 @@ export function firePlayerWeapon(game, weapon) {
     } else if (has('slider')) {
       // floor + ceiling pair joined by an energy beam
       const f = game.world.floorAt(p.x, p.z) ?? p.y;
-      const c = Math.min(game.world.ceilingOver(p.x, p.z, 0.3), f + 4);
+      const c = Math.min(game.world.ceilingOver(p.x, p.z, 0.3, f), f + 4);
       const pairId = fx.int(1, 1e9);
       const flat = Math.hypot(d[0], d[2]) || 1;
       const hv = [d[0] / flat * speed * 0.8, 0, d[2] / flat * speed * 0.8];
@@ -352,7 +358,7 @@ function hitscan(game, muzzle, eye, d, range, dmg, el, weapon, arch, critForced)
   let n = 0;
   for (const h of hits) {
     const crit = critForced || fx.chance(st.critChance);
-    damageMonster(game, h.m, dmg * (crit ? st.critMult * (critForced ? 2 : 1) : 1), { element: el, crit, dir: [d[0], d[2]], knock: arch.proj === 'rail' ? 1.2 : 0.2, statusChance: weapon.statusChance, chain: arch.chain || (weapon.patterns?.some((x) => x.id === 'chain') ? 2 : 0) });
+    damageMonster(game, h.m, dmg * (crit ? st.critMult * (critForced ? 2 : 1) : 1), { element: el, crit, dir: [d[0], d[2]], knock: arch.proj === 'rail' ? 1.2 : 0.2, statusChance: weapon.statusChance, chain: arch.chain || (weapon.patterns?.some((x) => x.id === 'chain') ? 2 : 0), hitPos: [eye[0] + d[0] * h.t, eye[1] + d[1] * h.t, eye[2] + d[2] * h.t] });
     n++;
     if (n > pierce) { endT = h.t; break; }
   }
@@ -460,23 +466,46 @@ export function updateProjectiles(game, dt) {
     const sdt = dt / steps;
     let removed = false;
     for (let k = 0; k < steps && !removed; k++) {
-      const nx = pr.bx + pr.vx * sdt, ny = pr.by + pr.vy * sdt, nz = pr.bz + pr.vz * sdt;
-      if (w.pointSolid(nx, ny, nz)) {
+      const sx = pr.vx * sdt, sy = pr.vy * sdt, sz = pr.vz * sdt;
+      const nx = pr.bx + sx, ny = pr.by + sy, nz = pr.bz + sz;
+      // sweep the segment (exact: thin rails of boxes / steps are not tunnelled)
+      const seg = Math.sqrt(sx * sx + sy * sy + sz * sz);
+      let ht = seg > 1e-6 ? w.castRay(pr.bx, pr.by, pr.bz, sx / seg, sy / seg, sz / seg, seg) : -1;
+      const hn = w.rayHit;
+      if (ht >= 0 && pr.slide && Math.abs(hn.ny) > 0.5) ht = -1;   // sliders follow floors / ramps / ceilings
+      if (ht >= 0) {
+        const hx = hn.x + hn.nx * 0.02, hy = hn.y + hn.ny * 0.02, hz = hn.z + hn.nz * 0.02;
+        const nX = hn.nx, nY = hn.ny, nZ = hn.nz;
         if (pr.slide) {
           // keep sliding along floor/ceiling; bounce off walls
-          if (w.pointSolid(nx, pr.by, pr.bz)) pr.vx = -pr.vx;
-          if (w.pointSolid(pr.bx, pr.by, nz)) pr.vz = -pr.vz;
+          const fl = Math.hypot(nX, nZ) || 1, ux = nX / fl, uz = nZ / fl;
+          const vn = pr.vx * ux + pr.vz * uz;
+          if (vn < 0) { pr.vx -= 2 * vn * ux; pr.vz -= 2 * vn * uz; }
           if (pr.bounces-- <= 0) { removed = true; break; }
           continue;
         }
         if (pr.bounces > 0) {
-          pr.bounces--;
-          if (w.pointSolid(nx, pr.by, pr.bz)) pr.vx = -pr.vx * 0.9;
-          if (w.pointSolid(pr.bx, ny, pr.bz)) pr.vy = -pr.vy * (pr.fuse ? 0.5 : 0.85);
-          if (w.pointSolid(pr.bx, pr.by, nz)) pr.vz = -pr.vz * 0.9;
-          if (pr.fuse) { pr.vx *= 0.75; pr.vz *= 0.75; game.sfx('wall_hit', { dist: dist2p(pr, p), pitch: 0.6 }); }
+          // reflect: v -= 2 (v.n) n, with some energy lost into the surface
+          const vn = pr.vx * nX + pr.vy * nY + pr.vz * nZ;
+          if (vn < 0) {
+            const tx = pr.vx - vn * nX, ty = pr.vy - vn * nY, tz = pr.vz - vn * nZ;
+            if (pr.fuse && nY > 0.6 && -vn < 2.5) {
+              // grenade settling on the ground: roll instead of spending a bounce
+              pr.vx = tx * 0.85; pr.vy = ty * 0.85; pr.vz = tz * 0.85;
+            } else {
+              pr.bounces--;
+              const rest = pr.fuse ? 0.5 : 0.85, keep = pr.fuse ? 0.75 : 0.92;
+              pr.vx = tx * keep - vn * nX * rest; pr.vy = ty * keep - vn * nY * rest; pr.vz = tz * keep - vn * nZ * rest;
+              if (pr.fuse) game.sfx('wall_hit', { dist: dist2p(pr, p), pitch: 0.6 });
+            }
+          }
+          pr.bx = hx; pr.by = hy; pr.bz = hz;
+          pr.x = hx; pr.y = hy; pr.z = hz;
           continue;
         }
+        // stop at the surface (explosions / impact effects happen there, not past it)
+        pr.bx = pr.x = hx; pr.by = pr.y = hy; pr.bz = pr.z = hz;
+        pr.hitNormal = [nX, nY, nZ];
         if (pr.explode || pr.fuse) detonate(game, pr);
         else impact(game, pr);
         removed = true;
@@ -485,7 +514,7 @@ export function updateProjectiles(game, dt) {
       pr.bx = nx; pr.by = ny; pr.bz = nz;
       // slider pair keeps to its surface
       if (pr.slide === 'floor') { const f = w.floorAt(pr.bx, pr.bz); if (f !== null) pr.by = f + 0.15; }
-      if (pr.slide === 'ceil') { const c = w.ceilingOver(pr.bx, pr.bz, 0.1); if (c < 50) pr.by = c - 0.15; }
+      if (pr.slide === 'ceil') { const c = w.ceilingOver(pr.bx, pr.bz, 0.1, pr.by - 1.5); if (c < 50) pr.by = c - 0.15; }
       // pattern offset
       pr.x = pr.bx; pr.y = pr.by; pr.z = pr.bz;
       if (pr.pattern) {
@@ -507,7 +536,7 @@ export function updateProjectiles(game, dt) {
           pr.hit.add(m);
           if (pr.explode && pr.pierce <= 0) { detonate(game, pr); removed = true; break; }
           const fl = Math.hypot(pr.vx, pr.vz) || 1;
-          damageMonster(game, m, pr.dmg, { element: pr.element, crit: pr.crit, dir: [pr.vx / fl, pr.vz / fl], statusChance: pr.statusChance, chain: pr.chain, pellets: pr.pellets });
+          damageMonster(game, m, pr.dmg, { element: pr.element, crit: pr.crit, dir: [pr.vx / fl, pr.vz / fl], statusChance: pr.statusChance, chain: pr.chain, pellets: pr.pellets, hitPos: [pr.x, pr.y, pr.z] });
           if (pr.pierce-- <= 0) { removed = true; break; }
         }
       } else {
@@ -623,7 +652,10 @@ export function killMonster(game, m, o = {}) {
   const def = m.def;
   const depth = Math.max(1, w.depth);
   game.sfx(def.category === 'robot' ? 'robot_death' : 'monster_death', { dist: m.distToPlayer, pitch: def.boss ? 0.6 : 1 });
-  w.burst(m.x, m.y + m.height * 0.5, m.z, def.category === 'robot' ? [1, 0.6, 0.2] : [0.7, 0.03, 0.03], def.boss ? 60 : 16, { speed: def.boss ? 8 : 5, life: 0.9, size: 0.18 });
+  // gore: non-bosses explode into blood, gibs and decals; bosses dissolve through
+  // escalating bursts. With gore off only robots throw a few sparks.
+  const gored = w.gore ? w.gore.kill(m, o) : false;
+  if (!gored && def.category === 'robot') w.burst(m.x, m.y + m.height * 0.5, m.z, [1, 0.6, 0.2], 12, { speed: 5, life: 0.6, size: 0.1 });
   if (def.category === 'robot' || def.boss) w.flash(m.x, m.y + 1, m.z, [1, 0.6, 0.2], def.boss ? 10 : 4, 0.3, 2);
   // XP
   const xp = B.enemyXP(depth) * (def.xp || 1) * (m.elite ? 2.5 : 1) * (m.variant.hpMult || 1) * (1 + st.xpGain);
@@ -672,8 +704,17 @@ export function killMonster(game, m, o = {}) {
 
 export function dropPickup(game, m, pk) {
   const a = fx.float(0, Math.PI * 2), sp = fx.float(0.5, pk.kind === 'item' ? 2.5 : 2);
+  if (pk.kind === 'key') {
+    // keys must never be lost (void, pits, lava, unreachable ledges): drop them
+    // on the nearest safe cell the player can reach
+    const s = game.world.safeDropSpot(m.x, m.z);
+    if (s && (s.x !== Math.floor(m.x) + 0.5 || s.z !== Math.floor(m.z) + 0.5 || Math.abs(m.y - s.y) > 1.5)) {
+      game.world.pickups.push({ ...pk, x: s.x, y: s.y + 0.6, z: s.z, vx: 0, vy: 0, vz: 0, age: 0, settled: true, phase: fx.float(0, 6) });
+      return;
+    }
+  }
   const y = (m.mode === 'ceiling' ? m.y : m.y) + Math.min(1.2, m.height * 0.5);
-  const floor = game.world.floorAt(m.x, m.z) ?? m.y;
+  const floor = game.world.surfaceBelow(m.x, y, m.z) ?? m.y;
   game.world.pickups.push({
     ...pk, x: m.x, y: Math.max(y, floor + 0.3), z: m.z, vx: Math.cos(a) * sp, vy: fx.float(2.5, 4.5), vz: Math.sin(a) * sp, age: 0,
     settled: false, phase: fx.float(0, 6),
