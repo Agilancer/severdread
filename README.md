@@ -36,12 +36,17 @@ on iOS for full-screen play.
   dynamic coloured lights, animated sky (ruined Earth, Mars, hell, storms,
   black hole...), billboarded 8-direction sprites with palette swaps, glows,
   dissolve effects.
-- **75 level themes** (all 44 from the brief + 31 originals) over 10 layout
-  generators: rooms/stations, caves, city blocks, rooftops & sky islands,
-  moving convoys (5-lane highway trucks, space trains, twin freighters,
-  subway), canyons with bridges, concert/theatre halls, mazes (incl. the Back
-  Rooms), mountains/deserts, castles. Every level gets a cohesive texture set
-  picked by tag from the uploaded texture sheets (1,273 tiles, 50 animated).
+- **75 level themes** (all 44 from the brief + 31 originals). Interiors are
+  built from big spaces: colonnaded halls, atriums with railed balconies, pit
+  rooms with bridges over lava / poison / spike pits, split levels, industrial
+  catwalks, control rooms, reactors and courtyards, joined by wide openings and
+  real staircases with hand rails. Cities have skyscraper-lined avenues with
+  lane markings, sidewalks, street lamps, lobbies, plazas, parking decks,
+  canals with railed bridges and a walled boss plaza. Caves, canyons,
+  mountains, mazes, halls, rooftops, sky islands and convoys each have their
+  own generator. Every surface and object gets a texture chosen for its role
+  (floor, wall, trim, pillar, crate, console, rail, stair, facade, road...),
+  from the uploaded sheets (1,273 tiles, 50 animated).
 - **Coloured keys and locked doors** (red/blue/yellow/green/purple) with the
   uploaded 4-frame door animations, placed so every level is solvable.
 - **129 uploaded monsters** (86 enemies, 43 bosses) + palette-swap variants
@@ -71,6 +76,12 @@ on iOS for full-screen play.
   armorer and ringsmith (upgrades costing credits + monster/boss reagents),
   quartermaster (bag 40 → 200 slots, +5 per upgrade).
 - **Pickups**: credits, 17 reagents, red health / blue armour / gold credit orbs.
+- **Gore**: kills explode into blood mist, droplets, bouncing gibs and
+  splatter painted on walls and floors; blood hits the camera lens and drips
+  down and off the screen (gore level and lens blood in Settings).
+- **First-person weapons** anchored DOOM-style: hands come up from the bottom
+  of the screen, one-handed weapons sit right of centre, shots leave from the
+  drawn muzzle.
 - **Audio**: every sound and the per-theme music are synthesized with WebAudio.
 - Saves automatically to localStorage.
 
