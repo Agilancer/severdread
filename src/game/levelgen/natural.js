@@ -393,59 +393,56 @@ export function layBridge(g, deco, cells, y, o = {}) {
 
 // ---------------------------------------------------------------- gates
 // Turn the open cells of `line` into a wall (height above each floor) except
-// `door`, which stays a single doorway with a frame. The door cell is what
-// the populate step turns into a (keyed) door.
+// `door` (a cell or a straight run of cells; keyed gates use 3), which stays
+// a doorway with a frame. The doorway is what the populate step turns into a
+// (keyed) door, so all its cells share one floor and a ceiling at floor + 3.
 export function gateWall(g, deco, line, door, o = {}) {
   const tex = o.wallTex ?? TS.WOOD;
   const hgt = o.height ?? 4.2;
-  const df = g.floor[door];
+  const doors = Array.isArray(door) ? door : [door];
+  const df = g.floor[doors[0]];
   for (const i of line) {
-    if (i === door || g.type[i] !== 1) continue;
+    if (doors.includes(i) || g.type[i] !== 1) continue;
     g.solid(i % g.w, (i / g.w) | 0, Math.max(g.floor[i], df) + hgt, tex);
     g.floorTex[i] = o.capTex ?? tex;
   }
-  const x = door % g.w, z = (door / g.w) | 0;
-  g.sky[door] = 0;
-  g.ceil[door] = df + 3;
-  g.roof[door] = df + hgt;
-  g.wallTex[door] = tex;
-  g.ceilTex[door] = o.ceilTex ?? TS.WOOD;
-  g.flags[door] |= F.NOSPAWN;
-  g.flags[door] &= ~(F.STAIR | F.BRIDGE | F.WATER | F.HAZARD);
-  g.clearEdges(x, z);
-  // frame: two posts and a lintel on both faces, along the wall line
+  for (const i of doors) {
+    g.sky[i] = 0;
+    g.floor[i] = df;
+    g.ceil[i] = df + 3;
+    g.roof[i] = df + hgt;
+    g.wallTex[i] = tex;
+    g.ceilTex[i] = o.ceilTex ?? TS.WOOD;
+    g.flags[i] |= F.NOSPAWN;
+    g.flags[i] &= ~(F.STAIR | F.BRIDGE | F.WATER | F.HAZARD);
+    g.stairDir[i] = 0; g.rise[i] = 0;
+    g.clearEdges(i % g.w, (i / g.w) | 0);
+  }
+  // frame: posts at both ends of the doorway and a lintel across it, on both
+  // faces of the wall line
   if (deco) {
     const ft = o.frameTex ?? TS.BEAM;
     const alongX = o.axis === 'z';   // door passage runs along z => wall line runs along x
+    const us = doors.map((i) => (alongX ? i % g.w : (i / g.w) | 0));
+    const a0 = Math.min(...us), a1 = Math.max(...us) + 1;
+    const row = alongX ? (doors[0] / g.w) | 0 : doors[0] % g.w;
+    // box spanning [u0, u1] along the wall line and [v0, v1] across it
+    const box = (u0, u1, v0, v1, y0, y1, tx, opt) => (alongX ? deco.box(u0, y0, v0, u1, y1, v1, tx, opt) : deco.box(v0, y0, u0, v1, y1, u1, tx, opt));
     const t = 0.16;
     for (const s of [0, 1]) {
-      if (alongX) {
-        const pz = z + s - (s ? t : 0);
-        deco.box(x - 0.02, df, pz, x + 0.12, df + 3.1, pz + t, ft);
-        deco.box(x + 0.88, df, pz, x + 1.02, df + 3.1, pz + t, ft);
-        deco.box(x - 0.15, df + 2.92, pz, x + 1.15, df + 3.22, pz + t, ft);
-      } else {
-        const px = x + s - (s ? t : 0);
-        deco.box(px, df, z - 0.02, px + t, df + 3.1, z + 0.12, ft);
-        deco.box(px, df, z + 0.88, px + t, df + 3.1, z + 1.02, ft);
-        deco.box(px, df + 2.92, z - 0.15, px + t, df + 3.22, z + 1.15, ft);
-      }
+      const v = row + s - (s ? t : 0);
+      box(a0 - 0.02, a0 + 0.12, v, v + t, df, df + 3.1, ft);
+      box(a1 - 0.12, a1 + 0.02, v, v + t, df, df + 3.1, ft);
+      box(a0 - 0.15, a1 + 0.15, v, v + t, df + 2.92, df + 3.22, ft);
     }
     if (o.torch) {
-      // lamps either side of the doorway, on the approach face
+      // lamps on the door posts, on the approach face
       const dir = o.facing ?? 1;
-      if (alongX) {
-        for (const ox of [-1, 1]) {
-          const lx = x + 0.5 + ox * 1.0, lz = z + (dir > 0 ? 1.08 : -0.08);
-          deco.box(lx - 0.12, df + 2.2, lz - 0.06, lx + 0.12, df + 2.45, lz + 0.06, TS.LIGHT, { uv: 'fit', emissive: 1 });
-          deco.light(lx, df + 2.2, lz + (dir > 0 ? 0.4 : -0.4), o.torch, 5, { flicker: true });
-        }
-      } else {
-        for (const oz of [-1, 1]) {
-          const lz = z + 0.5 + oz * 1.0, lx = x + (dir > 0 ? 1.08 : -0.08);
-          deco.box(lx - 0.06, df + 2.2, lz - 0.12, lx + 0.06, df + 2.45, lz + 0.12, TS.LIGHT, { uv: 'fit', emissive: 1 });
-          deco.light(lx + (dir > 0 ? 0.4 : -0.4), df + 2.2, lz, o.torch, 5, { flicker: true });
-        }
+      const v = row + (dir > 0 ? 1.08 : -0.08), lv = v + (dir > 0 ? 0.4 : -0.4);
+      for (const u of [a0 + 0.05, a1 - 0.05]) {
+        box(u - 0.12, u + 0.12, v - 0.06, v + 0.06, df + 2.2, df + 2.45, TS.LIGHT, { uv: 'fit', emissive: 1 });
+        if (alongX) deco.light(u, df + 2.2, lv, o.torch, 5, { flicker: true });
+        else deco.light(lv, df + 2.2, u, o.torch, 5, { flicker: true });
       }
     }
   }

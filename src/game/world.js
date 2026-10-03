@@ -20,6 +20,21 @@ const UNSTICK_D = [0.03, 0.06, 0.1, 0.15, 0.22, 0.3, 0.4, 0.55, 0.75];
 const UNSTICK_X = [1, -1, 0, 0, 0.7071, -0.7071, 0.7071, -0.7071];
 const UNSTICK_Z = [0, 0, 1, -1, 0.7071, 0.7071, -0.7071, -0.7071];
 
+// The open-doorway frame of a key door keeps its border, but a sill across
+// the bottom of a 3-wide doorway reads as a step: carve the see-through
+// opening down to the floor (columns open at mid height stay open below).
+function openToFloor(c) {
+  try {
+    const cx = c.getContext('2d'), w = c.width, h = c.height;
+    const im = cx.getImageData(0, 0, w, h), a = im.data;
+    for (let x = 0; x < w; x++) {
+      if (a[((h >> 1) * w + x) * 4 + 3] >= 128) continue;
+      for (let y = h >> 1; y < h; y++) a[(y * w + x) * 4 + 3] = 0;
+    }
+    cx.putImageData(im, 0, 0);
+  } catch (e) { /* tainted / no 2d context: keep the frame as is */ }
+}
+
 const DEFAULT_SKY = { top: [0.02, 0.02, 0.03], horizon: [0.12, 0.1, 0.1], bottom: [0.04, 0.03, 0.03], stars: 0.3, clouds: [0.15, 0.12, 0.12, 0.5] };
 
 export class World {
@@ -51,11 +66,20 @@ export class World {
     };
     const sk = SKIES[t.sky];
     this.sky = sk || { ...DEFAULT_SKY, horizon: this.env.fogColor.map((v) => v * 0.8 + 0.05) };
+    // a door covers a straight run of cells (keyed doors: 3); d.cell is its
+    // centre cell, x0..x1 / z0..z1 its footprint in world units
     this.doors = (level.doors || []).map((d) => {
-      const i = d.cell;
-      return { ...d, floor: this.grid.floor[i], ceil: this.grid.ceil[i], open: 0, target: 0, locked: !!d.color, timer: 0, msgCooldown: 0 };
+      const i = d.cell, W = this.grid.w;
+      const cells = d.cells || [i];
+      const xs = cells.map((c) => c % W), zs = cells.map((c) => (c / W) | 0);
+      const x0 = Math.min(...xs), z0 = Math.min(...zs), x1 = Math.max(...xs) + 1, z1 = Math.max(...zs) + 1;
+      return {
+        ...d, cells, x0, z0, x1, z1, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2,
+        floor: this.grid.floor[i], ceil: this.grid.ceil[i], open: 0, target: 0, locked: !!d.color, timer: 0, msgCooldown: 0,
+      };
     });
-    this.doorByCell = new Map(this.doors.map((d) => [d.cell, d]));
+    this.doorByCell = new Map();
+    for (const d of this.doors) for (const c of d.cells) this.doorByCell.set(c, d);
     this.buildPhysics();
     this.gore = new Gore(this);   // blood particles, gibs, decals (src/game/gore.js)
     this.scatter = new Scatter(game, this);   // pillars, explosives, pedestals, spike traps (src/game/scatter.js)
@@ -75,6 +99,7 @@ export class World {
       this.doorFrames = {};
       for (const color of ds.colors) {
         const frames = content.doorFrameCanvases(ds, color, design);
+        openToFloor(frames[frames.length - 1]);
         this.doorFrames[color] = frames.map((c) => { layers.push(c); return layers.length - 1; });
       }
     }
@@ -110,7 +135,7 @@ export class World {
   buildPhysics() {
     const g = this.grid, n = g.w * g.h;
     this.doorAt = new Int16Array(n).fill(-1);
-    this.doors.forEach((d, k) => { if (d.cell >= 0 && d.cell < n) this.doorAt[d.cell] = k; });
+    this.doors.forEach((d, k) => { for (const c of d.cells) if (c >= 0 && c < n) this.doorAt[c] = k; });
     const cols = (this.level.deco && this.level.deco.colliders) || [];
     const nb = cols.length;
     this.nBoxes = nb;
@@ -609,21 +634,28 @@ export class World {
   }
 
   // ------------------------------------------------------------------ doors
+  // Distance from (x, z) to a door's footprint (0 inside the doorway).
+  doorDist(d, x, z) {
+    const dx = Math.max(d.x0 - x, 0, x - d.x1), dz = Math.max(d.z0 - z, 0, z - d.z1);
+    return Math.hypot(dx, dz);
+  }
   updateDoors(dt, player, monsters) {
     for (const d of this.doors) {
       d.msgCooldown = Math.max(0, d.msgCooldown - dt);
-      const cx = d.x + 0.5, cz = d.z + 0.5;
       let want = false;
-      const pd = Math.hypot(player.x - cx, player.z - cz);
-      if (pd < 1.7) {
+      // proximity is measured to the whole doorway, so a 3-wide door opens
+      // as one panel wherever along it the player walks up
+      const pd = this.doorDist(d, player.x, player.z);
+      const sd = Math.hypot(player.x - d.cx, player.z - d.cz);   // sound distance
+      if (pd < 1.2) {
         if (d.locked) {
           if (player.keys.has(d.color)) {
             d.locked = false;
             player.keys.delete(d.color);
             this.game.toast(`${d.color.toUpperCase()} door unlocked`, d.color);
-            this.game.sfx('door_open', { dist: pd });
+            this.game.sfx('door_open', { dist: sd });
             want = true;
-          } else if (d.msgCooldown <= 0 && pd < 1.25) {
+          } else if (d.msgCooldown <= 0 && pd < 0.75) {
             d.msgCooldown = 2.5;
             this.game.toast(`You need the ${d.color.toUpperCase()} key`, d.color);
             this.game.sfx('door_locked');
@@ -632,14 +664,16 @@ export class World {
       }
       if (!d.locked && !want) {
         for (const m of monsters) {
-          if (!m.dead && Math.abs(m.x - cx) < 1.5 && Math.abs(m.z - cz) < 1.5) { want = true; break; }
+          if (m.dead) continue;
+          if (Math.max(d.x0 - m.x, m.x - d.x1, d.z0 - m.z, m.z - d.z1) < 1) { want = true; break; }
         }
       }
-      if (want) { d.timer = 3.5; if (d.target === 0) { d.target = 1; if (pd < 16) this.game.sfx('door_open', { dist: pd }); } }
+      if (want) { d.timer = 3.5; if (d.target === 0) { d.target = 1; if (sd < 16) this.game.sfx('door_open', { dist: sd }); } }
       else if (d.timer > 0) d.timer -= dt;
       else if (d.target === 1) {
         // don't close on something standing in the doorway
-        const occupied = Math.abs(player.x - cx) < 0.9 && Math.abs(player.z - cz) < 0.9;
+        const r = (player.radius ?? 0.3) + 0.1;
+        const occupied = player.x > d.x0 - r && player.x < d.x1 + r && player.z > d.z0 - r && player.z < d.z1 + r;
         if (!occupied) d.target = 0;
       }
       const speed = 1.6;
@@ -655,21 +689,32 @@ export class World {
     if (!this.doors.length) { renderer.setDynamicMesh(new Float32Array(0), new Uint32Array(0), 0); return; }
     const mb = new MeshBuilder(this.doors.length * 6 + 4);
     const g = this.grid;
+    // One picture per door face: u 0..1 across the whole doorway from the
+    // viewer's left (so it is never mirrored), v from vb at the bottom edge to
+    // vt at the top (image row 0 = top, so the picture stands upright).
+    // A tiny inset keeps REPEAT sampling from wrapping at the edges.
+    const E = 0.002;
+    const face = (L, R, y0, y1, vb, vt, n, layer, light, em) => mb.quad(
+      [[L[0], y0, L[1]], [R[0], y0, R[1]], [R[0], y1, R[1]], [L[0], y1, L[1]]],
+      [[E, vb], [1 - E, vb], [1 - E, vt], [E, vt]], n, layer, light, em, 0);
     for (const d of this.doors) {
-      const x0 = d.x, z0 = d.z, x1 = d.x + 1, z1 = d.z + 1;
+      const { x0, z0, x1, z1 } = d;
       const light = g.light[d.cell];
       const frames = d.color && this.doorFrames && this.doorFrames[d.color];
       if (frames) {
-        // frame-animated panel across the middle of the doorway
+        // frame-animated panel through the middle of the doorway: one door
+        // picture stretched over the whole opening, both sides
         const f = d.open >= 0.99 ? frames.length - 1 : Math.min(frames.length - 2, Math.floor(d.open * (frames.length - 1)));
         const layer = frames[f];
         const y0 = d.floor, y1 = d.ceil;
         if (d.axis === 'x') {
-          mb.wall([x0 + 0.5, z1], [x0 + 0.5, z0], y0, y1, 0, 1, [1, 0, 0], layer, light);
-          mb.wall([x0 + 0.5, z0], [x0 + 0.5, z1], y0, y1, 0, 1, [-1, 0, 0], layer, light);
+          const px = (x0 + x1) / 2;
+          face([px, z1], [px, z0], y0, y1, 1 - E, E, [1, 0, 0], layer, light, 0);
+          face([px, z0], [px, z1], y0, y1, 1 - E, E, [-1, 0, 0], layer, light, 0);
         } else {
-          mb.wall([x0, z0 + 0.5], [x1, z0 + 0.5], y0, y1, 0, 1, [0, 0, 1], layer, light);
-          mb.wall([x1, z0 + 0.5], [x0, z0 + 0.5], y0, y1, 0, 1, [0, 0, -1], layer, light);
+          const pz = (z0 + z1) / 2;
+          face([x0, pz], [x1, pz], y0, y1, 1 - E, E, [0, 0, 1], layer, light, 0);
+          face([x1, pz], [x0, pz], y0, y1, 1 - E, E, [0, 0, -1], layer, light, 0);
         }
         continue;
       }
@@ -677,11 +722,16 @@ export class World {
       const slot = this.slots[d.slot] || this.slots[TS.DOOR];
       const bot = d.floor + (d.ceil - d.floor) * d.open, top = d.ceil;
       const em = d.color ? 0.25 : 0;
-      // four faces + underside (DOOM-style slab rising into the ceiling)
-      mb.wall([x0, z0], [x1, z0], bot, top, 0, 1, [0, 0, -1], slot.layer, light, em);
-      mb.wall([x1, z1], [x0, z1], bot, top, 0, 1, [0, 0, 1], slot.layer, light, em);
-      mb.wall([x0, z1], [x0, z0], bot, top, 0, 1, [-1, 0, 0], slot.layer, light, em);
-      mb.wall([x1, z0], [x1, z1], bot, top, 0, 1, [1, 0, 0], slot.layer, light, em);
+      // DOOM-style slab over the whole doorway rising into the ceiling: the
+      // picture rides up with it (its hidden top part is the open fraction)
+      const vt = Math.min(1 - E, d.open + E);
+      if (d.axis === 'x') {
+        face([x0, z0], [x0, z1], bot, top, 1 - E, vt, [-1, 0, 0], slot.layer, light, em);
+        face([x1, z1], [x1, z0], bot, top, 1 - E, vt, [1, 0, 0], slot.layer, light, em);
+      } else {
+        face([x1, z0], [x0, z0], bot, top, 1 - E, vt, [0, 0, -1], slot.layer, light, em);
+        face([x0, z1], [x1, z1], bot, top, 1 - E, vt, [0, 0, 1], slot.layer, light, em);
+      }
       mb.quad([[x0, bot, z0], [x1, bot, z0], [x1, bot, z1], [x0, bot, z1]], [[0, 0], [1, 0], [1, 1], [0, 1]], [0, -1, 0], slot.layer, light * 0.7, em, 0);
     }
     const r = mb.result();

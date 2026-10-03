@@ -208,7 +208,9 @@ export function genArch(rng, theme, depth, opt = {}) {
     if (e.skip) continue;
     const A = rooms[e.lo], B = rooms[e.hi];       // lo is on the -axis side
     const door = e.gate || (!e.loop && rng.chance(opt.doorChance ?? 0.18)) || e.len < 4;
-    const width = door ? 1 : Math.min(e.len - 1, rng.pick(opt.connWidths || [2, 2, 3, 3, 4]));
+    // keyed gates are 3-wide doorways (the overlap a0..a1 is always >= 3);
+    // plain doorways stay 1 wide
+    const width = e.gate ? Math.min(3, e.len) : door ? 1 : Math.min(e.len - 1, rng.pick(opt.connWidths || [2, 2, 3, 3, 4]));
     const pos = rng.int(e.a0, e.a1 - width);
     conns.push({ ...e, A, B, door, width, pos });
   }
@@ -216,7 +218,9 @@ export function genArch(rng, theme, depth, opt = {}) {
   for (const c of conns) {
     const dh = c.B.floor - c.A.floor;
     c.dh = dh;
-    c.mode = Math.abs(dh) < 0.01 ? 'flat' : Math.abs(dh) <= 1.21 ? 'passage' : 'flight';
+    // gates take small climbs as a flight in a room too: the doorway itself
+    // must be flat for the door
+    c.mode = Math.abs(dh) < 0.01 ? 'flat' : Math.abs(dh) <= 1.21 && !c.gate ? 'passage' : 'flight';
     if (c.mode === 'flight') {
       // put the flight in the room with more depth; prefer the lower room
       const depthA = c.axis === 'x' ? c.A.w : c.A.h, depthB = c.axis === 'x' ? c.B.w : c.B.h;

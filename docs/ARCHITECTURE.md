@@ -32,6 +32,30 @@ Exact heights: `floorAtPos(i, x, z)` (stairs are ramps physically),
 `passable(a, b)` uses edge heights, refuses blocked edges and side entry onto
 stairs. `bfs(starts, {step, jumpGap, avoid, blocked, allowVoid})`.
 
+## Doors (`level.doors`)
+
+A door covers a straight **span** of cells across a passage: `{cell, cells,
+x, z, x0, z0, x1, z1, axis, color, slot}`. `axis` is the travel axis ('x':
+the passage runs along x, the span along z), `cells` all door cells (all
+`F.DOOR`), `cell`/`x`/`z` the centre cell, `x0..x1 / z0..z1` the footprint.
+
+- `doorSpan(g, i, maxW)` (levelgen/common.js): a run of up to `maxW` open
+  cells on one floor, walled (solid) at both ends, open in front and behind.
+  `findChokeSpans()` walks the start -> boss path and keeps spans whose
+  closing cuts the boss off (jump gaps included).
+- Keyed (coloured) doors are **3 wide x 3 tall** (`floor + 3`, lintel drawn
+  by the mesh, cells in front / behind get at least that head room). The
+  generators build their keyed gates as 3-wide doorways (gen_arch gate
+  connections, natural `gateWall`, mazekit `buildGate`, platkit gatehouses,
+  the city boss plaza); narrower spans are only a fallback.
+- Plain doors stay 1 cell wide (passage height, at most 3.5).
+- World (`world.js`): `doorByCell` / `doorAt` map every door cell; doors
+  open when the player (or a monster) comes near the whole footprint. Each
+  door face shows ONE picture stretched over the opening (u 0..1 across, v
+  bottom to top, never mirrored): key doors animate the door-frame sheet
+  (the open frame keeps its border, opening carved down to the floor), the
+  fallback / plain doors are slabs rising into the ceiling.
+
 ## Detail geometry (`src/game/levelgen/deco.js` -> `level.deco`)
 
 ```

@@ -572,10 +572,16 @@ export function genCity(rng, theme, depth) {
       g.open(x, z, 0.18, 3, { sky: true, light: outLight, floorTex: TS.FLOOR3, wallTex: TS.SIDE, region: -6, flags: F.OUTDOOR });
       cells.push(g.idx(x, z));
     }
-    // single gate on the side facing the start (north or west)
+    // single 3-wide gate (the keyed door) on the side facing the start (north or west)
     const gateNorth = rng.chance(0.5);
     const gx = gateNorth ? b.x + Math.floor(b.w / 2) : b.x, gz = gateNorth ? b.z : b.z + Math.floor(b.h / 2);
-    g.open(gx, gz, 0.18, 3.4, { light: outLight, floorTex: TS.SIDEWALK, ceilTex: TS.TRIM, wallTex: TS.TRIM, region: -2 });
+    for (let k = -1; k <= 1; k++) {
+      const x = gx + (gateNorth ? k : 0), z = gz + (gateNorth ? 0 : k);
+      g.open(x, z, 0.18, 3.18, { light: outLight, floorTex: TS.SIDEWALK, ceilTex: TS.TRIM, wallTex: TS.TRIM, region: -2 });
+      g.roof[g.idx(x, z)] = wallTop;
+      // keep the approach clear of later rubble / lamps / cars
+      for (const s of [-1, 0, 1]) { const j = g.idx(x + (gateNorth ? 0 : s), z + (gateNorth ? s : 0)); if (g.type[j]) g.flags[j] |= F.NOSPAWN; }
+    }
     // the wall gets a cap and buttresses
     deco.box(b.x - 0.1, wallTop, b.z - 0.1, b.x + b.w + 0.1, wallTop + 0.3, b.z + 0.3, TS.TRIM, {});
     deco.box(b.x - 0.1, wallTop, b.z + b.h - 0.3, b.x + b.w + 0.1, wallTop + 0.3, b.z + b.h + 0.1, TS.TRIM, {});
@@ -652,7 +658,7 @@ export function genCity(rng, theme, depth) {
       const w = vertical ? SW - 2 * SIDE : 3, h = vertical ? 3 : SW - 2 * SIDE;
       const kind = theme.hazard === 'lava' ? HAZ.LAVA : rng.chance(0.5) ? HAZ.WATER : HAZ.POISON;
       let ok = true;
-      for (let z = cz; z < cz + h; z++) for (let x = cx; x < cx + w; x++) { const i = g.idx(x, z); if (!g.type[i] || (g.flags[i] & (F.OBSTACLE | F.BRIDGE | F.START)) || kind === 0) ok = false; }
+      for (let z = cz; z < cz + h; z++) for (let x = cx; x < cx + w; x++) { const i = g.idx(x, z); if (!g.type[i] || (g.flags[i] & (F.OBSTACLE | F.BRIDGE | F.START | F.NOSPAWN)) || kind === 0) ok = false; }
       if (!ok) continue;
       // keep a 1-cell lane open on one side so the street is never cut
       for (let z = cz; z < cz + h; z++) for (let x = cx; x < cx + w; x++) {

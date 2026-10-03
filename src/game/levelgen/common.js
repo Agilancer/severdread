@@ -168,11 +168,8 @@ export function fortifyArena(g, arenaCells, dist, opts = {}) {
   return gate;
 }
 
-// Cells whose removal disconnects `target` from `source` (1-wide chokepoints),
-// searched along the shortest path. Returns indices ordered from source.
-export function findChokepoints(g, source, target, dist) {
-  if (dist[target] < 0) return [];
-  // walk back along decreasing distance
+// Shortest path source -> target (walking back along decreasing distance).
+function pathTo(g, source, target, dist) {
   const path = [];
   let cur = target;
   while (cur !== source && path.length < 4000) {
@@ -186,7 +183,14 @@ export function findChokepoints(g, source, target, dist) {
     if (next < 0) break;
     cur = next;
   }
-  path.reverse();
+  return path.reverse();
+}
+
+// Cells whose removal disconnects `target` from `source` (1-wide chokepoints),
+// searched along the shortest path. Returns indices ordered from source.
+export function findChokepoints(g, source, target, dist) {
+  if (dist[target] < 0) return [];
+  const path = pathTo(g, source, target, dist);
   const chokes = [];
   for (let k = 2; k < path.length - 2; k++) {
     const c = path[k];
@@ -197,7 +201,66 @@ export function findChokepoints(g, source, target, dist) {
   return chokes;
 }
 
-// A door fits where the cell is open on one axis and walled on the other.
+// Door spans whose closing disconnects `target` from `source`, searched along
+// the shortest path: {cells, axis, floor, d (distance of the path cell)},
+// ordered from the source. Spans are up to maxW wide; a path cell with no
+// walled span falls back to the old 1-cell doorable test. bfsOpts: the
+// walker (jump gaps, avoided flags) so jumps around a door do not count.
+export function findChokeSpans(g, source, target, dist, bfsOpts = {}, maxW = 3) {
+  if (dist[target] < 0) return [];
+  const path = pathTo(g, source, target, dist);
+  const seen = new Set(), out = [];
+  for (let k = 2; k < path.length - 2; k++) {
+    const c = path[k];
+    let sp = doorSpan(g, c, maxW);
+    if (!sp) { const ax = isDoorable(g, c); if (ax) sp = { cells: [c], axis: ax, floor: g.floor[c] }; }
+    if (!sp) continue;
+    const key = Math.min(...sp.cells);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const set = new Set(sp.cells);
+    const d2 = g.bfs([source], { ...bfsOpts, blocked: (b) => set.has(b) });
+    if (d2[target] < 0) { sp.d = dist[c]; out.push(sp); }
+  }
+  return out;
+}
+
+// A door span: a straight run of 1..maxW open cells across a passage, all on
+// one floor, walled (solid cells) at both ends, and each open on both sides
+// along the travel axis at about the same height. axis = travel axis ('x':
+// the passage runs along x, the span runs along z). Returns
+// {cells (ordered along the span), axis, floor} or null.
+const SPAN_BAD = F.VOID | F.HAZARD | F.PIT | F.STAIR | F.BRIDGE | F.OBSTACLE | F.WATER | F.SCROLL;
+export function doorSpan(g, i, maxW = 3) {
+  if (g.type[i] !== OPEN || (g.flags[i] & SPAN_BAD) || g.edge[i]) return null;
+  const W = g.w, x = i % W, z = (i / W) | 0, f = g.floor[i];
+  const side = (a, b) => g.isOpen(a, b) && !(g.flags[g.idx(a, b)] & (F.VOID | F.PIT)) && Math.abs(g.minFloor(g.idx(a, b)) - f) < 0.6;
+  for (const axis of ['x', 'z']) {
+    const tx = axis === 'x' ? 1 : 0, tz = 1 - tx;     // travel step
+    const through = (a, b) => side(a + tx, b + tz) && side(a - tx, b - tz);
+    if (!through(x, z)) continue;
+    let lo = 0, hi = 0, ok = true;
+    for (const s of [-1, 1]) {
+      for (let n = 1; ; n++) {
+        const a = x + tz * s * n, b = z + tx * s * n;
+        if (!g.in(a, b)) { ok = false; break; }
+        const j = g.idx(a, b);
+        if (g.type[j] !== OPEN) break;                // wall: this end is closed
+        if ((g.flags[j] & SPAN_BAD) || g.edge[j] || Math.abs(g.floor[j] - f) > 0.01 || !through(a, b) || lo + hi + 2 > maxW) { ok = false; break; }
+        if (s < 0) lo = n; else hi = n;
+      }
+      if (!ok) break;
+    }
+    if (!ok) continue;
+    const cells = [];
+    for (let n = -lo; n <= hi; n++) cells.push(g.idx(x + tz * n, z + tx * n));
+    return { cells, axis, floor: f };
+  }
+  return null;
+}
+
+// A (1-cell) door fits where the cell is open on one axis and walled on the
+// other (void / pits / drops count as walls here, unlike doorSpan).
 export function isDoorable(g, i) {
   if (g.type[i] !== OPEN || (g.flags[i] & (F.VOID | F.HAZARD | F.PIT | F.STAIR | F.BRIDGE | F.OBSTACLE)) || g.edge[i]) return false;
   const x = i % g.w, z = (i / g.w) | 0;

@@ -974,6 +974,8 @@
     "art/raw/doors/key_doors_01_open3.webp"
    ],
    "cols": 10,
+   "colEdges": [0, 213, 390, 567, 738, 915, 1071, 1231, 1395, 1571, 1774],
+   "rowEdges": [0, 178, 356, 535, 713, 887],
    "colors": [
     "red",
     "blue",

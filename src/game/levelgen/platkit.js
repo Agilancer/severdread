@@ -290,21 +290,24 @@ function tryConnect(X, e, b, bw) {
     if (!cs.every((i) => okCell(i, P, false))) return false;
     flatEnds.push(...cs);
   }
-  // gatehouse one cell inside the child pad
+  // gatehouse one cell inside the child pad: a 3-wide keyed doorway over
+  // the bridge lanes (+ one cell beside them) in a wall one cell longer
+  // each side
   let gate = null;
   if (e.gate) {
     const P = e.child;
     if (!P || (flight && flight.P === P)) return false;
     const sd = side(P);
-    const line = [];
-    for (let l = -1; l <= bw; l++) line.push(C(sd.e + sd.s, b + l));
-    const inner = band(P, 2);
-    if (!line.every((i) => okCell(i, P)) || !inner.every((i) => okCell(i, P, false))) return false;
-    const door = line[1 + (X.rng.chance(0.5) ? 0 : bw - 1)];
-    // the landing row beside the bridge mouth must not lead around the gate wall
-    const fence = [[C(sd.e, b - 1), C(sd.e, b)], [C(sd.e, b + bw - 1), C(sd.e, b + bw)]];
+    const dw = 3, d0 = X.rng.chance(0.5) ? Math.min(0, bw - dw) : 0;
+    const row = (k, l0, l1) => { const out = []; for (let l = l0; l <= l1; l++) out.push(C(sd.e + sd.s * k, b + l)); return out; };
+    const line = row(1, d0 - 1, d0 + dw);
+    const door = line.slice(1, 1 + dw);
+    const inner = row(2, d0, d0 + dw - 1), landing = row(0, d0, d0 + dw - 1);
+    if (!line.every((i) => okCell(i, P)) || !inner.every((i) => okCell(i, P, false)) || !landing.every((i) => okCell(i, P, false))) return false;
+    // the landing row in front of the doorway must not lead around the gate wall
+    const fence = [[C(sd.e, b + d0 - 1), C(sd.e, b + d0)], [C(sd.e, b + d0 + dw - 1), C(sd.e, b + d0 + dw)]];
     if (!fence.every(([u, v]) => owner[u] === P.id && owner[v] === P.id)) return false;
-    gate = { P, line, door, axis: ax ? 'x' : 'z', facing: P === B ? -1 : 1, fence, sd };
+    gate = { P, line, door, inner, landing, axis: ax ? 'x' : 'z', facing: P === B ? -1 : 1, fence, sd };
   }
   // ---- apply
   const cells = [];
@@ -325,7 +328,7 @@ function tryConnect(X, e, b, bw) {
   }
   if (gate) {
     gateWall(g, deco, gate.line, gate.door, { wallTex: S.gateWall ?? TS.WALL2, capTex: S.gateCap ?? TS.ROOF, frameTex: S.gateFrame ?? TS.METAL, ceilTex: S.gateCeil ?? TS.CEIL, height: S.gateH ?? 4.2, axis: gate.axis, torch: S.gateLight, facing: gate.facing });
-    for (const i of gate.line) { lock[i] = LOCK.HARD; if (i !== gate.door) owner[i] = -3; }
+    for (const i of gate.line) { lock[i] = LOCK.HARD; if (!gate.door.includes(i)) owner[i] = -3; }
     // rails closing the landing off from the rest of the pad's edge row
     const y = gate.P.y;
     for (const [u, v] of gate.fence) {
@@ -336,7 +339,7 @@ function tryConnect(X, e, b, bw) {
       if (dir < 2) { const lx = Math.max(ux, vx); deco.railRun(lx, uz, lx, uz + 1, y, { style: S.rail, tex: S.railTex }); }
       else { const lz = Math.max(uz, vz); deco.railRun(ux, lz, ux + 1, lz, y, { style: S.rail, tex: S.railTex }); }
     }
-    for (const i of band(gate.P, 2)) lock[i] = LOCK.HARD;
+    for (const i of [...gate.inner, ...gate.landing]) lock[i] = LOCK.HARD;
     X.gates.push(gate);
   }
   X.bridges.push({ e, ax, b, bw, cells, y: yDeck, eA, eB, din, flight });

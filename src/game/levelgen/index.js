@@ -3,7 +3,7 @@ import { Rng } from '../../core/rng.js';
 import { THEMES, THEME_BY_ID } from '../../data/themes.js';
 import { MONSTERS, VARIANTS } from '../../data/monsters.js';
 import * as B from '../../data/balance.js';
-import { TS, F, KEY_COLORS, DOOR_SLOT, fortifyArena, findChokepoints, isDoorable, cellsInRadius } from './common.js';
+import { TS, F, KEY_COLORS, DOOR_SLOT, fortifyArena, findChokeSpans, doorSpan, isDoorable, cellsInRadius } from './common.js';
 import { Deco } from './deco.js';
 import { genRooms } from './gen_rooms.js';
 import { genArch } from './gen_arch.js';
@@ -128,35 +128,45 @@ function populate(L, rng, theme, depth, playerLevel) {
   }
   const arenaSet = new Set(arena || []);
 
-  // ---- doors: gate + other chokepoints; some become locked
-  const chokes = findChokepoints(g, startIdx, bossCell, dist).filter((c) => !arenaSet.has(c) && dist[c] > 6);
-  if (gate >= 0 && !chokes.includes(gate) && isDoorable(g, gate)) chokes.push(gate);
-  chokes.sort((a, b) => dist[a] - dist[b]);
+  // ---- doors: door spans across chokepoints (+ the fortified gate); some
+  // become locked. Keyed doors are 3 cells wide whenever the level has 3-wide
+  // choke spans (generators build their gates that way); narrower spans are
+  // the fallback for levels without one.
+  let spans = findChokeSpans(g, startIdx, bossCell, dist, bfsOpts).filter((s) => s.d > 6 && s.cells.every((c) => !arenaSet.has(c)));
+  if (gate >= 0 && !spans.some((s) => s.cells.includes(gate))) {
+    const ax = isDoorable(g, gate);
+    const sp = doorSpan(g, gate) || (ax ? { cells: [gate], axis: ax, floor: g.floor[gate] } : null);
+    if (sp) { sp.d = dist[gate]; spans.push(sp); }
+  }
+  spans.sort((a, b) => a.d - b.d);
+  const wide = spans.filter((s) => s.cells.length === 3);
+  if (wide.length) spans = wide;
   const maxLocks = depth <= 1 ? 1 : depth <= 4 ? 2 : 3;
-  const nLocks = Math.min(chokes.length, rng.int(Math.min(1, chokes.length), maxLocks));
+  const nLocks = Math.min(spans.length, rng.int(Math.min(1, spans.length), maxLocks));
   // spread the locked doors: always include the last choke (boss gate)
-  const lockCells = [];
+  const lockSpans = [];
   if (nLocks > 0) {
-    lockCells.push(chokes[chokes.length - 1]);
-    const rest = chokes.slice(0, -1).filter((c) => dist[c] > 10);
+    lockSpans.push(spans[spans.length - 1]);
+    const rest = spans.slice(0, -1).filter((s) => s.d > 10);
     rng.shuffle(rest);
-    for (const c of rest) {
-      if (lockCells.length >= nLocks) break;
-      if (lockCells.every((o) => Math.abs(dist[o] - dist[c]) > 8)) lockCells.push(c);
+    for (const s of rest) {
+      if (lockSpans.length >= nLocks) break;
+      if (lockSpans.every((o) => Math.abs(o.d - s.d) > 8)) lockSpans.push(s);
     }
   }
-  lockCells.sort((a, b) => dist[a] - dist[b]);
+  lockSpans.sort((a, b) => a.d - b.d);
+  const lockCells = new Set(lockSpans.flatMap((s) => s.cells));
   const colors = rng.shuffle([...KEY_COLORS]);
   const doors = [];
   const keys = [];
-  lockCells.forEach((c, k) => {
+  lockSpans.forEach((s, k) => {
     const color = colors[k % colors.length];
-    doors.push(makeDoor(g, c, color));
+    doors.push(makeDoor(g, s, color));
   });
   // plain doors on other doorable chokepoints / corridor mouths
   const plainDoorCandidates = [];
   for (let i = 0; i < g.w * g.h; i++) {
-    if (lockCells.includes(i) || arenaSet.has(i)) continue;
+    if (lockCells.has(i) || arenaSet.has(i)) continue;
     if (g.region[i] !== -2 || g.sky[i]) continue;
     if (!isDoorable(g, i)) continue;
     // corridor cell adjacent to a room cell
@@ -165,16 +175,15 @@ function populate(L, rng, theme, depth, playerLevel) {
   }
   rng.shuffle(plainDoorCandidates);
   for (const c of plainDoorCandidates.slice(0, Math.min(10, Math.floor(plainDoorCandidates.length * 0.5)))) {
-    if (doors.some((d) => Math.abs(d.x - (c % W)) + Math.abs(d.z - ((c / W) | 0)) < 3)) continue;
-    doors.push(makeDoor(g, c, null));
+    if (doors.some((d) => d.cells.some((o) => cellD(o, c, W) < 3))) continue;
+    doors.push(makeDoor(g, { cells: [c], axis: isDoorable(g, c) || 'x' }, null));
   }
 
   // ---- keys: for each locked door, place its key in the region reachable
   // before that door (treating this and all later locked doors as closed)
-  const lockedSet = new Set(lockCells);
   const keyHolders = [];
-  lockCells.forEach((c, k) => {
-    const blocked = new Set(lockCells.slice(k));
+  lockSpans.forEach((s, k) => {
+    const blocked = new Set(lockSpans.slice(k).flatMap((o) => o.cells));
     const d = g.bfs([startIdx], { ...bfsOpts, blocked: (b) => blocked.has(b) });
     const cand = [];
     for (let i = 0; i < d.length; i++) {
@@ -187,7 +196,7 @@ function populate(L, rng, theme, depth, playerLevel) {
     cand.sort((a, b) => d[b] - d[a]);
     const pickFrom = cand.slice(0, Math.max(1, Math.floor(cand.length * 0.35)));
     const cell = rng.pick(pickFrom);
-    const color = doors.find((dd) => dd.cell === c).color;
+    const color = doors[k].color;
     if (rng.chance(0.4)) keyHolders.push({ color, region: d, cell });
     else keys.push({ x: (cell % W) + 0.5, z: ((cell / W) | 0) + 0.5, color });
   });
@@ -269,7 +278,7 @@ function populate(L, rng, theme, depth, playerLevel) {
     }
   }
   // ---- scatter terrain: pillars, explosive barrels, pedestals, spike traps (levelgen/scatter.js)
-  const scatter = placeScatter({ g, deco, rng: rng.fork('scatter'), theme, depth, dist, startIdx, bossCell, portalCell, arenaSet, spawns, chests, keys, doors, lockCells, props, jumpGap: L.jumpGap || 0 });
+  const scatter = placeScatter({ g, deco, rng: rng.fork('scatter'), theme, depth, dist, startIdx, bossCell, portalCell, arenaSet, spawns, chests, keys, doors, lockSpans: lockSpans.map((sp) => sp.cells), props, jumpGap: L.jumpGap || 0 });
   bakeLights(g, lights, theme);
   const decoOut = deco.result();
 
@@ -297,12 +306,27 @@ function restore(g, s) {
   for (const k of SNAP_FIELDS) g[k].set(s[k]);
 }
 
-function makeDoor(g, cell, color) {
-  const axis = isDoorable(g, cell) || 'x';
-  g.flags[cell] |= F.DOOR;
-  if (g.sky[cell]) { g.sky[cell] = 0; g.ceil[cell] = g.floor[cell] + 3; }
-  g.ceil[cell] = Math.min(g.ceil[cell], g.floor[cell] + 3.5);
-  return { cell, x: cell % g.w, z: (cell / g.w) | 0, axis, color, slot: color ? DOOR_SLOT[color] : TS.DOOR };
+// Door over a span of cells (1 cell for plain doors, up to 3 for keyed ones).
+// Keyed doors are exactly 3 tall (floor + 3) with a lintel above drawn by
+// the world mesh; the cells in front and behind get at least that much head
+// room so the door is never cut by a lower ceiling. d.cell is the centre
+// cell (kept for code that thinks in single cells), d.cells all of them.
+function makeDoor(g, span, color) {
+  const cells = span.cells, W = g.w;
+  const f = g.floor[cells[0]];
+  // plain doors keep their old size: the passage height, at most 3.5
+  const top = color ? f + 3 : Math.min(...cells.map((c) => (g.sky[c] ? f + 3 : Math.min(g.ceil[c], f + 3.5))));
+  for (const c of cells) { g.flags[c] |= F.DOOR; g.sky[c] = 0; g.ceil[c] = top; g.floor[c] = f; }
+  if (color) {
+    const step = span.axis === 'x' ? 1 : W;
+    for (const c of cells) for (const j of [c - step, c + step]) if (g.type[j] && !g.sky[j] && g.ceil[j] < top) g.ceil[j] = top;
+  }
+  const xs = cells.map((c) => c % W), zs = cells.map((c) => (c / W) | 0);
+  const mid = cells[(cells.length - 1) >> 1];
+  return {
+    cell: mid, cells, x: mid % W, z: (mid / W) | 0, axis: span.axis, color, slot: color ? DOOR_SLOT[color] : TS.DOOR,
+    x0: Math.min(...xs), z0: Math.min(...zs), x1: Math.max(...xs) + 1, z1: Math.max(...zs) + 1,
+  };
 }
 
 function makeSpawn(cell, type, depth, rng, g) {

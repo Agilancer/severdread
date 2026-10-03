@@ -25,11 +25,11 @@ export function placeScatter(ctx) {
   const bfsOut = new Int32Array(n), bfsQueue = new Int32Array(n);
   const baseOpts = { jumpGap: ctx.jumpGap || 0, avoid: F.OBSTACLE, out: bfsOut, queue: bfsQueue };
   const start = ctx.startIdx;
-  const locks = ctx.lockCells || [];
+  const locks = ctx.lockSpans || [];   // cells of each locked door, in key order
 
   // ---- reachability baselines: doors open, then each prefix of locked doors shut
   const variants = [null];
-  for (let k = 0; k < locks.length; k++) variants.push(new Set(locks.slice(k)));
+  for (let k = 0; k < locks.length; k++) variants.push(new Set(locks.slice(k).flat()));
   const baseCount = [], baseReach = [];
   for (const v of variants) {
     const d = g.bfs([start], v ? { ...baseOpts, blocked: (b) => v.has(b) } : baseOpts);
@@ -110,7 +110,7 @@ export function placeScatter(ctx) {
   for (const k of ctx.keys || []) reserve(g.cellAt(k.x, k.z), 1);
   for (const s of ctx.spawns || []) reserve(s.cell, 0);
   for (const p of ctx.props || []) reserve(p.cell, 0);
-  for (const d of ctx.doors || []) reserve(d.cell, 1);
+  for (const d of ctx.doors || []) for (const c of d.cells || [d.cell]) reserve(c, 1);
 
   const dist = ctx.dist;
   let maxDist = 1;
@@ -304,7 +304,7 @@ export function placeScatter(ctx) {
 
   // ------------------------------------------------------------ spike traps
   if (style.spike && style.spike.length) {
-    const doorCells = (ctx.doors || []).map((d) => d.cell);
+    const doorCells = (ctx.doors || []).flatMap((d) => d.cells || [d.cell]);
     const cand = [];
     for (let i = 0; i < n; i++) {
       if (!free(i, 1.8) || dist[i] < 8 || arena.has(i) || !clearAround(i, 1)) continue;

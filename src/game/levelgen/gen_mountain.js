@@ -184,7 +184,7 @@ function mountainSkin(theme, depth) {
       for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (g.in(x + dx, z + dz)) prot[idx(x + dx, z + dz)] = 1;
     };
     for (let i = 0; i < N; i++) if (g.type[i] && (g.flags[i] & (F.STAIR | F.DOOR))) protect(i, 2);
-    for (const t of tunnels) if (t.door !== undefined) protect(t.door, 4);
+    for (const t of tunnels) for (const i of t.doorCells || []) protect(i, 4);
     const makeVoid = [], bog = [];
     const border = (x, z) => x < 3 || z < 3 || x > W - 4 || z > H - 4;
     for (let i = 0; i < N; i++) {

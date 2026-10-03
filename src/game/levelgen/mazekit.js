@@ -497,21 +497,25 @@ export function carveCorridor(ctx, e) {
   if (skin.dressCorridor) skin.dressCorridor(ctx, e);
 }
 
-// 1-wide doorway: a wall across the corridor at t = 0 with one opening.
+// Keyed doorway: a wall across the corridor at t = 0 with one opening, 3
+// cells wide when the walking lanes allow (narrower lanes: all of them).
 export function buildGate(ctx, e) {
   const { g, isVoid, skin } = ctx;
   if (!e.xz) corridorGeom(g, e);
   const lanes = e.lanes || { walk: [0, e.width] };
   const [w0, w1] = lanes.walk;
-  const ds = w0 + Math.floor((w1 - w0 - 1) / 2);
+  const dw = Math.min(3, w1 - w0);
+  const ds = w0 + Math.floor((w1 - w0 - dw) / 2);
   const t = 0;
   const f = e.A.floor;
   const wallTex = skin.gateWall ?? (isVoid ? TS.WALL2 : TS.ACCENT);
+  const top = f + (isVoid ? 4.2 : 6);
+  e.doorCells = [];
   for (let s = 0; s < e.width; s++) {
     const [x, z] = e.xz(t, s);
     const i = g.idx(x, z);
-    if (s === ds) {
-      g.flags[i] &= ~(F.BRIDGE | F.VOID | F.PIT | F.HAZARD | F.NOSPAWN);
+    if (s >= ds && s < ds + dw) {
+      g.flags[i] &= ~(F.BRIDGE | F.VOID | F.PIT | F.HAZARD | F.NOSPAWN | F.WATER);
       g.hazType[i] = 0;
       g.clearEdges(x, z);
       g.sky[i] = 0;
@@ -519,28 +523,27 @@ export function buildGate(ctx, e) {
       g.ceil[i] = f + 3;
       g.floorTex[i] = skin.gateFloor ?? TS.FLOOR2;
       g.ceilTex[i] = TS.CEIL;
-      e.doorCell = i;
+      e.doorCells.push(i);
     } else {
-      g.solid(x, z, f + (isVoid ? 4.2 : 6), wallTex);
+      g.solid(x, z, top, wallTex);
       g.floorTex[i] = TS.TRIM;
     }
   }
-  // jambs either side of the door cell take the trim texture (door frame)
-  for (const s of [ds - 1, ds + 1]) {
-    if (s < 0 || s >= e.width) {
-      const [x, z] = e.xz(t, s);
-      if (g.in(x, z) && !g.type[g.idx(x, z)]) g.wallTex[g.idx(x, z)] = TS.TRIM;
-      continue;
-    }
+  e.doorCell = e.doorCells[(dw - 1) >> 1];
+  // jambs either side of the doorway take the trim texture (door frame); in
+  // a void map the corridor is a bridge, so the jambs become gate towers
+  for (const s of [ds - 1, ds + dw]) {
     const [x, z] = e.xz(t, s);
-    g.wallTex[g.idx(x, z)] = TS.TRIM;
+    if (!g.in(x, z)) continue;
+    const i = g.idx(x, z);
+    if (isVoid && g.type[i] && (g.flags[i] & F.VOID)) { g.solid(x, z, top, wallTex); g.floorTex[i] = TS.TRIM; }
+    if (!g.type[i] || (s >= 0 && s < e.width)) g.wallTex[i] = TS.TRIM;
   }
   // gate towers in a void map: give the gate a roof slab
   if (isVoid) {
-    const [x, z] = e.xz(t, ds);
-    const i = g.idx(x, z);
-    g.ceil[i] = f + 3;
-    ctx.deco.box(x - (e.axis === 'z' ? 1 : 0), f + 3, z - (e.axis === 'x' ? 1 : 0), x + 1 + (e.axis === 'z' ? 1 : 0), f + 3.4, z + 1 + (e.axis === 'x' ? 1 : 0), TS.TRIM);
+    const [x0, z0] = e.xz(t, ds), [x1, z1] = e.xz(t, ds + dw - 1);
+    const ax = Math.min(x0, x1), az = Math.min(z0, z1), bx = Math.max(x0, x1) + 1, bz = Math.max(z0, z1) + 1;
+    ctx.deco.box(ax - (e.axis === 'z' ? 1 : 0), f + 3, az - (e.axis === 'x' ? 1 : 0), bx + (e.axis === 'z' ? 1 : 0), f + 3.4, bz + (e.axis === 'x' ? 1 : 0), TS.TRIM);
   }
 }
 

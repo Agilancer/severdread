@@ -454,12 +454,15 @@ export function buildNatural(rng, theme, depth, skin) {
     const k = t.gk;
     const line = crossCells(t, k).map(([x, z]) => idx(x, z));
     const door = idx(t.pts[k][0], t.pts[k][1]);
+    // keyed doorway: the 3 cells around the passage centre (offsets -1..1)
+    const doorCells = line.filter((_, n) => Math.abs(n - t.a) <= 1);
     const d = t.dir[k];
-    gateWall(g, deco, line, door, {
+    gateWall(g, deco, line, doorCells, {
       wallTex: S.gateTex, frameTex: S.frameTex, axis: d < 2 ? 'x' : 'z', torch: S.torch, facing: d === 0 || d === 2 ? -1 : 1,
       ceilTex: S.gateCeil ?? TS.WOOD, capTex: S.gateCap, height: S.gateH,
     });
     t.door = door;
+    t.doorCells = doorCells;
     if (skin.dressGate) skin.dressGate(X, t, line, door);
   }
   // entries (chamber cells where passages arrive), mouths and spines
