@@ -2,7 +2,7 @@
 // uploaded tiles whose tags match the theme's request win; otherwise a
 // placeholder is generated from the theme's spec.
 import { Rng } from '../core/rng.js';
-import { TS, KEY_HEX } from './levelgen/common.js';
+import { TS, KEY_HEX, SLOT_COUNT } from './levelgen/common.js';
 import { generateTexture } from '../art/textures_gen.js';
 
 const BUSY = ['machinery', 'equipment', 'door', 'window', 'screen', 'storefront', 'shop', 'lobby', 'pipes', 'tubes', 'canopy', 'shutter', 'hatch', 'fan', 'vent', 'skylight', 'railing', 'interior'];
@@ -105,15 +105,42 @@ export function buildLevelTextures(theme, seed, content, opts = {}) {
   else { canvases[TS.VOID] = generateTexture({ type: 'starfield' }, seed); slots[TS.VOID] = { layer: TS.VOID, emissive: 0, scroll: 0 }; }
   fill(TS.SPECIAL, tex.special || { ph: { type: 'teleporter', base: '#202830', accent: '#40e0ff' } }, { emissive: 0.7 });
 
+  // TEMPORARY role fallbacks until the role-based picker lands
+  const ROLE_PH = {
+    [TS.TRIM]: { type: 'metal_panel', base: '#6a6e76' }, [TS.PILLAR]: { type: 'concrete', base: '#8a8880' },
+    [TS.BEAM]: { type: 'metal_panel', base: '#4a4e56' }, [TS.CRATE]: { type: 'wood', base: '#7a5430' },
+    [TS.CRATE2]: { type: 'corrugated', base: '#8a2a1a' }, [TS.MACHINE]: { type: 'tech_panel', base: '#3a3e48', accent: '#30d8ff' },
+    [TS.PANEL]: { type: 'tech_panel', base: '#50545e' }, [TS.PIPE]: { type: 'pipes', base: '#5a5a60' },
+    [TS.GRATE]: { type: 'grate', base: '#5a5a60' }, [TS.STAIR]: { type: 'metal_panel', base: '#5a5e66' },
+    [TS.RAIL]: { type: 'metal_panel', base: '#8a8e96' }, [TS.LIGHT]: { type: 'ceiling_tile', base: '#f0f0e0', light: true },
+    [TS.LAVA]: { type: 'lava', base: '#ff5a00' }, [TS.POISON]: { type: 'lava', base: '#60e020', dark: '#0a3008', accent: '#e0ff60' },
+    [TS.SPIKES]: { type: 'metal_panel', base: '#9a9aa0' }, [TS.WATER]: { type: 'water', base: '#1a4a7a' },
+    [TS.FACADE]: { type: 'windows', base: '#3a3f48', alt: '#1a2a3a', accent: '#ffd27a' }, [TS.FACADE2]: { type: 'windows', base: '#4a4640', alt: '#151515', accent: '#ff9a40' },
+    [TS.FACADE3]: { type: 'windows', base: '#14121c', alt: '#1a0a2a', accent: '#ff40d0' }, [TS.ROAD]: { type: 'asphalt', base: '#2c2c30' },
+    [TS.SIDEWALK]: { type: 'concrete', base: '#8a8880' }, [TS.ROOF]: { type: 'concrete', base: '#5a5852' },
+    [TS.GLASS]: { type: 'windows', base: '#203040', alt: '#304a60', accent: '#a0d0ff' }, [TS.ROCK]: { type: 'rock', base: '#6a5a4c' },
+    [TS.GROUND]: { type: 'grass', base: '#3d5a26' }, [TS.FOLIAGE]: { type: 'hedge', base: '#2a4a1a' },
+    [TS.METAL]: { type: 'metal_panel', base: '#5a5e66' }, [TS.CEIL2]: { type: 'metal_panel', base: '#3a3e44' },
+    [TS.FLOOR3]: { type: 'tile', base: '#9a9a9a' }, [TS.PITWALL]: { type: 'rock', base: '#3a3030' },
+    [TS.WOOD]: { type: 'wood', base: '#6b4426' }, [TS.SCREEN]: { type: 'screen_wall', base: '#1a1e24', accent: '#40ff90' },
+    [TS.PAINT]: { type: 'concrete', base: '#e8d24a' }, [TS.NEON]: { type: 'neon_grid', base: '#07040f', accent: '#ff2bd6' },
+    [TS.CARPET]: { type: 'carpet', base: '#5a1a24', alt: '#a8862c' },
+  };
+  for (let k = 16; k < SLOT_COUNT; k++) {
+    if (canvases[k]) continue;
+    canvases[k] = generateTexture(ROLE_PH[k] || { type: 'concrete', base: '#777' }, (seed + k * 7919) >>> 0);
+    slots[k] = { layer: k, emissive: (k === TS.LIGHT || k === TS.NEON || k === TS.SCREEN) ? 1 : (k === TS.LAVA ? 1 : k === TS.POISON ? 0.85 : 0), scroll: 0 };
+  }
+
   // Flatten into texture-array layers. Static slot k -> layer k. Animated
   // slots get their frames appended after the 16 slots and encode
   // layer = firstFrame + frames * 1000 (decoded in the world shader).
   const layers = [];
-  for (let k = 0; k < 16; k++) {
+  for (let k = 0; k < SLOT_COUNT; k++) {
     const c = canvases[k];
     layers[k] = Array.isArray(c) ? c[0] : c;
   }
-  for (let k = 0; k < 16; k++) {
+  for (let k = 0; k < SLOT_COUNT; k++) {
     const c = canvases[k];
     if (!Array.isArray(c)) continue;
     const first = layers.length;

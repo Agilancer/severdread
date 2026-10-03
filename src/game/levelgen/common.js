@@ -1,13 +1,61 @@
 // Shared level-generation helpers.
-import { Grid, F, OPEN, SOLID, SKY_H } from '../grid.js';
+import { Grid, F, OPEN, SOLID, SKY_H, HAZ, DIR_X, DIR_Z, OPP, EDGE_BIT } from '../grid.js';
 import { clamp } from '../../core/math.js';
 
-// Texture slots: every level fills these slots with real or placeholder art.
+// Texture slots ("roles"): every level fills these slots with real or
+// placeholder art chosen so the texture fits the surface it is used on
+// (see game/leveltextures.js + data/texroles.js). Grid cells and deco boxes
+// refer to slots, never to raw tiles.
 export const TS = {
-  WALL: 0, WALL2: 1, FLOOR: 2, FLOOR2: 3, CEIL: 4, ACCENT: 5, SIDE: 6,
+  WALL: 0,        // main wall
+  WALL2: 1,       // secondary wall (other rooms / wings)
+  FLOOR: 2,       // main floor
+  FLOOR2: 3,      // corridor / walkway floor
+  CEIL: 4,        // ceiling
+  ACCENT: 5,      // feature wall (boss arena, focal walls)
+  SIDE: 6,        // ledge / platform / pit sides, curbs
   DOOR: 7, DOOR_RED: 8, DOOR_BLUE: 9, DOOR_YELLOW: 10, DOOR_GREEN: 11, DOOR_PURPLE: 12,
-  HAZARD: 13, VOID: 14, SPECIAL: 15,
+  HAZARD: 13,     // the theme's default hazard liquid
+  VOID: 14,       // far plane below voids (road, clouds, lava sea...)
+  SPECIAL: 15,    // teleporter pad
+  TRIM: 16,       // baseboards, crown moulding, wall bands, door frames, step nosing
+  PILLAR: 17,     // columns / supports
+  BEAM: 18,       // girders, ceiling beams, struts
+  CRATE: 19,      // crates / boxes
+  CRATE2: 20,     // containers / second crate kind
+  MACHINE: 21,    // consoles, computers, machinery fronts
+  PANEL: 22,      // wall panelling / wainscot / tech panels
+  PIPE: 23,       // pipes and conduits
+  GRATE: 24,      // catwalks, bridge decks, metal walkways, vents
+  STAIR: 25,      // stair treads
+  RAIL: 26,       // hand rails / guard rails / fences
+  LIGHT: 27,      // emissive light panels and lamp heads
+  LAVA: 28,
+  POISON: 29,
+  SPIKES: 30,     // spike metal (pit spikes)
+  WATER: 31,
+  FACADE: 32,     // building facades (skyscraper windows)
+  FACADE2: 33,
+  FACADE3: 34,
+  ROAD: 35,       // asphalt with lane markings
+  SIDEWALK: 36,   // pavement / plaza paving
+  ROOF: 37,       // rooftop surface / building caps
+  GLASS: 38,      // windows (looking out)
+  ROCK: 39,       // natural rock / cliff faces
+  GROUND: 40,     // outdoor ground (grass, dirt, sand, snow)
+  FOLIAGE: 41,    // hedges / bushes / tree canopies
+  METAL: 42,      // plain metal plate (vehicles, machine sides, brackets)
+  CEIL2: 43,      // secondary ceiling (halls / big rooms)
+  FLOOR3: 44,     // feature floor (hall centre, plaza, arena)
+  PITWALL: 45,    // pit / shaft walls
+  WOOD: 46,       // wooden planks / furniture
+  SCREEN: 47,     // screens / displays (emissive)
+  PAINT: 48,      // road paint / floor markings (lane lines, crosswalks, hazard lines)
+  NEON: 49,       // neon signs and strips (emissive)
+  CARPET: 50,     // carpets / rugs / runners
 };
+export const SLOT_COUNT = 56;
+
 export const KEY_COLORS = ['red', 'blue', 'yellow', 'green', 'purple'];
 export const KEY_HEX = { red: '#ff2a2a', blue: '#2a6aff', yellow: '#ffd21a', green: '#2aff4a', purple: '#c040ff' };
 export const DOOR_SLOT = { red: TS.DOOR_RED, blue: TS.DOOR_BLUE, yellow: TS.DOOR_YELLOW, green: TS.DOOR_GREEN, purple: TS.DOOR_PURPLE };
@@ -151,9 +199,9 @@ export function findChokepoints(g, source, target, dist) {
 
 // A door fits where the cell is open on one axis and walled on the other.
 export function isDoorable(g, i) {
-  if (g.type[i] !== OPEN || (g.flags[i] & (F.VOID | F.HAZARD))) return false;
+  if (g.type[i] !== OPEN || (g.flags[i] & (F.VOID | F.HAZARD | F.PIT | F.STAIR | F.BRIDGE | F.OBSTACLE)) || g.edge[i]) return false;
   const x = i % g.w, z = (i / g.w) | 0;
-  const o = (a, b) => g.isOpen(a, b) && !(g.flags[g.idx(a, b)] & F.VOID);
+  const o = (a, b) => g.isOpen(a, b) && !(g.flags[g.idx(a, b)] & (F.VOID | F.PIT)) && Math.abs(g.minFloor(g.idx(a, b)) - g.floor[i]) < 0.6;
   const ex = o(x + 1, z), wx = o(x - 1, z), sz = o(x, z + 1), nz = o(x, z - 1);
   if (ex && wx && !sz && !nz) return 'x';
   if (sz && nz && !ex && !wx) return 'z';
@@ -193,4 +241,4 @@ export function relaxHeights(g, maxStep = 0.5, iters = 6) {
 }
 
 export function quant(v, q = 0.25) { return Math.round(v / q) * q; }
-export { F, OPEN, SOLID, SKY_H, clamp };
+export { F, OPEN, SOLID, SKY_H, HAZ, DIR_X, DIR_Z, OPP, EDGE_BIT, clamp };

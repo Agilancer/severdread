@@ -70,6 +70,8 @@ export class World {
     let hasVoid = false;
     for (let i = 0; i < g.w * g.h; i++) if (g.flags[i] & F.VOID) { hasVoid = true; break; }
     const mesh = buildWorldMesh(g, this.slots, {
+      deco: this.level.deco,
+      spikeSlot: TS.SPIKES,
       voidY: this.level.voidY,
       voidPlane: hasVoid && this.theme.void !== 'abyss' && this.theme.void !== 'space' && voidSlot
         ? { y: this.level.voidY + 0.5, layer: voidSlot.layer, emissive: voidSlot.emissive, scroll: voidSlot.scroll, light: 0.9 } : null,

@@ -4,6 +4,7 @@ import { THEMES, THEME_BY_ID } from '../../data/themes.js';
 import { MONSTERS, VARIANTS } from '../../data/monsters.js';
 import * as B from '../../data/balance.js';
 import { TS, F, KEY_COLORS, DOOR_SLOT, fortifyArena, findChokepoints, isDoorable, cellsInRadius } from './common.js';
+import { Deco } from './deco.js';
 import { genRooms } from './gen_rooms.js';
 import { genCaves } from './gen_caves.js';
 import { genCity } from './gen_city.js';
@@ -60,7 +61,7 @@ function validate(L) {
     if (best < 0) return false;
     L.start = { x: best % g.w, z: (best / g.w) | 0 };
   }
-  const dist = g.bfs([g.idx(L.start.x, L.start.z)], { jumpGap: L.jumpGap || 0 });
+  const dist = g.bfs([g.idx(L.start.x, L.start.z)], { jumpGap: L.jumpGap || 0, avoid: F.OBSTACLE });
   let reach = 0;
   for (let i = 0; i < dist.length; i++) if (dist[i] >= 0) reach++;
   return reach > 120;
@@ -72,7 +73,8 @@ function populate(L, rng, theme, depth, playerLevel) {
   const W = g.w;
   const startIdx = g.idx(Math.floor(L.start.x), Math.floor(L.start.z));
   g.flags[startIdx] |= F.START;
-  const bfsOpts = { jumpGap: L.jumpGap || 0 };
+  const deco = L.deco || new Deco(g, theme, rng);
+  const bfsOpts = { jumpGap: L.jumpGap || 0, avoid: F.OBSTACLE };
   let dist = g.bfs([startIdx], bfsOpts);
 
   // ---- boss arena
@@ -105,21 +107,21 @@ function populate(L, rng, theme, depth, playerLevel) {
   let bossCell = -1;
   if (L.boss) {
     const bi = g.idx(Math.floor(L.boss.x), Math.floor(L.boss.z));
-    if (g.type[bi] && dist[bi] >= 0 && !(g.flags[bi] & (F.HAZARD | F.VOID))) bossCell = bi;
+    if (g.type[bi] && dist[bi] >= 0 && !(g.flags[bi] & (F.HAZARD | F.VOID | F.PIT | F.STAIR | F.OBSTACLE))) bossCell = bi;
   }
   if (bossCell < 0 && arena && arena.length) {
     const tx = L.boss ? L.boss.x : arena.reduce((s, i) => s + (i % W), 0) / arena.length;
     const tz = L.boss ? L.boss.z : arena.reduce((s, i) => s + ((i / W) | 0), 0) / arena.length;
     let bd = Infinity;
     for (const i of arena) {
-      if (!g.type[i] || dist[i] < 0 || (g.flags[i] & (F.HAZARD | F.VOID))) continue;
+      if (!g.type[i] || dist[i] < 0 || (g.flags[i] & (F.HAZARD | F.VOID | F.PIT | F.STAIR | F.OBSTACLE))) continue;
       const d = ((i % W) + 0.5 - tx) ** 2 + (((i / W) | 0) + 0.5 - tz) ** 2;
       if (d < bd) { bd = d; bossCell = i; }
     }
   }
   if (bossCell < 0) {
     let bd = -1;
-    for (let i = 0; i < dist.length; i++) if (dist[i] > bd && !(g.flags[i] & (F.HAZARD | F.VOID))) { bd = dist[i]; bossCell = i; }
+    for (let i = 0; i < dist.length; i++) if (dist[i] > bd && !(g.flags[i] & (F.HAZARD | F.VOID | F.PIT | F.STAIR | F.OBSTACLE))) { bd = dist[i]; bossCell = i; }
   }
   const arenaSet = new Set(arena || []);
 
@@ -173,7 +175,7 @@ function populate(L, rng, theme, depth, playerLevel) {
     const d = g.bfs([startIdx], { ...bfsOpts, blocked: (b) => blocked.has(b) });
     const cand = [];
     for (let i = 0; i < d.length; i++) {
-      if (d[i] < 6 || (g.flags[i] & (F.HAZARD | F.VOID | F.DOOR)) || arenaSet.has(i)) continue;
+      if (d[i] < 6 || (g.flags[i] & (F.HAZARD | F.VOID | F.DOOR | F.PIT | F.STAIR | F.OBSTACLE | F.NOSPAWN)) || arenaSet.has(i)) continue;
       if (g.ceil[i] - g.floor[i] < 1.2) continue;
       cand.push(i);
     }
@@ -193,7 +195,7 @@ function populate(L, rng, theme, depth, playerLevel) {
   const nEnemies = B.enemyCount(depth, sizeFactor);
   const spawnable = [];
   for (let i = 0; i < dist.length; i++) {
-    if (dist[i] < 9 || (g.flags[i] & (F.HAZARD | F.VOID | F.DOOR | F.NOSPAWN | F.START)) || arenaSet.has(i)) continue;
+    if (dist[i] < 9 || (g.flags[i] & (F.HAZARD | F.VOID | F.DOOR | F.NOSPAWN | F.START | F.PIT | F.STAIR | F.OBSTACLE)) || arenaSet.has(i)) continue;
     if (g.ceil[i] - g.floor[i] < 1.3) continue;
     spawnable.push(i);
   }
@@ -223,7 +225,7 @@ function populate(L, rng, theme, depth, playerLevel) {
 
   // portal: arena cell near the boss spawn but not on it
   let portalCell = bossCell;
-  const near = cellsInRadius(g, bossSpawn.x, bossSpawn.z, 4, (i) => g.type[i] && !(g.flags[i] & (F.HAZARD | F.VOID)) && dist[i] >= 0);
+  const near = cellsInRadius(g, bossSpawn.x, bossSpawn.z, 4, (i) => g.type[i] && !(g.flags[i] & (F.HAZARD | F.VOID | F.PIT | F.STAIR | F.OBSTACLE | F.DOOR)) && dist[i] >= 0);
   if (near.length) portalCell = near.sort((a, b) => Math.abs(cellD(a, bossCell, W) - 3) - Math.abs(cellD(b, bossCell, W) - 3))[0];
 
   // ---- chests
@@ -241,7 +243,7 @@ function populate(L, rng, theme, depth, playerLevel) {
 
   // ---- props & light sources
   const props = [];
-  const lights = [];
+  const lights = [...deco.lights];
   const propNames = theme.props || [];
   if (propNames.length) {
     const nProps = Math.floor(countReachable(dist) / 45);
@@ -263,12 +265,13 @@ function populate(L, rng, theme, depth, playerLevel) {
     }
   }
   bakeLights(g, lights, theme);
+  const decoOut = deco.result();
 
   return {
     theme, depth, grid: g,
     start: { x: L.start.x + 0.5, z: L.start.z + 0.5, yaw: L.startYaw ?? guessYaw(g, startIdx, dist) },
     spawns, boss: bossSpawn, portal: { x: (portalCell % W) + 0.5, z: ((portalCell / W) | 0) + 0.5 },
-    doors, keys, chests, props, lights,
+    doors, keys, chests, props, lights, deco: decoOut,
     voidY: L.voidY ?? -30,
     scrollSpeed: L.scrollSpeed || 0,
     jumpGap: L.jumpGap || 0,
@@ -277,11 +280,14 @@ function populate(L, rng, theme, depth, playerLevel) {
   };
 }
 
+const SNAP_FIELDS = ['type', 'floor', 'ceil', 'sky', 'wallTex', 'floorTex', 'flags', 'hazType', 'stairDir', 'rise', 'edge'];
 function snapshot(g) {
-  return { type: g.type.slice(), floor: g.floor.slice(), ceil: g.ceil.slice(), sky: g.sky.slice(), wallTex: g.wallTex.slice(), flags: g.flags.slice() };
+  const s = {};
+  for (const k of SNAP_FIELDS) s[k] = g[k].slice();
+  return s;
 }
 function restore(g, s) {
-  g.type.set(s.type); g.floor.set(s.floor); g.ceil.set(s.ceil); g.sky.set(s.sky); g.wallTex.set(s.wallTex); g.flags.set(s.flags);
+  for (const k of SNAP_FIELDS) g[k].set(s[k]);
 }
 
 function makeDoor(g, cell, color) {
