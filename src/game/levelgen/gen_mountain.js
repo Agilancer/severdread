@@ -16,7 +16,7 @@
 //    LIGHT), data monoliths (SCREEN), crystals (ACCENT), relay huts (METAL).
 //  - desert: dune hollows between sand dunes (GROUND / FLOOR) and tall mesas
 //    (ROCK), sunken bowls, mesas reached by stairs, oasis pools with palms,
-//    sandstone ruins (PANEL walls, TRIM caps, PILLAR columns), cacti,
+//    sandstone ruins (masonry walls on the PILLAR role, TRIM caps, columns), cacti,
 //    hoodoos, wagons, adobe huts.
 //  - toxic swamp: islands among hedge banks (WALL / FOLIAGE tops) joined by
 //    boardwalks over poison marsh, deep poison bogs with plank bridges,
@@ -92,7 +92,7 @@ function mountainSkin(theme, depth) {
   const skin = {
     style: () => ({
       ceilT: TS.CEIL, cliffTex: TS.ROCK, spikeTex: fam === 'cyber' ? TS.ACCENT : TS.ROCK, sky: 1,
-      gateTex: fam === 'cyber' ? TS.METAL : fam === 'desert' ? TS.PANEL : TS.WOOD,
+      gateTex: fam === 'cyber' ? TS.METAL : fam === 'desert' ? TS.PILLAR : TS.WOOD,
       frameTex: fam === 'cyber' ? TS.METAL : TS.BEAM,
       gateCap: fam === 'cyber' ? TS.METAL : fam === 'desert' ? TS.TRIM : TS.WOOD,
       gateCeil: fam === 'cyber' ? TS.METAL : TS.WOOD,
@@ -320,7 +320,7 @@ function mountainSkin(theme, depth) {
   const logged = (name, fn) => (c) => { const ok = fn(c); if (ok && globalThis.DBG) console.log('extra', name, 'in area', c.id); return ok; };
   skin.features = (X, L) => ({
     outpost: logged('outpost', (c) => cabin(X, L, c, fam === 'cyber' ? { wallTex: TS.METAL, chimneyTex: TS.PIPE, lamp: cyan }
-      : fam === 'desert' ? { wallTex: TS.PANEL, chimneyTex: TS.PANEL } : { wallTex: TS.WOOD, chimneyTex: TS.ROCK })),
+      : fam === 'desert' ? { wallTex: TS.PILLAR, chimneyTex: TS.PILLAR } : { wallTex: TS.WOOD, chimneyTex: TS.ROCK })),
     adit: logged('adit', (c) => adit(X, L, c)),
     shrine: logged('shrine', (c) => shrine(X, L, c)),
     ruins: logged('ruins', (c) => ruins(X, L, c)),
@@ -376,7 +376,7 @@ function mountainSkin(theme, depth) {
     return false;
   }
 
-  // sandstone ruin: broken walls (grid solids, PANEL faces, TRIM caps) with
+  // sandstone ruin: broken walls (grid solids, PILLAR masonry, TRIM caps) with
   // 2-wide gaps, paved floor, broken columns and rubble inside
   function ruins(X, L, c) {
     const { g, deco, rng, W, idx } = X;
@@ -403,7 +403,7 @@ function mountainSkin(theme, depth) {
         const edge = x === x0 || z === z0 || x === x0 + w - 1 || z === z0 + h - 1;
         if (edge && !gaps.has(i)) {
           const corner = (x === x0 || x === x0 + w - 1) && (z === z0 || z === z0 + h - 1);
-          g.solid(x, z, y + (corner ? rng.float(2.8, 4.2) : rng.float(1.2, 3.4)), TS.PANEL);
+          g.solid(x, z, y + (corner ? rng.float(2.8, 4.2) : rng.float(1.2, 3.4)), TS.PILLAR);
           g.floorTex[i] = TS.TRIM;
         } else g.floorTex[i] = TS.FLOOR3;
       }
@@ -423,7 +423,7 @@ function mountainSkin(theme, depth) {
       for (let k = 0; k < 3; k++) {
         const x = x0 - 1 + rng.int(0, w + 1), z = rng.chance(0.5) ? z0 - 1 : z0 + h;
         if (!deco.cellFree(x, z)) continue;
-        deco.box(x + 0.2, y, z + 0.25, x + 0.8, y + rng.float(0.3, 0.6), z + 0.75, TS.PANEL, { solid: true });
+        deco.box(x + 0.2, y, z + 0.25, x + 0.8, y + rng.float(0.3, 0.6), z + 0.75, TS.PILLAR, { solid: true });
       }
       return true;
     }
