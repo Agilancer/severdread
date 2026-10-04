@@ -200,25 +200,69 @@ export function spawnProjectile(game, p) {
   p.age = 0;
   p.hit = p.hit || new Set();
   p.bx = p.x; p.by = p.y; p.bz = p.z;
+  p.sx = p.x; p.sy = p.y; p.sz = p.z;          // spawn point: tracer tails never reach behind it
   game.world.projectiles.push(p);
   return p;
 }
 
-// Player fires `weapon` along the camera direction.
+// Player shots leave the DRAWN barrel tip and fly into what the crosshair is
+// on. Depth (m in front of the eye, along the view axis) of the shot origin
+// on the camera ray through the muzzle: projectiles start at arm's length,
+// beams a little farther so their first glow dots are not screen-sized.
+const MUZZLE_DEPTH = 0.45, BEAM_DEPTH = 0.8, AIM_RANGE = 120;
+
+// Camera basis at fire time, the same as Renderer.beginFrame builds it
+// (yaw, pitch, strafe roll; fov incl. the dash widening).
+function shotCamera(game) {
+  const p = game.player, eye = p.eyePos(), yaw = p.yaw, pitch = p.pitch, roll = p.camRoll || 0;
+  const cp = Math.cos(pitch), f = [Math.cos(yaw) * cp, Math.sin(pitch), Math.sin(yaw) * cp];
+  const u0 = [-Math.sin(yaw) * Math.sin(roll), Math.cos(roll), Math.cos(yaw) * Math.sin(roll)];
+  const r = norm3(cross3(f, u0)), up = cross3(r, f);
+  const tanV = Math.tan((((game.settings?.fov) || 80) * Math.PI) / 360) * (p.dashT > 0 ? 1.06 : 1);
+  return { eye, fwd: f, right: r, up, tanV, tanH: tanV * game.renderer.lowW / game.renderer.lowH };
+}
+function norm3(v) { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
+function cross3(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+
+// What the crosshair is on: the eye ray against walls / props and monsters,
+// up to `range` (a far point on the ray when nothing is hit).
+function crosshairTarget(game, C, range) {
+  const w = game.world, e = C.eye, f = C.fwd;
+  let dist = w.castRay(e[0], e[1], e[2], f[0], f[1], f[2], range);
+  if (dist < 0) dist = range;
+  for (const m of w.monsters) {
+    if (m.dead) continue;
+    const t = rayCylinder(e, f, m);
+    if (t !== null && t < dist) dist = t;
+  }
+  return [e[0] + f[0] * dist, e[1] + f[1] * dist, e[2] + f[2] * dist];
+}
+
+// The shot origin: the point `depth` in front of the eye on the camera ray
+// through the drawn muzzle (p.muzzleNDC, set by Game.weaponLayout). Every
+// point of that ray projects onto the muzzle, so this is exact on screen at
+// any depth. When the ray meets a wall / prop first the origin moves in
+// along the same ray (still on the muzzle, never inside geometry).
+// Returns {o, depth}.
+function shotOrigin(game, C, depth) {
+  const ndc = game.player.muzzleNDC, e = C.eye, f = C.fwd, r = C.right, up = C.up;
+  const kx = ndc ? ndc[0] * C.tanH : 0.12, ky = ndc ? ndc[1] * C.tanV : -0.2;
+  const u = [f[0] + r[0] * kx + up[0] * ky, f[1] + r[1] * kx + up[1] * ky, f[2] + r[2] * kx + up[2] * ky];
+  const L = Math.hypot(u[0], u[1], u[2]);
+  const hit = game.world.castRay(e[0], e[1], e[2], u[0] / L, u[1] / L, u[2] / L, depth * L + 0.2);
+  if (hit >= 0) depth = Math.max(0.06, Math.min(depth, (hit - 0.2) / L));
+  return { o: [e[0] + u[0] * depth, e[1] + u[1] * depth, e[2] + u[2] * depth], depth };
+}
+
+// Player fires `weapon`: from the drawn muzzle toward the crosshair target.
 export function firePlayerWeapon(game, weapon) {
   const p = game.player, st = p.stats;
   const arch = ARCHETYPES[weapon.archetype] || ARCHETYPES.rifle;
   const el = weapon.element;
-  const yaw = p.yaw, pitch = p.pitch;
-  const fwd = [Math.cos(yaw) * Math.cos(pitch), Math.sin(pitch), Math.sin(yaw) * Math.cos(pitch)];
-  const right = [-Math.sin(yaw), 0, Math.cos(yaw)];
-  const up = [-Math.cos(yaw) * Math.sin(pitch), Math.cos(pitch), -Math.sin(yaw) * Math.sin(pitch)];
-  const eye = p.eyePos();
-  // muzzle slightly right/below the eye
-  // shots leave from the sprite's on-screen muzzle when known (projected 0.35 in front of the eye)
-  const ndc = p.muzzleNDC, tanV = Math.tan((((game.settings?.fov) || 80) * Math.PI) / 360), asp = game.renderer.lowW / game.renderer.lowH;
-  const mr = ndc ? Math.max(-0.4, Math.min(0.4, ndc[0] * tanV * asp * 0.35)) : 0.12, mu = ndc ? Math.max(-0.3, Math.min(0.1, ndc[1] * tanV * 0.35)) : -0.14;
-  const mz = [eye[0] + fwd[0] * 0.35 + right[0] * mr + up[0] * mu, eye[1] + fwd[1] * 0.35 + up[1] * mu, eye[2] + fwd[2] * 0.35 + right[2] * mr + up[2] * mu];
+  const yaw = p.yaw;
+  const C = shotCamera(game);
+  const fwd = C.fwd, right = C.right, up = C.up, eye = C.eye;
+  const org = shotOrigin(game, C, MUZZLE_DEPTH), mz = org.o;
   const ab = st.abilities;
   p.shotCount++;
   let critForced = false;
@@ -253,35 +297,41 @@ export function firePlayerWeapon(game, weapon) {
   if (arch.hitscan) {
     const range = arch.range || 60;
     const spreadPel = Math.max(1, 1 + pat('fan') + (ab.multishot || 0));
+    const bo = shotOrigin(game, C, BEAM_DEPTH);   // damage runs along the eye ray, the beam starts at the muzzle
     for (let k = 0; k < spreadPel; k++) {
       const off = spreadPel > 1 ? (k / (spreadPel - 1) - 0.5) * 0.25 : 0;
       const d = rotateDir(fwd, right, up, off, 0);
-      hitscan(game, mz, eye, d, range, baseDmg, el, weapon, arch, critForced);
+      const n = game.world.beams.length;
+      hitscan(game, bo.o, eye, d, range, baseDmg, el, weapon, arch, critForced);
+      for (let i = n; i < game.world.beams.length; i++) game.muzzleShots.push({ beam: game.world.beams[i], depth: bo.depth });
     }
     if (has('nova') && p.shotCount % 5 === 0) novaRing(game, mz, baseDmg * 0.6, el, 12);
     return;
   }
 
-  // projectile weapons
+  // projectile weapons: spread / fans / rings around the muzzle -> target line
   const vis = projVisual(game, el, arch.proj, weapon.seed || 0);
   let pellets = Math.max(1, arch.pellets || 1) + (ab.multishot || 0);
   const fanN = pat('fan'), ringN = pat('burst_ring');
+  const aim = crosshairTarget(game, C, AIM_RANGE);
+  const aimDir = norm3([aim[0] - mz[0], aim[1] - mz[1], aim[2] - mz[2]]);
+  const aR = norm3(cross3(aimDir, up)), aU = cross3(aR, aimDir);
   const dirs = [];
   if (ringN) {
-    for (let k = 0; k < ringN; k++) dirs.push(rotateDir(fwd, right, up, (k / ringN) * Math.PI * 2, 0));
+    for (let k = 0; k < ringN; k++) dirs.push(rotateDir(aimDir, aR, aU, (k / ringN) * Math.PI * 2, 0));
   } else {
     const fanCount = fanN || 1;
     const fanSpread = fanN ? 0.12 * Math.sqrt(fanN) : (arch.fan || 0);
     const fanEach = (arch.fan && pellets > 1) ? pellets : fanCount;
     if (arch.fan && pellets > 1 && !fanN) {
-      for (let k = 0; k < pellets; k++) dirs.push(rotateDir(fwd, right, up, (k / (pellets - 1) - 0.5) * arch.fan, 0));
+      for (let k = 0; k < pellets; k++) dirs.push(rotateDir(aimDir, aR, aU, (k / (pellets - 1) - 0.5) * arch.fan, 0));
       pellets = 1;
     } else {
       for (let f = 0; f < fanEach; f++) {
         const fo = fanCount > 1 ? (f / (fanCount - 1) - 0.5) * fanSpread * 2 : 0;
         for (let k = 0; k < pellets; k++) {
           const s = arch.spread * (p.moving ? 1.3 : 1);
-          dirs.push(rotateDir(fwd, right, up, fo + fx.gauss() * s, fx.gauss() * s * 0.7));
+          dirs.push(rotateDir(aimDir, aR, aU, fo + fx.gauss() * s, fx.gauss() * s * 0.7));
         }
       }
     }
@@ -309,9 +359,10 @@ export function firePlayerWeapon(game, weapon) {
     if (has('wave')) base.pattern = { type: 'wave', amp: 0.35, freq: 13, phase: idx * 1.3 };
     if (has('curve')) base.curve = (idx % 2 ? 1 : -1) * 1.6;
     if (has('orbit')) base.pattern = { type: 'orbit', amp: 0.25, freq: 14, phase: idx * 0.7, grow: 1.5 };
+    const pin = (pr) => { if (pr) game.muzzleShots.push({ pr, depth: org.depth }); };
     if (has('helix')) {
-      spawnProjectile(game, { ...base, pattern: { type: 'helix', amp: 0.3, freq: 15, phase: 0 } });
-      spawnProjectile(game, { ...base, hit: new Set(), pattern: { type: 'helix', amp: 0.3, freq: 15, phase: Math.PI } });
+      pin(spawnProjectile(game, { ...base, pattern: { type: 'helix', amp: 0.3, freq: 15, phase: 0 } }));
+      pin(spawnProjectile(game, { ...base, hit: new Set(), pattern: { type: 'helix', amp: 0.3, freq: 15, phase: Math.PI } }));
     } else if (has('slider')) {
       // floor + ceiling pair joined by an energy beam
       const f = game.world.floorAt(p.x, p.z) ?? p.y;
@@ -321,7 +372,7 @@ export function firePlayerWeapon(game, weapon) {
       const hv = [d[0] / flat * speed * 0.8, 0, d[2] / flat * speed * 0.8];
       spawnProjectile(game, { ...base, y: f + 0.15, vx: hv[0], vy: 0, vz: hv[2], slide: 'floor', pairId, gravity: 0, bounces: 8, life: 2.5, dmg: base.dmg * 0.6 });
       spawnProjectile(game, { ...base, hit: new Set(), y: c - 0.15, vx: hv[0], vy: 0, vz: hv[2], slide: 'ceil', pairId, gravity: 0, bounces: 8, life: 2.5, dmg: base.dmg * 0.6 });
-    } else spawnProjectile(game, base);
+    } else pin(spawnProjectile(game, base));
   });
   if (has('nova') && p.shotCount % 5 === 0) novaRing(game, mz, baseDmg * 0.6, el, 12);
 }
@@ -607,7 +658,19 @@ function detonate(game, pr) {
   }
 }
 
+// Player shots start at arm's length in front of the eye, where a world-sized
+// sprite would fill the screen: their on-screen size is capped (share of the
+// screen height) and grows into the normal size a little way out.
+const SHOT_MAX_PX = { bullet: 0.035, pellet: 0.03, rocket: 0.1, grenade: 0.07, orb: 0.11, flame: 0.2, disc: 0.1 };
+// Streak behind player shots, from the muzzle at first: [seconds of flight it
+// covers, width (share of the screen height), alpha]. It shows the shot
+// leaving the barrel along the barrel line even when it is already a few
+// metres out by the first frame it is seen.
+const SHOT_TRAIL = { bullet: [0.03, 0.016, 1], pellet: [0.022, 0.012, 0.8], rocket: [0.05, 0.03, 0.45], orb: [0.035, 0.035, 0.3], disc: [0.03, 0.03, 0.3] };
+const TRACER_UV = [0.75, 0, 1, 1];
+
 export function submitProjectiles(game, batcher) {
+  const r = game.renderer, W = r.lowW, H = r.lowH, kpx = 2 / (H * r.proj[5]);   // world units per screen px at view depth 1
   for (const pr of game.world.projectiles) {
     const v = pr.vis;
     if (!v) continue;
@@ -616,20 +679,30 @@ export function submitProjectiles(game, batcher) {
     // solid-looking sprites (bullets, rockets, grenades, organic orbs) draw as cutouts
     const solid = v.real && (pr.kind === 'bullet' || pr.kind === 'pellet' || pr.kind === 'rocket' || pr.kind === 'grenade' || pr.kind === 'disc');
     const mode = v.dark ? MODE.ALPHA : solid ? MODE.CUTOUT : MODE.ADD;
+    const mine = pr.owner === 'player';
     let rot = pr.age * (pr.spin || 0);
+    // flight direction on screen (y up): toward a point 5 cm ahead
+    const head = r.project(pr.x, pr.y, pr.z);
+    let ang = null;
+    if (head) {
+      const sp = Math.hypot(pr.vx, pr.vy, pr.vz) || 1, k = 0.05 / sp;
+      const b = r.project(pr.x + pr.vx * k, pr.y + pr.vy * k, pr.z + pr.vz * k);
+      if (b && (b.x - head.x) ** 2 + (b.y - head.y) ** 2 > 1e-12) ang = Math.atan2(-(b.y - head.y) * H, (b.x - head.x) * W);
+    }
     if (v.direction === 'right') {
       // side-view projectiles (comets, arrows) point along their flight path on screen
-      const r = game.renderer;
-      const a = r.project(pr.x, pr.y, pr.z), b = r.project(pr.x + pr.vx * 0.05, pr.y + pr.vy * 0.05, pr.z + pr.vz * 0.05);
-      if (a && b) rot = Math.atan2(-(b.y - a.y) * r.lowH, (b.x - a.x) * r.lowW);
+      if (ang !== null) rot = ang;
       s *= 1.4;
-    } else if (solid && (pr.kind === 'bullet' || pr.kind === 'rocket')) rot = 0;
+    } else if (mine && v.real && v.direction === 'up' && ang !== null) rot = ang - Math.PI / 2;   // bullets, rockets, discs seen from behind: nose along the flight
+    else if (solid && (pr.kind === 'bullet' || pr.kind === 'rocket')) rot = 0;
     if (pr.kind === 'bullet' || pr.kind === 'pellet') s = Math.max(s, 0.14);
+    if (mine && head && SHOT_MAX_PX[pr.kind]) s = Math.min(s, SHOT_MAX_PX[pr.kind] * H * head.w * kpx);
+    if (mine && head && SHOT_TRAIL[pr.kind] && pr.age > 0) shotTrail(game, batcher, pr, head, v, s, fade, kpx);
     batcher.add(v.handle, mode, pr.x, pr.y, pr.z, s, s, {
       uv: v.uv, tint: v.real ? [1.15, 1.15, 1.15, fade] : [v.color[0], v.color[1], v.color[2], fade], anchorY: 0.5, spherical: true,
       rot, fullbright: true, glow: v.real ? [0, 0, 0, 0] : [v.color[0] * 0.3, v.color[1] * 0.3, v.color[2] * 0.3, 0],
     });
-    if (solid && pr.owner === 'player' && pr.kind !== 'grenade') {
+    if (solid && mine && pr.kind !== 'grenade') {
       // engine / tracer glow behind bullets & rockets
       const col = pr.light || v.color || [1, 0.7, 0.3];
       batcher.add(game.content.fx, MODE.ADD, pr.x, pr.y, pr.z, s * 1.6, s * 1.6, { uv: [0, 0, 0.25, 1], tint: [col[0], col[1], col[2], 0.5], anchorY: 0.5, spherical: true, fullbright: true });
@@ -639,6 +712,38 @@ export function submitProjectiles(game, batcher) {
       batcher.add(game.content.fx, MODE.ADD, pr.x, pr.y, pr.z, s * 1.8, s * 1.8, { uv: [0, 0, 0.25, 1], tint: [...(pr.light || [1, 0.5, 0.5]), 0.45], anchorY: 0.5, spherical: true, fullbright: true });
     }
   }
+}
+
+// A stretched tracer quad from a little behind the shot (never behind its
+// spawn point: the first frames run from the muzzle) to the shot. Billboards
+// stay screen-aligned, so the quad sits at the point that projects onto the
+// middle of the projected streak (perspective-correct) and is sized from the
+// projected length, rotated along it.
+function shotTrail(game, batcher, pr, head, v, size, fade, kpx) {
+  const r = game.renderer, W = r.lowW, H = r.lowH, [secs, width, alpha] = SHOT_TRAIL[pr.kind];
+  const sp = Math.hypot(pr.vx, pr.vy, pr.vz) || 1;
+  const len = Math.min(sp * Math.min(pr.age, secs), Math.hypot(pr.x - pr.sx, pr.y - pr.sy, pr.z - pr.sz));
+  if (len < 0.02) return;
+  let tx = pr.x - pr.vx / sp * len, ty = pr.y - pr.vy / sp * len, tz = pr.z - pr.vz / sp * len;
+  let tail = r.project(tx, ty, tz);
+  const near = 0.07;
+  if (!tail || tail.w < near) {
+    // tail behind the near plane: cut the streak where it enters the view
+    const m = r.viewProj, wt = m[3] * tx + m[7] * ty + m[11] * tz + m[15];
+    if (head.w <= near + 0.01) return;
+    const k = (near + 0.005 - wt) / (head.w - wt);
+    tx += (pr.x - tx) * k; ty += (pr.y - ty) * k; tz += (pr.z - tz) * k;
+    tail = r.project(tx, ty, tz);
+    if (!tail) return;
+  }
+  const dx = (head.x - tail.x) * W, dy = (tail.y - head.y) * H, ls = Math.hypot(dx, dy);
+  if (ls < 1) return;
+  const t = tail.w / (tail.w + head.w), wc = (2 * tail.w * head.w) / (tail.w + head.w);
+  const wpx = Math.min(width * H, Math.max(size * 0.6, 0.05) / (wc * kpx));   // thins out with distance
+  const col = pr.kind === 'rocket' ? [1, 0.6, 0.25] : (v.color || [1, 0.85, 0.5]);
+  batcher.add(game.content.fx, MODE.ADD, tx + (pr.x - tx) * t, ty + (pr.y - ty) * t, tz + (pr.z - tz) * t, wpx * wc * kpx, ls * wc * kpx, {
+    uv: TRACER_UV, tint: [col[0], col[1], col[2], alpha * fade], anchorY: 0.5, spherical: true, rot: Math.atan2(dy, dx) - Math.PI / 2, fullbright: true,
+  });
 }
 
 export function projectileLights(game, out) {

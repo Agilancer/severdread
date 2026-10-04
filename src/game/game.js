@@ -39,6 +39,9 @@ export function newSave() {
 
 // share of the screen height the idle weapon art fills, per archetype
 const WEAPON_SCREEN_SHARE = { pistol: 0.38, revolver: 0.4, smg: 0.42, shuriken: 0.4, javelin: 0.42, blade: 0.46, club: 0.46, mace: 0.46, minigun: 0.48, rocket: 0.48, super_shotgun: 0.46 };
+// measured barrels (fp.barrel / fp.tip, tools/weapon_barrels.py) below this
+// confidence keep the old fixed placement
+const BARREL_MIN_Q = 0.5;
 
 export class Game {
   constructor(renderer, store, content, hud, ui, touch) {
@@ -58,6 +61,7 @@ export class Game {
     this.shakeAmt = 0;
     this.noiseT = 0;
     this.timeScale = 1; this.slowT = 0;
+    this.muzzleShots = [];   // player shots pinned to the drawn muzzle on the next frame(s) (pinShots)
     this.damageNumbers = [];
     this.shockwaves = [];
     this.singularities = [];
@@ -526,12 +530,15 @@ export class Game {
     b.begin();
     for (const m of w.monsters) if (Math.hypot(m.x - cam.x, m.z - cam.z) < 60) m.submit(b, cam);
     this.submitWorldSprites(b, cam);
+    // first-person weapon layout first: fresh shots are pinned to its muzzle
+    const wl = p.dead ? null : this.weaponLayout();
+    this.pinShots(wl);
     submitProjectiles(this, b);
     w.gore.submit(b, c, cam);
     w.submitEffects(b, c, cam);
     r.drawSprites(b.finish());
     // first-person weapon
-    if (!p.dead) this.drawWeapon();
+    if (wl) this.drawWeapon(wl);
     this.lens.draw(r, c.gore, c.fx);
     r.endFrame({ ...this.post, quantize: s.quantize, brightness: s.brightness });
   }
@@ -620,39 +627,99 @@ export class Game {
     }
   }
 
-  drawWeapon() {
+  // First-person weapon placement for this frame (low-res px).
+  // The art metadata scales the real art box (not the padded cell) to an
+  // archetype-specific share of the screen and anchors the hand/grip at the
+  // bottom edge. Guns are then AIMED: the idle frame slides sideways until its
+  // barrel line (fp.barrel through fp.tip), extended out of the muzzle, runs
+  // through the crosshair - a gun held at the right whose barrel leans left
+  // sits right of centre (more so on wide phone screens, where the crosshair
+  // is farther from the hand), a straight-ahead one near the middle. Clamps
+  // keep most of the art and the arm on screen. Melee, thrown and unmeasured
+  // weapons keep the old fixed bias (one-handed right of centre, DOOM style).
+  // Bob (view.ox), recoil (oy) and per-frame dy move sprite and muzzle together.
+  weaponLayout() {
     const p = this.player, r = this.renderer, wpn = p.currentWeapon();
-    if (!wpn || this.inHub) return;
-    const fp = this.content.weaponFP(wpn.base);
-    if (!fp || !fp.handle.ready) return;
+    if (!wpn || this.inHub) return null;
+    const fp = this.content.weaponFP(wpn.base, wpn.archetype);
+    if (!fp || !fp.handle.ready) return null;
     const H = r.lowH, W = r.lowW;
-    // placement from the art metadata: scale the real art box (not the padded
-    // cell) to an archetype-specific share of the screen, anchor the hand/grip
-    // at the bottom edge, one-handed weapons sit right of centre (DOOM style)
     const m = fp.meta || { top: 0, bottom: fp.frameH, gripX: fp.frameW / 2, artL: 0, artR: fp.frameW, hands: 'center', muzzle: null, flashFrame: 1 };
     const nF = fp.frames;
     const melee = /blade|mace|club/.test(wpn.archetype), thrown = /shuriken|javelin/.test(wpn.archetype);
     const artH = Math.max(8, m.bottom - m.top), artW = Math.max(8, m.artR - m.artL);
     const K = WEAPON_SCREEN_SHARE[wpn.archetype] ?? 0.44;
     const s = Math.min((K * H) / artH, (0.58 * W) / artW);
+    const over = Math.ceil(H * 0.06);                // overscan so the cut-off arm never shows
+    const y0 = H + over - m.bottom * s;              // idle frame, no bob / recoil
     const bias = m.hands === 'right' ? 0.11 : m.hands === 'left' ? -0.06 : 0.035;
+    let x0 = W * 0.5 + bias * H - m.gripX * s;
+    const b = m.barrel, aimed = !melee && !thrown && !!b && !!m.tip && (m.barrelQ ?? 0) >= BARREL_MIN_Q && b[1] < -0.1;
+    if (aimed) {
+      // tip + t*barrel meets the crosshair row at t = (H/2 - tipY) / by
+      const ty = y0 + m.tip[1] * s;
+      x0 = W * 0.5 - ((H * 0.5 - ty) * b[0]) / b[1] - m.tip[0] * s;
+      // at least ~70% of the art, the arm cut and the barrel tip stay on screen
+      const aw = artW * s;
+      const hi = Math.min(W + 0.3 * aw - m.artR * s, W * 0.97 - m.gripX * s, W * 0.92 - m.tip[0] * s);
+      const lo = Math.max(-0.3 * aw - m.artL * s, W * 0.03 - m.gripX * s, W * 0.08 - m.tip[0] * s);
+      x0 = lo > hi ? (lo + hi) / 2 : clamp(x0, lo, hi);
+    }
+    // fire frames: a gun's sequence starts on its flash frame - the shot leaves
+    // the barrel the moment the trigger is pulled, so the baked flash has to be
+    // on screen with it (frames before it are wind-up poses)
+    const f0 = !melee && !thrown && m.flashFrame > 1 ? m.flashFrame : 1;
     const seq = [];
-    for (let f = 1; f < nF; f++) seq.push(f);
+    for (let f = f0; f < nF; f++) if (!m.seq || m.seq.includes(f) || f === f0) seq.push(f);
     const view = p.weaponView(H, seq);
     const frame = Math.min(view.frame, nF - 1);
-    const over = Math.ceil(H * 0.06);                // overscan so the cut-off arm never shows
     const oy = Math.max(view.oy, -over + 1);
     const dyf = (m.dy && m.dy[frame]) || 0;
-    const x = Math.round(W * 0.5 + bias * H - m.gripX * s + view.ox);
-    const y = Math.round(H + over - (m.bottom - dyf) * s + oy);
+    const x = Math.round(x0 + view.ox), y = Math.round(y0 + dyf * s + oy);
+    // the drawn muzzle (barrel tip of this frame) - shots leave from it
+    const tip = aimed ? m.tip : (m.muzzle && !melee ? m.muzzle : null);
+    const mx = tip ? x + tip[0] * s : null, my = tip ? y + tip[1] * s : null;
+    p.muzzleNDC = tip ? [(mx / W) * 2 - 1, 1 - (my / H) * 2] : null;
+    p.muzzleDir = aimed ? b : null;                  // barrel direction on screen (low-res px, y down)
+    return { fp, m, s, x, y, frame, view, melee, thrown, aimed, mx, my, W, H };
+  }
+
+  // Shots fired since the last frame were spawned on the camera ray through
+  // the muzzle at fire time (combat.js shotOrigin). The recoil pitch kick,
+  // bob, shake and the fire frame's offsets move the drawn muzzle by a few
+  // px before they are first seen, so they are pinned to THIS frame's muzzle:
+  // fresh projectiles shift by the difference (a few cm), muzzle beams keep
+  // their start glued to the barrel tip while they fade.
+  pinShots(wl) {
+    const shots = this.muzzleShots;
+    if (!shots.length) return;
+    if (!wl || wl.mx === null) { shots.length = 0; return; }
+    const r = this.renderer, cam = this.cam, P = r.camPos, R = r.camRight, U = r.camUp;
+    const cp = Math.cos(cam.pitch), f = [Math.cos(cam.yaw) * cp, Math.sin(cam.pitch), Math.sin(cam.yaw) * cp];
+    const nx = (wl.mx / wl.W) * 2 - 1, ny = 1 - (wl.my / wl.H) * 2, tx = nx / r.proj[0], ty = ny / r.proj[5];
+    const u = [f[0] + R[0] * tx + U[0] * ty, f[1] + R[1] * tx + U[1] * ty, f[2] + R[2] * tx + U[2] * ty];   // unit view depth
+    const keep = [];
+    for (const sh of shots) {
+      const o = [P[0] + u[0] * sh.depth, P[1] + u[1] * sh.depth, P[2] + u[2] * sh.depth];
+      if (sh.beam) {
+        if (sh.beam.age >= sh.beam.life) continue;
+        sh.beam.x0 = o[0]; sh.beam.y0 = o[1]; sh.beam.z0 = o[2];
+        keep.push(sh);
+      } else if (!sh.pr.dead && this.world.projectiles.includes(sh.pr)) {
+        const pr = sh.pr, dx = o[0] - pr.sx, dy = o[1] - pr.sy, dz = o[2] - pr.sz;
+        pr.x += dx; pr.y += dy; pr.z += dz; pr.bx += dx; pr.by += dy; pr.bz += dz; pr.sx += dx; pr.sy += dy; pr.sz += dz;
+      }
+    }
+    this.muzzleShots = keep;
+  }
+
+  drawWeapon(L) {
+    const p = this.player, r = this.renderer, wpn = p.currentWeapon();
+    if (!L || !wpn) return;
+    const { fp, m, s, x, y, frame, view, melee, thrown, H } = L;
     const dw = fp.frameW * s, dh = fp.frameH * s;
     const aw = fp.frameW * fp.frames, ah = fp.frameH * fp.rows;
     const uv = [(frame * fp.frameW + 0.5) / aw, (fp.row * fp.frameH + 0.5) / ah, ((frame + 1) * fp.frameW - 0.5) / aw, ((fp.row + 1) * fp.frameH - 0.5) / ah];
-    // remember where the muzzle is on screen so shots leave from it
-    if (m.muzzle && !melee) {
-      const mx0 = Math.round(W * 0.5 + bias * H - m.gripX * s) + m.muzzle[0] * s, my0 = Math.round(H + over - m.bottom * s) + m.muzzle[1] * s;
-      p.muzzleNDC = [(mx0 / W) * 2 - 1, 1 - (my0 / H) * 2];
-    } else p.muzzleNDC = null;
     const flashF = m.flashFrame ?? 1;
     const flashing = view.frame > 0 && !melee && !thrown && (view.frame === flashF || view.frame === flashF + 1);
     // lighting: sector light + muzzle flash + damage flash
@@ -670,13 +737,34 @@ export class Game {
       r.drawQuad(fxh.tex, x - dw * 0.1, y - dh * 0.05, dw * 1.2, dh * 1.1, [0, 0, 0.25, 1], { additive: true, tint: [ec[0], ec[1], ec[2], 0.18 + 0.12 * pulse] });
     }
     r.drawQuad(fp.handle.tex, x, y, dw, dh, uv, { tint: [light, light * (p.hurtT > 0 ? 0.6 : 1), light * (p.hurtT > 0 ? 0.6 : 1), 1], add });
-    // muzzle flare glow
-    if (flashing && m.muzzle) {
-      const mx = x + m.muzzle[0] * s, my = y + m.muzzle[1] * s;
+    // muzzle flare glow: on the baked flash, or on the barrel tip shots leave from
+    if (flashing && (m.muzzle || L.mx !== null)) {
+      const mx = m.muzzle ? x + m.muzzle[0] * s : L.mx, my = m.muzzle ? y + m.muzzle[1] * s : L.my;
       const col = ec || [1, 0.75, 0.35];
       const fxh = this.content.fx;
       const sz = H * 0.28;
       r.drawQuad(fxh.tex, mx - sz / 2, my - sz / 2, sz, sz, [0, 0, 0.25, 1], { additive: true, tint: [col[0], col[1], col[2], 0.55] });
     }
+    if (this.debugBarrel) this.drawBarrelDebug(L);
+  }
+
+  // Debug overlay (g.debugBarrel = true): the barrel line extended from the
+  // drawn muzzle through the crosshair row (cyan = measured barrel, orange =
+  // fallback placement), the muzzle and the screen centre.
+  drawBarrelDebug(L) {
+    const r = this.renderer, { W, H } = L;
+    const dot = (x, y, c, k = 1) => r.drawQuad(null, Math.round(x) - (k >> 1), Math.round(y) - (k >> 1), k, k, [0, 0, 1, 1], { tint: c });
+    dot(W / 2, H / 2, [1, 1, 1, 1], 3);
+    if (L.mx === null) return;
+    const b = L.m.barrel;
+    if (b) {
+      const c = L.aimed ? [0.2, 1, 1, 1] : [1, 0.6, 0.1, 1];
+      for (let t = -H * 0.3; t < H * 1.2; t += 1) {
+        const px = L.mx + b[0] * t, py = L.my + b[1] * t;
+        if (py < H * 0.1 || px < 0 || px > W) continue;
+        dot(px, py, c);
+      }
+    }
+    dot(L.mx, L.my, [1, 0.1, 0.1, 1], 3);
   }
 }

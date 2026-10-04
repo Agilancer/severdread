@@ -3908,7 +3908,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3487,
+       -0.9372
+      ],
+      "tip": [
+       53.3,
+       22.9
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -3932,7 +3941,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3309,
+       -0.9437
+      ],
+      "tip": [
+       55.3,
+       12.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -3956,7 +3974,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       50.0,
+       15.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -3980,7 +4007,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2574,
+       -0.9663
+      ],
+      "tip": [
+       57.7,
+       13.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4004,7 +4040,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6947,
+       -0.7193
+      ],
+      "tip": [
+       34.5,
+       5.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4028,7 +4073,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6947,
+       -0.7193
+      ],
+      "tip": [
+       44.9,
+       11.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4052,7 +4106,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5045,
+       -0.8634
+      ],
+      "tip": [
+       51.6,
+       13.8
+      ],
+      "barrelQ": 0.58
      }
     },
     {
@@ -4076,7 +4139,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6691,
+       -0.7431
+      ],
+      "tip": [
+       57.1,
+       11.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4100,7 +4172,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7496,
+       -0.6619
+      ],
+      "tip": [
+       52.3,
+       17.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4124,7 +4205,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.225,
+       -0.9744
+      ],
+      "tip": [
+       61.1,
+       8.6
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -4164,7 +4254,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8151,
+       -0.5794
+      ],
+      "tip": [
+       29.2,
+       53.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4187,7 +4286,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9347,
+       -0.3554
+      ],
+      "tip": [
+       30.7,
+       55.5
+      ],
+      "barrelQ": 0.42
      }
     },
     {
@@ -4210,7 +4318,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9994,
+       -0.034
+      ],
+      "tip": [
+       13.5,
+       57.4
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -4233,7 +4350,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7819,
+       -0.6234
+      ],
+      "tip": [
+       27.4,
+       41.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4256,7 +4382,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8759,
+       -0.4825
+      ],
+      "tip": [
+       32.9,
+       42.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4279,7 +4414,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7176,
+       -0.6964
+      ],
+      "tip": [
+       30.6,
+       39.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4302,7 +4446,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6685,
+       -0.7438
+      ],
+      "tip": [
+       36.5,
+       41.9
+      ],
+      "barrelQ": 0.31
      }
     },
     {
@@ -4325,7 +4478,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9155,
+       -0.4022
+      ],
+      "tip": [
+       29.6,
+       43.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4348,7 +4510,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7467,
+       -0.6652
+      ],
+      "tip": [
+       36.1,
+       40.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4371,7 +4542,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.309,
+       -0.9511
+      ],
+      "tip": [
+       48.8,
+       4.3
+      ],
+      "barrelQ": 0.28
      }
     }
    ],
@@ -4411,7 +4591,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8105,
+       -0.5857
+      ],
+      "tip": [
+       35.6,
+       41.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4434,7 +4623,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7547,
+       -0.6561
+      ],
+      "tip": [
+       34.7,
+       28.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4457,7 +4655,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4384,
+       -0.8988
+      ],
+      "tip": [
+       35.9,
+       18.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4480,7 +4687,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4067,
+       -0.9135
+      ],
+      "tip": [
+       38.4,
+       26.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4503,7 +4719,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6539,
+       -0.7566
+      ],
+      "tip": [
+       37.7,
+       29.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4526,7 +4751,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4065,
+       -0.9136
+      ],
+      "tip": [
+       40.7,
+       21.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4549,7 +4783,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8537,
+       -0.5207
+      ],
+      "tip": [
+       28.8,
+       35.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4572,7 +4815,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7193,
+       -0.6947
+      ],
+      "tip": [
+       31.5,
+       15.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4595,7 +4847,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.21,
+       -0.9777
+      ],
+      "tip": [
+       54.0,
+       15.9
+      ],
+      "barrelQ": 0.7
      }
     },
     {
@@ -4618,7 +4879,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6081,
+       -0.7939
+      ],
+      "tip": [
+       44.1,
+       13.8
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -4658,7 +4928,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3562,
+       -0.9344
+      ],
+      "tip": [
+       54.0,
+       43.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4681,7 +4960,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6118,
+       -0.791
+      ],
+      "tip": [
+       48.8,
+       32.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4704,7 +4992,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6226,
+       -0.7825
+      ],
+      "tip": [
+       48.4,
+       42.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4727,7 +5024,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5634,
+       -0.8262
+      ],
+      "tip": [
+       53.0,
+       47.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4750,7 +5056,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3609,
+       -0.9326
+      ],
+      "tip": [
+       47.5,
+       12.5
+      ],
+      "barrelQ": 0.72
      }
     },
     {
@@ -4773,7 +5088,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       31.6,
+       10.4
+      ],
+      "barrelQ": 0.55
      }
     },
     {
@@ -4796,7 +5120,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4395,
+       -0.8982
+      ],
+      "tip": [
+       51.6,
+       36.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4819,7 +5152,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.646,
+       -0.7634
+      ],
+      "tip": [
+       51.2,
+       32.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4842,7 +5184,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5446,
+       -0.8387
+      ],
+      "tip": [
+       47.8,
+       31.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4865,7 +5216,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6947,
+       -0.7193
+      ],
+      "tip": [
+       49.5,
+       25.5
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -4905,7 +5265,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8289,
+       -0.5594
+      ],
+      "tip": [
+       32.5,
+       42.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4928,7 +5297,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7176,
+       -0.6964
+      ],
+      "tip": [
+       35.4,
+       36.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -4951,7 +5329,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5949,
+       -0.8038
+      ],
+      "tip": [
+       44.4,
+       32.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -4974,7 +5361,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6311,
+       -0.7757
+      ],
+      "tip": [
+       39.8,
+       34.4
+      ],
+      "barrelQ": 0.75
      }
     },
     {
@@ -4997,7 +5393,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5764,
+       -0.8172
+      ],
+      "tip": [
+       35.4,
+       31.1
+      ],
+      "barrelQ": 0.9
      }
     },
     {
@@ -5020,7 +5425,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       36.7,
+       25.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -5043,7 +5457,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5206,
+       -0.8538
+      ],
+      "tip": [
+       31.4,
+       20.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5066,7 +5489,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6175,
+       -0.7866
+      ],
+      "tip": [
+       24.9,
+       22.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5089,7 +5521,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7986,
+       -0.6018
+      ],
+      "tip": [
+       27.8,
+       41.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -5112,7 +5553,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6909,
+       -0.723
+      ],
+      "tip": [
+       31.7,
+       22.2
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -5152,7 +5602,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.515,
+       -0.8572
+      ],
+      "tip": [
+       55.4,
+       18.1
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -5175,7 +5634,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4294,
+       -0.9031
+      ],
+      "tip": [
+       51.7,
+       14.8
+      ],
+      "barrelQ": 0.3
      }
     },
     {
@@ -5198,7 +5666,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8572,
+       -0.515
+      ],
+      "tip": [
+       42.4,
+       17.6
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -5221,7 +5698,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.39,
+       -0.9208
+      ],
+      "tip": [
+       50.6,
+       2.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5244,7 +5730,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4695,
+       -0.8829
+      ],
+      "tip": [
+       62.3,
+       23.2
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -5267,7 +5762,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9361,
+       -0.3516
+      ],
+      "tip": [
+       32.4,
+       15.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5290,7 +5794,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5136,
+       -0.858
+      ],
+      "tip": [
+       45.7,
+       7.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5313,7 +5826,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5523,
+       -0.8336
+      ],
+      "tip": [
+       40.5,
+       6.2
+      ],
+      "barrelQ": 0.32
      }
     },
     {
@@ -5336,7 +5858,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5878,
+       -0.809
+      ],
+      "tip": [
+       56.5,
+       16.5
+      ],
+      "barrelQ": 0.06
      }
     },
     {
@@ -5359,7 +5890,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8746,
+       -0.4848
+      ],
+      "tip": [
+       24.8,
+       15.1
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -5596,7 +6136,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.91,
+       -0.4146
+      ],
+      "tip": [
+       34.1,
+       33.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -5619,7 +6168,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.493,
+       -0.87
+      ],
+      "tip": [
+       54.0,
+       19.3
+      ],
+      "barrelQ": 0.03
      }
     },
     {
@@ -5642,7 +6200,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5776,
+       -0.8163
+      ],
+      "tip": [
+       45.7,
+       25.3
+      ],
+      "barrelQ": 0.42
      }
     },
     {
@@ -5665,7 +6232,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7414,
+       -0.671
+      ],
+      "tip": [
+       49.3,
+       21.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5688,7 +6264,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7991,
+       -0.6012
+      ],
+      "tip": [
+       35.8,
+       18.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5711,7 +6296,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1632,
+       -0.9866
+      ],
+      "tip": [
+       71.3,
+       10.8
+      ],
+      "barrelQ": 0.12
      }
     },
     {
@@ -5734,7 +6328,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7193,
+       0.6947
+      ],
+      "tip": [
+       14.4,
+       99.6
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -5757,7 +6360,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6217,
+       -0.7833
+      ],
+      "tip": [
+       44.3,
+       15.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5780,7 +6392,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.544,
+       -0.8391
+      ],
+      "tip": [
+       55.2,
+       6.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5803,7 +6424,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6018,
+       -0.7986
+      ],
+      "tip": [
+       45.4,
+       4.6
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -5843,7 +6473,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5873,
+       -0.8094
+      ],
+      "tip": [
+       40.9,
+       40.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5866,7 +6505,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6915,
+       -0.7224
+      ],
+      "tip": [
+       37.0,
+       39.9
+      ],
+      "barrelQ": 0.04
      }
     },
     {
@@ -5889,7 +6537,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5786,
+       -0.8156
+      ],
+      "tip": [
+       42.6,
+       34.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5912,7 +6569,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7431,
+       -0.6691
+      ],
+      "tip": [
+       36.6,
+       41.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -5935,7 +6601,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3973,
+       -0.9177
+      ],
+      "tip": [
+       48.5,
+       28.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -5958,7 +6633,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8129,
+       -0.5824
+      ],
+      "tip": [
+       28.1,
+       46.8
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -5998,7 +6682,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.225,
+       -0.9744
+      ],
+      "tip": [
+       50.9,
+       30.6
+      ],
+      "barrelQ": 0.64
      }
     },
     {
@@ -6021,7 +6714,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8923,
+       -0.4515
+      ],
+      "tip": [
+       29.2,
+       40.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6044,7 +6746,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7972,
+       -0.6037
+      ],
+      "tip": [
+       48.5,
+       38.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -6067,7 +6778,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8742,
+       -0.4856
+      ],
+      "tip": [
+       35.4,
+       43.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6090,7 +6810,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.999,
+       -0.0438
+      ],
+      "tip": [
+       30.5,
+       49.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -6113,7 +6842,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.055,
+       -0.9985
+      ],
+      "tip": [
+       58.5,
+       20.5
+      ],
+      "barrelQ": 0.68
      }
     },
     {
@@ -6136,7 +6874,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7193,
+       -0.6947
+      ],
+      "tip": [
+       28.5,
+       32.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6159,7 +6906,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6428,
+       -0.766
+      ],
+      "tip": [
+       32.6,
+       24.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6182,7 +6938,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9599,
+       -0.2804
+      ],
+      "tip": [
+       35.7,
+       41.7
+      ],
+      "barrelQ": 0.65
      }
     },
     {
@@ -6205,7 +6970,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4519,
+       -0.8921
+      ],
+      "tip": [
+       42.3,
+       8.2
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -6245,7 +7019,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8375,
+       -0.5464
+      ],
+      "tip": [
+       42.8,
+       39.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6268,7 +7051,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6293,
+       -0.7771
+      ],
+      "tip": [
+       43.2,
+       35.0
+      ],
+      "barrelQ": 0.93
      }
     },
     {
@@ -6291,7 +7083,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9471,
+       -0.3208
+      ],
+      "tip": [
+       45.9,
+       41.4
+      ],
+      "barrelQ": 0.73
      }
     },
     {
@@ -6314,7 +7115,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7217,
+       -0.6922
+      ],
+      "tip": [
+       38.5,
+       37.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -6337,7 +7147,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.766,
+       -0.6428
+      ],
+      "tip": [
+       42.1,
+       34.4
+      ],
+      "barrelQ": 0.72
      }
     },
     {
@@ -6360,7 +7179,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6293,
+       -0.7771
+      ],
+      "tip": [
+       43.5,
+       26.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6383,7 +7211,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9633,
+       -0.2685
+      ],
+      "tip": [
+       35.3,
+       51.9
+      ],
+      "barrelQ": 0.59
      }
     },
     {
@@ -6406,7 +7243,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7431,
+       -0.6691
+      ],
+      "tip": [
+       44.3,
+       32.9
+      ],
+      "barrelQ": 0.01
      }
     },
     {
@@ -6429,7 +7275,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       44.5,
+       29.0
+      ],
+      "barrelQ": 0.92
      }
     },
     {
@@ -6452,7 +7307,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4273,
+       -0.9041
+      ],
+      "tip": [
+       53.7,
+       5.9
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -6492,7 +7356,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7038,
+       -0.7104
+      ],
+      "tip": [
+       55.5,
+       37.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -6515,7 +7388,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7498,
+       -0.6617
+      ],
+      "tip": [
+       50.4,
+       47.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -6538,7 +7420,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3797,
+       -0.9251
+      ],
+      "tip": [
+       73.9,
+       22.4
+      ],
+      "barrelQ": 0.19
      }
     },
     {
@@ -6561,7 +7452,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8387,
+       -0.5446
+      ],
+      "tip": [
+       70.4,
+       39.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6584,7 +7484,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7846,
+       -0.62
+      ],
+      "tip": [
+       61.2,
+       30.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -6607,7 +7516,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       55.0,
+       25.0
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -6647,7 +7565,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8387,
+       -0.5446
+      ],
+      "tip": [
+       30.5,
+       32.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6670,7 +7597,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6267,
+       -0.7792
+      ],
+      "tip": [
+       38.4,
+       26.7
+      ],
+      "barrelQ": 0.27
      }
     },
     {
@@ -6693,7 +7629,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6567,
+       -0.7542
+      ],
+      "tip": [
+       30.0,
+       16.0
+      ],
+      "barrelQ": 0.58
      }
     },
     {
@@ -6716,7 +7661,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6672,
+       -0.7449
+      ],
+      "tip": [
+       34.4,
+       23.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -6739,7 +7693,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6561,
+       -0.7547
+      ],
+      "tip": [
+       38.1,
+       22.1
+      ],
+      "barrelQ": 0.78
      }
     },
     {
@@ -6762,7 +7725,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9514,
+       -0.308
+      ],
+      "tip": [
+       33.2,
+       26.8
+      ],
+      "barrelQ": 0.67
      }
     },
     {
@@ -6785,7 +7757,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9576,
+       -0.2882
+      ],
+      "tip": [
+       31.1,
+       20.6
+      ],
+      "barrelQ": 0.59
      }
     },
     {
@@ -6808,7 +7789,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6406,
+       -0.7679
+      ],
+      "tip": [
+       33.9,
+       19.7
+      ],
+      "barrelQ": 0.65
      }
     },
     {
@@ -6831,7 +7821,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7431,
+       -0.6691
+      ],
+      "tip": [
+       40.5,
+       16.6
+      ],
+      "barrelQ": 0.39
      }
     },
     {
@@ -6854,7 +7853,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5658,
+       -0.8246
+      ],
+      "tip": [
+       40.5,
+       5.5
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -6894,7 +7902,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9244,
+       -0.3815
+      ],
+      "tip": [
+       18.0,
+       28.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6917,7 +7934,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.715,
+       -0.6991
+      ],
+      "tip": [
+       23.6,
+       21.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -6940,7 +7966,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9004,
+       -0.4352
+      ],
+      "tip": [
+       19.5,
+       28.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -6963,7 +7998,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4329,
+       -0.9014
+      ],
+      "tip": [
+       37.4,
+       12.2
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -6986,7 +8030,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7173,
+       -0.6968
+      ],
+      "tip": [
+       23.8,
+       20.9
+      ],
+      "barrelQ": 0.5
      }
     },
     {
@@ -7009,7 +8062,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9095,
+       -0.4158
+      ],
+      "tip": [
+       24.6,
+       23.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -7032,7 +8094,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7648,
+       -0.6443
+      ],
+      "tip": [
+       25.1,
+       19.3
+      ],
+      "barrelQ": 0.38
      }
     },
     {
@@ -7055,7 +8126,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7027,
+       -0.7115
+      ],
+      "tip": [
+       25.0,
+       19.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7078,7 +8158,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5584,
+       -0.8295
+      ],
+      "tip": [
+       33.5,
+       17.0
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -7101,7 +8190,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7431,
+       -0.6691
+      ],
+      "tip": [
+       24.5,
+       9.6
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -7141,7 +8239,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6951,
+       -0.719
+      ],
+      "tip": [
+       37.4,
+       28.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -7164,7 +8271,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5878,
+       -0.809
+      ],
+      "tip": [
+       38.0,
+       17.6
+      ],
+      "barrelQ": 0.94
      }
     },
     {
@@ -7187,7 +8303,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7299,
+       -0.6836
+      ],
+      "tip": [
+       37.7,
+       23.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7210,7 +8335,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6947,
+       -0.7193
+      ],
+      "tip": [
+       29.5,
+       16.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7233,7 +8367,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.717,
+       -0.6971
+      ],
+      "tip": [
+       41.5,
+       22.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -7256,7 +8399,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6561,
+       0.7547
+      ],
+      "tip": [
+       12.9,
+       98.1
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -7279,7 +8431,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6691,
+       -0.7431
+      ],
+      "tip": [
+       34.6,
+       20.5
+      ],
+      "barrelQ": 0.69
      }
     },
     {
@@ -7302,7 +8463,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7193,
+       -0.6947
+      ],
+      "tip": [
+       37.5,
+       20.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7325,7 +8495,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       40.7,
+       15.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7348,7 +8527,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.75,
+       -0.6614
+      ],
+      "tip": [
+       33.4,
+       27.6
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -7388,7 +8576,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8769,
+       -0.4808
+      ],
+      "tip": [
+       58.7,
+       42.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -7411,7 +8608,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8263,
+       -0.5632
+      ],
+      "tip": [
+       58.8,
+       40.9
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -7434,7 +8640,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6712,
+       -0.7413
+      ],
+      "tip": [
+       61.8,
+       39.8
+      ],
+      "barrelQ": 0.33
      }
     },
     {
@@ -7457,7 +8672,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       59.2,
+       33.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7480,7 +8704,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5059,
+       -0.8626
+      ],
+      "tip": [
+       69.8,
+       30.4
+      ],
+      "barrelQ": 0.01
      }
     },
     {
@@ -7503,7 +8736,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6315,
+       -0.7754
+      ],
+      "tip": [
+       64.9,
+       33.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7526,7 +8768,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9722,
+       -0.2342
+      ],
+      "tip": [
+       54.8,
+       38.2
+      ],
+      "barrelQ": 0.36
      }
     },
     {
@@ -7549,7 +8800,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6947,
+       -0.7193
+      ],
+      "tip": [
+       63.9,
+       22.8
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -7572,7 +8832,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9732,
+       -0.23
+      ],
+      "tip": [
+       56.9,
+       40.9
+      ],
+      "barrelQ": 0.34
      }
     },
     {
@@ -7595,7 +8864,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6653,
+       -0.7466
+      ],
+      "tip": [
+       57.9,
+       8.0
+      ],
+      "barrelQ": 0.56
      }
     }
    ],
@@ -7726,7 +9004,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.3907,
+       -0.9205
+      ],
+      "tip": [
+       132.0,
+       12.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7756,7 +9043,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.9761,
+       -0.2175
+      ],
+      "tip": [
+       150.7,
+       68.1
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -7786,7 +9082,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.4384,
+       -0.8988
+      ],
+      "tip": [
+       104.1,
+       10.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -7827,7 +9132,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0606,
+       -0.9982
+      ],
+      "tip": [
+       102.6,
+       11.6
+      ],
+      "barrelQ": 0.63
      }
     },
     {
@@ -7850,7 +9164,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.5717,
+       -0.8205
+      ],
+      "tip": [
+       136.6,
+       4.9
+      ],
+      "barrelQ": 0.0
      }
     }
    ],
@@ -8087,7 +9410,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.682,
+       -0.7314
+      ],
+      "tip": [
+       57.5,
+       47.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -8110,7 +9442,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6018,
+       -0.7986
+      ],
+      "tip": [
+       54.4,
+       36.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -8133,7 +9474,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4337,
+       -0.901
+      ],
+      "tip": [
+       61.4,
+       43.3
+      ],
+      "barrelQ": 0.13
      }
     },
     {
@@ -8156,7 +9506,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7533,
+       -0.6577
+      ],
+      "tip": [
+       54.5,
+       47.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8179,7 +9538,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4747,
+       -0.8802
+      ],
+      "tip": [
+       61.5,
+       29.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8202,7 +9570,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7078,
+       -0.7064
+      ],
+      "tip": [
+       58.5,
+       49.5
+      ],
+      "barrelQ": 0.92
      }
     },
     {
@@ -8225,7 +9602,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.454,
+       -0.891
+      ],
+      "tip": [
+       62.8,
+       27.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -8248,7 +9634,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0669,
+       -0.9978
+      ],
+      "tip": [
+       74.7,
+       29.5
+      ],
+      "barrelQ": 0.13
      }
     },
     {
@@ -8271,7 +9666,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4384,
+       -0.8988
+      ],
+      "tip": [
+       63.0,
+       29.9
+      ],
+      "barrelQ": 0.64
      }
     },
     {
@@ -8294,7 +9698,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.404,
+       -0.9147
+      ],
+      "tip": [
+       61.3,
+       22.8
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -8334,7 +9747,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7458,
+       -0.6662
+      ],
+      "tip": [
+       23.0,
+       31.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8357,7 +9779,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.2684,
+       -0.9633
+      ],
+      "tip": [
+       58.8,
+       20.8
+      ],
+      "barrelQ": 0.65
      }
     },
     {
@@ -8380,7 +9811,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5453,
+       -0.8382
+      ],
+      "tip": [
+       28.8,
+       22.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8403,7 +9843,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7193,
+       -0.6947
+      ],
+      "tip": [
+       25.5,
+       23.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -8426,7 +9875,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7771,
+       -0.6293
+      ],
+      "tip": [
+       27.0,
+       24.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -8449,7 +9907,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5675,
+       -0.8233
+      ],
+      "tip": [
+       34.2,
+       18.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8472,7 +9939,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7986,
+       -0.6018
+      ],
+      "tip": [
+       26.4,
+       23.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -8495,7 +9971,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5322,
+       -0.8466
+      ],
+      "tip": [
+       30.2,
+       14.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8518,7 +10003,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7771,
+       -0.6293
+      ],
+      "tip": [
+       15.6,
+       11.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -8541,7 +10035,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4893,
+       -0.8721
+      ],
+      "tip": [
+       34.8,
+       6.7
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -8581,7 +10084,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1705,
+       -0.9854
+      ],
+      "tip": [
+       55.3,
+       56.9
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8604,7 +10116,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1713,
+       -0.9852
+      ],
+      "tip": [
+       60.4,
+       55.9
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8627,7 +10148,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0744,
+       -0.9972
+      ],
+      "tip": [
+       69.7,
+       67.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8650,7 +10180,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1143,
+       -0.9934
+      ],
+      "tip": [
+       64.2,
+       62.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8673,7 +10212,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1098,
+       -0.994
+      ],
+      "tip": [
+       62.2,
+       56.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8696,7 +10244,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2605,
+       -0.9655
+      ],
+      "tip": [
+       58.3,
+       53.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8719,7 +10276,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1725,
+       -0.985
+      ],
+      "tip": [
+       62.8,
+       48.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8742,7 +10308,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1735,
+       -0.9848
+      ],
+      "tip": [
+       60.4,
+       56.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -8765,7 +10340,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1052,
+       -0.9945
+      ],
+      "tip": [
+       59.5,
+       25.6
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -9002,7 +10586,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1009,
+       -0.9949
+      ],
+      "tip": [
+       52.9,
+       52.2
+      ],
+      "barrelQ": 0.73
      }
     },
     {
@@ -9025,7 +10618,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4295,
+       -0.9031
+      ],
+      "tip": [
+       56.1,
+       47.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9048,7 +10650,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0064,
+       -1.0
+      ],
+      "tip": [
+       66.5,
+       46.5
+      ],
+      "barrelQ": 0.62
      }
     },
     {
@@ -9071,7 +10682,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2853,
+       -0.9584
+      ],
+      "tip": [
+       60.9,
+       29.9
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9094,7 +10714,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2568,
+       -0.9665
+      ],
+      "tip": [
+       61.4,
+       41.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9117,7 +10746,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5299,
+       -0.848
+      ],
+      "tip": [
+       53.3,
+       48.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9140,7 +10778,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4563,
+       -0.8898
+      ],
+      "tip": [
+       61.2,
+       39.9
+      ],
+      "barrelQ": 0.84
      }
     },
     {
@@ -9163,7 +10810,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3143,
+       -0.9493
+      ],
+      "tip": [
+       59.9,
+       21.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9186,7 +10842,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4199,
+       -0.9076
+      ],
+      "tip": [
+       57.8,
+       20.9
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -9226,7 +10891,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.301,
+       -0.9536
+      ],
+      "tip": [
+       43.2,
+       25.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9249,7 +10923,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3005,
+       -0.9538
+      ],
+      "tip": [
+       43.0,
+       27.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9272,7 +10955,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.489,
+       -0.8723
+      ],
+      "tip": [
+       43.9,
+       24.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9295,7 +10987,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2788,
+       -0.9603
+      ],
+      "tip": [
+       47.2,
+       26.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9318,7 +11019,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1544,
+       -0.988
+      ],
+      "tip": [
+       54.2,
+       16.3
+      ],
+      "barrelQ": 0.44
      }
     },
     {
@@ -9341,7 +11051,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.527,
+       -0.8499
+      ],
+      "tip": [
+       33.1,
+       6.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9364,7 +11083,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3907,
+       -0.9205
+      ],
+      "tip": [
+       42.1,
+       11.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9387,7 +11115,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3716,
+       -0.9284
+      ],
+      "tip": [
+       48.8,
+       8.3
+      ],
+      "barrelQ": 0.39
      }
     },
     {
@@ -9410,7 +11147,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1581,
+       -0.9874
+      ],
+      "tip": [
+       58.4,
+       13.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9433,7 +11179,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5,
+       -0.866
+      ],
+      "tip": [
+       39.1,
+       2.4
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -9473,7 +11228,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3256,
+       -0.9455
+      ],
+      "tip": [
+       53.4,
+       55.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9496,7 +11260,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.342,
+       -0.9397
+      ],
+      "tip": [
+       53.5,
+       41.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9519,7 +11292,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3907,
+       -0.9205
+      ],
+      "tip": [
+       54.8,
+       39.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9542,7 +11324,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0795,
+       -0.9968
+      ],
+      "tip": [
+       56.3,
+       40.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9565,7 +11356,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.428,
+       -0.9038
+      ],
+      "tip": [
+       54.9,
+       55.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9588,7 +11388,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3256,
+       -0.9455
+      ],
+      "tip": [
+       54.1,
+       35.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9611,7 +11420,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0537,
+       -0.9986
+      ],
+      "tip": [
+       55.4,
+       42.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9634,7 +11452,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0175,
+       -0.9998
+      ],
+      "tip": [
+       55.5,
+       24.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9657,7 +11484,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4226,
+       -0.9063
+      ],
+      "tip": [
+       55.5,
+       51.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9680,7 +11516,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.342,
+       -0.9397
+      ],
+      "tip": [
+       52.7,
+       28.2
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -9720,7 +11565,16 @@
       ],
       "flashFrame": 3,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6166,
+       -0.7873
+      ],
+      "tip": [
+       43.6,
+       18.2
+      ],
+      "barrelQ": 0.93
      }
     },
     {
@@ -9743,7 +11597,16 @@
       ],
       "flashFrame": 3,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0485,
+       -0.9988
+      ],
+      "tip": [
+       66.5,
+       12.8
+      ],
+      "barrelQ": 0.27
      }
     },
     {
@@ -9766,7 +11629,16 @@
       ],
       "flashFrame": 3,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.034,
+       -0.9994
+      ],
+      "tip": [
+       74.5,
+       7.6
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -9789,7 +11661,16 @@
       ],
       "flashFrame": 3,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.682,
+       -0.7313
+      ],
+      "tip": [
+       37.9,
+       12.9
+      ],
+      "barrelQ": 0.93
      }
     },
     {
@@ -9812,7 +11693,16 @@
       ],
       "flashFrame": 3,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.493,
+       -0.87
+      ],
+      "tip": [
+       95.0,
+       6.7
+      ],
+      "barrelQ": 0.0
      }
     }
    ],
@@ -9852,7 +11742,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2847,
+       -0.9586
+      ],
+      "tip": [
+       37.9,
+       13.8
+      ],
+      "barrelQ": 0.61
      }
     },
     {
@@ -9875,7 +11774,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.1295,
+       -0.9916
+      ],
+      "tip": [
+       67.7,
+       16.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -9898,7 +11806,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0037,
+       -1.0
+      ],
+      "tip": [
+       59.5,
+       12.5
+      ],
+      "barrelQ": 0.6
      }
     },
     {
@@ -9921,7 +11838,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0648,
+       -0.9979
+      ],
+      "tip": [
+       64.7,
+       6.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -9944,7 +11870,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0877,
+       -0.9961
+      ],
+      "tip": [
+       53.6,
+       3.6
+      ],
+      "barrelQ": 0.84
      }
     }
    ],
@@ -9984,7 +11919,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.4958,
+       -0.8685
+      ],
+      "tip": [
+       85.1,
+       30.4
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -10007,7 +11951,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2136,
+       -0.9769
+      ],
+      "tip": [
+       61.6,
+       18.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -10030,7 +11983,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4384,
+       -0.8988
+      ],
+      "tip": [
+       45.1,
+       13.7
+      ],
+      "barrelQ": 0.75
      }
     },
     {
@@ -10053,7 +12015,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3581,
+       -0.9337
+      ],
+      "tip": [
+       57.0,
+       22.5
+      ],
+      "barrelQ": 0.76
      }
     },
     {
@@ -10076,7 +12047,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3319,
+       -0.9433
+      ],
+      "tip": [
+       56.7,
+       2.1
+      ],
+      "barrelQ": 0.0
      }
     }
    ],
@@ -10116,7 +12096,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.1451,
+       -0.9894
+      ],
+      "tip": [
+       82.7,
+       14.9
+      ],
+      "barrelQ": 0.39
      }
     },
     {
@@ -10139,7 +12128,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9492,
+       0.3146
+      ],
+      "tip": [
+       16.1,
+       82.3
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -10162,7 +12160,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0,
+       -1.0
+      ],
+      "tip": [
+       68.5,
+       16.5
+      ],
+      "barrelQ": 0.26
      }
     },
     {
@@ -10185,7 +12192,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.927,
+       -0.3751
+      ],
+      "tip": [
+       19.2,
+       42.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -10208,7 +12224,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0327,
+       -0.9995
+      ],
+      "tip": [
+       74.5,
+       2.6
+      ],
+      "barrelQ": 0.37
      }
     }
    ],
@@ -10248,7 +12273,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7314,
+       -0.682
+      ],
+      "tip": [
+       44.9,
+       27.9
+      ],
+      "barrelQ": 0.9
      }
     },
     {
@@ -10271,7 +12305,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0313,
+       -0.9995
+      ],
+      "tip": [
+       63.5,
+       11.5
+      ],
+      "barrelQ": 0.3
      }
     },
     {
@@ -10294,7 +12337,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9996,
+       0.028
+      ],
+      "tip": [
+       7.5,
+       64.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -10317,7 +12369,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9201,
+       -0.3918
+      ],
+      "tip": [
+       20.7,
+       32.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -10340,7 +12401,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9171,
+       0.3986
+      ],
+      "tip": [
+       9.9,
+       81.6
+      ],
+      "barrelQ": 0.0
      }
     }
    ],
@@ -10380,7 +12450,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9849,
+       -0.1731
+      ],
+      "tip": [
+       11.0,
+       64.6
+      ],
+      "barrelQ": 0.05
      }
     },
     {
@@ -10403,7 +12482,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.788,
+       -0.6157
+      ],
+      "tip": [
+       113.4,
+       26.6
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -10426,7 +12514,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.2419,
+       -0.9703
+      ],
+      "tip": [
+       74.9,
+       5.6
+      ],
+      "barrelQ": 0.7
      }
     },
     {
@@ -10449,7 +12546,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6018,
+       0.7986
+      ],
+      "tip": [
+       4.6,
+       146.4
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -10472,7 +12578,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4299,
+       -0.9029
+      ],
+      "tip": [
+       49.1,
+       3.7
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -10512,7 +12627,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0097,
+       -1.0
+      ],
+      "tip": [
+       85.5,
+       14.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -10535,7 +12659,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3934,
+       -0.9194
+      ],
+      "tip": [
+       67.6,
+       10.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -10558,7 +12691,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.061,
+       -0.9981
+      ],
+      "tip": [
+       86.0,
+       13.4
+      ],
+      "barrelQ": 0.72
      }
     },
     {
@@ -10581,7 +12723,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0167,
+       -0.9999
+      ],
+      "tip": [
+       88.5,
+       11.2
+      ],
+      "barrelQ": 0.72
      }
     },
     {
@@ -10604,7 +12755,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4336,
+       -0.9011
+      ],
+      "tip": [
+       69.5,
+       8.9
+      ],
+      "barrelQ": 0.8
      }
     }
    ],
@@ -10644,7 +12804,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0073,
+       -1.0
+      ],
+      "tip": [
+       55.0,
+       41.6
+      ],
+      "barrelQ": 0.04
      }
     },
     {
@@ -10667,7 +12836,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1392,
+       -0.9903
+      ],
+      "tip": [
+       65.1,
+       28.9
+      ],
+      "barrelQ": 0.54
      }
     },
     {
@@ -10690,7 +12868,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0459,
+       -0.9989
+      ],
+      "tip": [
+       64.4,
+       22.7
+      ],
+      "barrelQ": 0.16
      }
     },
     {
@@ -10713,7 +12900,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0128,
+       -0.9999
+      ],
+      "tip": [
+       73.5,
+       7.5
+      ],
+      "barrelQ": 0.6
      }
     },
     {
@@ -10736,7 +12932,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8227,
+       -0.5685
+      ],
+      "tip": [
+       26.5,
+       50.7
+      ],
+      "barrelQ": 0.11
      }
     }
    ],
@@ -10776,7 +12981,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       47.3,
+       37.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -10799,7 +13013,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.454,
+       -0.891
+      ],
+      "tip": [
+       49.6,
+       33.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -10822,7 +13045,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5299,
+       -0.848
+      ],
+      "tip": [
+       54.0,
+       16.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -10845,7 +13077,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5299,
+       -0.848
+      ],
+      "tip": [
+       61.3,
+       26.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -10868,7 +13109,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5878,
+       -0.809
+      ],
+      "tip": [
+       52.8,
+       14.1
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -11122,7 +13372,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4384,
+       -0.8988
+      ],
+      "tip": [
+       64.3,
+       38.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11145,7 +13404,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2554,
+       -0.9668
+      ],
+      "tip": [
+       74.0,
+       19.5
+      ],
+      "barrelQ": 0.53
      }
     },
     {
@@ -11168,7 +13436,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1908,
+       -0.9816
+      ],
+      "tip": [
+       71.3,
+       8.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11191,7 +13468,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.4025,
+       -0.9154
+      ],
+      "tip": [
+       111.6,
+       32.9
+      ],
+      "barrelQ": 0.15
      }
     },
     {
@@ -11214,7 +13500,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.2574,
+       -0.9663
+      ],
+      "tip": [
+       107.4,
+       8.8
+      ],
+      "barrelQ": 0.66
      }
     }
    ],
@@ -11254,7 +13549,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.1172,
+       -0.9931
+      ],
+      "tip": [
+       109.8,
+       20.6
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -11277,7 +13581,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.2219,
+       -0.9751
+      ],
+      "tip": [
+       103.8,
+       17.8
+      ],
+      "barrelQ": 0.64
      }
     },
     {
@@ -11300,7 +13613,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0373,
+       -0.9993
+      ],
+      "tip": [
+       91.5,
+       19.6
+      ],
+      "barrelQ": 0.57
      }
     },
     {
@@ -11323,7 +13645,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5446,
+       -0.8387
+      ],
+      "tip": [
+       85.7,
+       20.5
+      ],
+      "barrelQ": 0.86
      }
     },
     {
@@ -11346,7 +13677,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0633,
+       -0.998
+      ],
+      "tip": [
+       105.5,
+       12.4
+      ],
+      "barrelQ": 0.58
      }
     }
    ],
@@ -11386,7 +13726,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0175,
+       -0.9998
+      ],
+      "tip": [
+       63.5,
+       11.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11409,7 +13758,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7948,
+       -0.6069
+      ],
+      "tip": [
+       30.0,
+       24.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11432,7 +13790,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.2069,
+       -0.9784
+      ],
+      "tip": [
+       80.9,
+       11.0
+      ],
+      "barrelQ": 0.75
      }
     },
     {
@@ -11455,7 +13822,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5353,
+       -0.8447
+      ],
+      "tip": [
+       44.9,
+       14.9
+      ],
+      "barrelQ": 0.75
      }
     },
     {
@@ -11478,7 +13854,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1161,
+       -0.9932
+      ],
+      "tip": [
+       65.7,
+       3.5
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -11518,7 +13903,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.2079,
+       -0.9781
+      ],
+      "tip": [
+       82.2,
+       34.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11541,7 +13935,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0051,
+       -1.0
+      ],
+      "tip": [
+       74.5,
+       27.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11564,7 +13967,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0462,
+       -0.9989
+      ],
+      "tip": [
+       74.4,
+       23.6
+      ],
+      "barrelQ": 0.68
      }
     },
     {
@@ -11587,7 +13999,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.016,
+       -0.9999
+      ],
+      "tip": [
+       80.5,
+       25.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11610,7 +14031,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0,
+       -1.0
+      ],
+      "tip": [
+       75.5,
+       10.7
+      ],
+      "barrelQ": 0.77
      }
     }
    ],
@@ -11650,7 +14080,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5446,
+       -0.8387
+      ],
+      "tip": [
+       42.4,
+       25.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11673,7 +14112,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.309,
+       -0.9511
+      ],
+      "tip": [
+       56.1,
+       19.7
+      ],
+      "barrelQ": 0.3
      }
     },
     {
@@ -11696,7 +14144,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.064,
+       -0.998
+      ],
+      "tip": [
+       54.4,
+       15.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -11719,7 +14176,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1736,
+       -0.9848
+      ],
+      "tip": [
+       46.5,
+       21.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11742,7 +14208,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5076,
+       -0.8616
+      ],
+      "tip": [
+       52.5,
+       9.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -11765,7 +14240,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0175,
+       -0.9998
+      ],
+      "tip": [
+       59.5,
+       13.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -11788,7 +14272,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.548,
+       -0.8365
+      ],
+      "tip": [
+       52.4,
+       30.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -11811,7 +14304,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0175,
+       -0.9998
+      ],
+      "tip": [
+       45.0,
+       14.5
+      ],
+      "barrelQ": 0.97
      }
     },
     {
@@ -11834,7 +14336,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2575,
+       -0.9663
+      ],
+      "tip": [
+       56.3,
+       19.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -11857,7 +14368,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2413,
+       -0.9704
+      ],
+      "tip": [
+       45.0,
+       6.5
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -12094,7 +14614,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5299,
+       -0.848
+      ],
+      "tip": [
+       60.2,
+       31.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -12117,7 +14646,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4758,
+       -0.8795
+      ],
+      "tip": [
+       56.4,
+       27.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -12140,7 +14678,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1719,
+       -0.9851
+      ],
+      "tip": [
+       57.3,
+       22.3
+      ],
+      "barrelQ": 0.63
      }
     },
     {
@@ -12163,7 +14710,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2933,
+       -0.956
+      ],
+      "tip": [
+       57.6,
+       16.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -12186,7 +14742,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5227,
+       -0.8525
+      ],
+      "tip": [
+       56.7,
+       21.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -12209,7 +14774,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4803,
+       -0.8771
+      ],
+      "tip": [
+       53.0,
+       24.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -12232,7 +14806,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       45.9,
+       17.6
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -12255,7 +14838,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.225,
+       -0.9744
+      ],
+      "tip": [
+       53.4,
+       24.0
+      ],
+      "barrelQ": 0.83
      }
     },
     {
@@ -12278,7 +14870,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5021,
+       -0.8648
+      ],
+      "tip": [
+       49.4,
+       35.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -12301,7 +14902,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5552,
+       -0.8317
+      ],
+      "tip": [
+       54.9,
+       34.2
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -12341,7 +14951,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1437,
+       -0.9896
+      ],
+      "tip": [
+       76.4,
+       21.9
+      ],
+      "barrelQ": 0.35
      }
     },
     {
@@ -12364,7 +14983,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0433,
+       -0.9991
+      ],
+      "tip": [
+       92.5,
+       18.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -12387,7 +15015,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3907,
+       -0.9205
+      ],
+      "tip": [
+       67.9,
+       22.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -12410,7 +15047,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.2011,
+       -0.9796
+      ],
+      "tip": [
+       101.5,
+       7.5
+      ],
+      "barrelQ": 0.23
      }
     },
     {
@@ -12433,7 +15079,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.7572,
+       -0.6531
+      ],
+      "tip": [
+       144.0,
+       27.1
+      ],
+      "barrelQ": 0.0
      }
     }
    ],
@@ -12473,7 +15128,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.454,
+       -0.891
+      ],
+      "tip": [
+       63.3,
+       28.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -12496,7 +15160,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.013,
+       -0.9999
+      ],
+      "tip": [
+       77.5,
+       15.5
+      ],
+      "barrelQ": 0.4
      }
     },
     {
@@ -12519,7 +15192,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2218,
+       -0.9751
+      ],
+      "tip": [
+       70.8,
+       20.1
+      ],
+      "barrelQ": 0.83
      }
     },
     {
@@ -12542,7 +15224,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3268,
+       -0.9451
+      ],
+      "tip": [
+       66.4,
+       21.9
+      ],
+      "barrelQ": 0.78
      }
     },
     {
@@ -12565,7 +15256,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0223,
+       -0.9998
+      ],
+      "tip": [
+       76.5,
+       8.5
+      ],
+      "barrelQ": 0.32
      }
     }
    ],
@@ -12605,7 +15305,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0175,
+       -0.9998
+      ],
+      "tip": [
+       77.5,
+       11.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -12628,7 +15337,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0015,
+       -1.0
+      ],
+      "tip": [
+       78.5,
+       19.3
+      ],
+      "barrelQ": 0.32
      }
     },
     {
@@ -12651,7 +15369,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.1736,
+       -0.9848
+      ],
+      "tip": [
+       78.7,
+       14.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -12674,7 +15401,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0204,
+       -0.9998
+      ],
+      "tip": [
+       78.5,
+       20.6
+      ],
+      "barrelQ": 0.49
      }
     },
     {
@@ -12697,7 +15433,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0175,
+       -0.9998
+      ],
+      "tip": [
+       76.5,
+       18.4
+      ],
+      "barrelQ": 0.33
      }
     }
    ],
@@ -12737,7 +15482,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9598,
+       -0.2807
+      ],
+      "tip": [
+       8.7,
+       45.1
+      ],
+      "barrelQ": 0.56
      }
     },
     {
@@ -12760,7 +15514,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0331,
+       -0.9995
+      ],
+      "tip": [
+       65.5,
+       8.5
+      ],
+      "barrelQ": 0.72
      }
     },
     {
@@ -12783,7 +15546,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3438,
+       -0.9391
+      ],
+      "tip": [
+       50.2,
+       3.7
+      ],
+      "barrelQ": 0.91
      }
     },
     {
@@ -12806,7 +15578,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9993,
+       -0.0378
+      ],
+      "tip": [
+       9.2,
+       49.0
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -12829,7 +15610,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4631,
+       -0.8863
+      ],
+      "tip": [
+       40.3,
+       9.2
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -12869,7 +15659,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9212,
+       -0.3891
+      ],
+      "tip": [
+       15.1,
+       41.1
+      ],
+      "barrelQ": 0.5
      }
     },
     {
@@ -12892,7 +15691,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0955,
+       -0.9954
+      ],
+      "tip": [
+       71.1,
+       20.5
+      ],
+      "barrelQ": 0.15
      }
     },
     {
@@ -12915,7 +15723,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.8291
+      ],
+      "tip": [
+       42.0,
+       23.2
+      ],
+      "barrelQ": 0.44
      }
     },
     {
@@ -12938,7 +15755,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.3582,
+       -0.9336
+      ],
+      "tip": [
+       82.3,
+       22.0
+      ],
+      "barrelQ": 0.19
      }
     },
     {
@@ -12961,7 +15787,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8829,
+       -0.4695
+      ],
+      "tip": [
+       21.3,
+       17.9
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -13001,7 +15836,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9985,
+       -0.054
+      ],
+      "tip": [
+       30.4,
+       50.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13024,7 +15868,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.5527,
+       -0.8334
+      ],
+      "tip": [
+       114.0,
+       27.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13047,7 +15900,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5604,
+       -0.8282
+      ],
+      "tip": [
+       57.0,
+       8.3
+      ],
+      "barrelQ": 0.78
      }
     },
     {
@@ -13070,7 +15932,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8496,
+       -0.5273
+      ],
+      "tip": [
+       29.5,
+       28.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -13093,7 +15964,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6239,
+       -0.7815
+      ],
+      "tip": [
+       46.3,
+       7.0
+      ],
+      "barrelQ": 0.8
      }
     }
    ],
@@ -13133,7 +16013,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4994,
+       -0.8664
+      ],
+      "tip": [
+       53.3,
+       39.4
+      ],
+      "barrelQ": 0.29
      }
     },
     {
@@ -13156,7 +16045,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6276,
+       -0.7785
+      ],
+      "tip": [
+       49.1,
+       42.8
+      ],
+      "barrelQ": 0.99
      }
     },
     {
@@ -13179,7 +16077,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6681,
+       -0.7441
+      ],
+      "tip": [
+       35.9,
+       26.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -13202,7 +16109,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5402,
+       -0.8415
+      ],
+      "tip": [
+       49.2,
+       24.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -13225,7 +16141,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6752,
+       -0.7377
+      ],
+      "tip": [
+       39.4,
+       24.4
+      ],
+      "barrelQ": 0.4
      }
     }
    ],
@@ -13265,7 +16190,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5631,
+       -0.8264
+      ],
+      "tip": [
+       44.3,
+       20.2
+      ],
+      "barrelQ": 0.88
      }
     },
     {
@@ -13288,7 +16222,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0926,
+       -0.9957
+      ],
+      "tip": [
+       68.6,
+       23.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13311,7 +16254,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4454,
+       -0.8953
+      ],
+      "tip": [
+       58.5,
+       24.6
+      ],
+      "barrelQ": 0.61
      }
     },
     {
@@ -13334,7 +16286,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6332,
+       -0.774
+      ],
+      "tip": [
+       42.8,
+       30.6
+      ],
+      "barrelQ": 0.73
      }
     },
     {
@@ -13357,7 +16318,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4155,
+       -0.9096
+      ],
+      "tip": [
+       56.2,
+       19.4
+      ],
+      "barrelQ": 0.59
      }
     }
    ],
@@ -13404,7 +16374,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6729,
+       -0.7397
+      ],
+      "tip": [
+       24.7,
+       18.5
+      ],
+      "barrelQ": 0.07
      }
     },
     {
@@ -13434,7 +16413,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.7139,
+       0.7002
+      ],
+      "tip": [
+       85.0,
+       81.0
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13464,7 +16452,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.809,
+       -0.5878
+      ],
+      "tip": [
+       15.7,
+       14.6
+      ],
+      "barrelQ": 0.71
      }
     },
     {
@@ -13494,7 +16491,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4701,
+       -0.8826
+      ],
+      "tip": [
+       21.9,
+       7.4
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13524,7 +16530,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6947,
+       -0.7193
+      ],
+      "tip": [
+       14.6,
+       13.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -13554,7 +16569,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.788,
+       -0.6157
+      ],
+      "tip": [
+       14.7,
+       9.9
+      ],
+      "barrelQ": 0.5
      }
     },
     {
@@ -13584,7 +16608,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.6667,
+       0.7453
+      ],
+      "tip": [
+       85.4,
+       81.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13614,7 +16647,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6157,
+       -0.788
+      ],
+      "tip": [
+       19.8,
+       4.2
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13644,7 +16686,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4928,
+       -0.8702
+      ],
+      "tip": [
+       21.2,
+       2.2
+      ],
+      "barrelQ": 0.08
      }
     },
     {
@@ -13674,7 +16725,16 @@
        5,
        6
       ],
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6815,
+       -0.7318
+      ],
+      "tip": [
+       17.9,
+       4.0
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -13714,7 +16774,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7388,
+       -0.6739
+      ],
+      "tip": [
+       13.8,
+       29.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -13737,7 +16806,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5277,
+       -0.8494
+      ],
+      "tip": [
+       26.2,
+       21.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -13760,7 +16838,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       21.5,
+       21.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -13783,7 +16870,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7038,
+       -0.7104
+      ],
+      "tip": [
+       20.3,
+       22.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -13806,7 +16902,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7547,
+       -0.6561
+      ],
+      "tip": [
+       23.4,
+       20.1
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -13829,7 +16934,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4695,
+       -0.8829
+      ],
+      "tip": [
+       31.6,
+       12.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -13852,7 +16966,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6492,
+       -0.7606
+      ],
+      "tip": [
+       23.1,
+       22.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -13875,7 +16998,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.7155,
+       0.6986
+      ],
+      "tip": [
+       115.9,
+       108.8
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -13898,7 +17030,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7314,
+       -0.682
+      ],
+      "tip": [
+       22.2,
+       17.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -13921,7 +17062,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7771,
+       -0.6293
+      ],
+      "tip": [
+       17.0,
+       14.3
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -13961,7 +17111,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3556,
+       -0.9346
+      ],
+      "tip": [
+       40.5,
+       52.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -13984,7 +17143,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1814,
+       -0.9834
+      ],
+      "tip": [
+       42.5,
+       44.5
+      ],
+      "barrelQ": 0.55
      }
     },
     {
@@ -14007,7 +17175,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8213,
+       -0.5705
+      ],
+      "tip": [
+       14.0,
+       61.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -14030,7 +17207,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4695,
+       -0.8829
+      ],
+      "tip": [
+       24.7,
+       30.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -14053,7 +17239,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4141,
+       -0.9102
+      ],
+      "tip": [
+       39.4,
+       4.2
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -14093,7 +17288,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5446,
+       -0.8387
+      ],
+      "tip": [
+       45.9,
+       33.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -14116,7 +17320,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       51.0,
+       25.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -14139,7 +17352,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.816,
+       -0.5781
+      ],
+      "tip": [
+       49.6,
+       59.6
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -14162,7 +17384,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7771,
+       -0.6293
+      ],
+      "tip": [
+       38.2,
+       23.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -14185,7 +17416,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7405,
+       -0.6721
+      ],
+      "tip": [
+       46.9,
+       15.9
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -14225,7 +17465,16 @@
       ],
       "flashFrame": 2,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0349,
+       -0.9994
+      ],
+      "tip": [
+       68.5,
+       7.6
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -14248,7 +17497,16 @@
       ],
       "flashFrame": 2,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1908,
+       -0.9816
+      ],
+      "tip": [
+       56.2,
+       25.7
+      ],
+      "barrelQ": 0.76
      }
     },
     {
@@ -14271,7 +17529,16 @@
       ],
       "flashFrame": 2,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0184,
+       -0.9998
+      ],
+      "tip": [
+       67.5,
+       5.5
+      ],
+      "barrelQ": 0.76
      }
     },
     {
@@ -14294,7 +17561,16 @@
       ],
       "flashFrame": 2,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.023,
+       -0.9997
+      ],
+      "tip": [
+       67.5,
+       18.4
+      ],
+      "barrelQ": 0.5
      }
     },
     {
@@ -14317,7 +17593,16 @@
       ],
       "flashFrame": 2,
       "frames": 6,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0084,
+       -1.0
+      ],
+      "tip": [
+       67.5,
+       9.5
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -15149,7 +18434,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.3552,
+       -0.9348
+      ],
+      "tip": [
+       71.7,
+       50.7
+      ],
+      "barrelQ": 0.4
      }
     },
     {
@@ -15172,7 +18466,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3843,
+       -0.9232
+      ],
+      "tip": [
+       51.9,
+       45.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -15195,7 +18498,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3641,
+       -0.9314
+      ],
+      "tip": [
+       49.5,
+       49.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -15218,7 +18530,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4143,
+       -0.9102
+      ],
+      "tip": [
+       48.8,
+       42.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -15241,7 +18562,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3683,
+       -0.9297
+      ],
+      "tip": [
+       47.8,
+       44.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -15264,7 +18594,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       45.2,
+       30.3
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -15287,7 +18626,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3083,
+       -0.9513
+      ],
+      "tip": [
+       48.0,
+       32.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -15310,7 +18658,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2088,
+       -0.978
+      ],
+      "tip": [
+       50.1,
+       47.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -15333,7 +18690,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3209,
+       -0.9471
+      ],
+      "tip": [
+       50.9,
+       31.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -15356,7 +18722,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3844,
+       -0.9232
+      ],
+      "tip": [
+       45.8,
+       32.1
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -15830,7 +19205,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.1838,
+       -0.983
+      ],
+      "tip": [
+       65.8,
+       23.3
+      ],
+      "barrelQ": 0.47
      }
     },
     {
@@ -15853,7 +19237,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0518,
+       -0.9987
+      ],
+      "tip": [
+       58.6,
+       19.5
+      ],
+      "barrelQ": 0.34
      }
     },
     {
@@ -15876,7 +19269,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0672,
+       -0.9977
+      ],
+      "tip": [
+       55.4,
+       30.5
+      ],
+      "barrelQ": 0.79
      }
     },
     {
@@ -15899,7 +19301,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0238,
+       -0.9997
+      ],
+      "tip": [
+       59.4,
+       22.9
+      ],
+      "barrelQ": 0.24
      }
     },
     {
@@ -15922,7 +19333,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0505,
+       -0.9987
+      ],
+      "tip": [
+       59.5,
+       20.5
+      ],
+      "barrelQ": 0.06
      }
     },
     {
@@ -15945,7 +19365,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0227,
+       -0.9997
+      ],
+      "tip": [
+       58.5,
+       21.5
+      ],
+      "barrelQ": 0.49
      }
     },
     {
@@ -15968,7 +19397,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0061,
+       -1.0
+      ],
+      "tip": [
+       61.5,
+       15.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -15991,7 +19429,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0523,
+       -0.9986
+      ],
+      "tip": [
+       57.5,
+       14.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -16014,7 +19461,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.016,
+       -0.9999
+      ],
+      "tip": [
+       57.5,
+       23.5
+      ],
+      "barrelQ": 0.71
      }
     },
     {
@@ -16037,7 +19493,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0141,
+       -0.9999
+      ],
+      "tip": [
+       58.0,
+       13.4
+      ],
+      "barrelQ": 0.46
      }
     }
    ],
@@ -16077,7 +19542,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0371,
+       -0.9993
+      ],
+      "tip": [
+       63.5,
+       14.5
+      ],
+      "barrelQ": 0.84
      }
     },
     {
@@ -16100,7 +19574,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0035,
+       -1.0
+      ],
+      "tip": [
+       61.5,
+       22.5
+      ],
+      "barrelQ": 0.72
      }
     },
     {
@@ -16123,7 +19606,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0212,
+       -0.9998
+      ],
+      "tip": [
+       58.5,
+       25.5
+      ],
+      "barrelQ": 0.43
      }
     },
     {
@@ -16146,7 +19638,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0211,
+       -0.9998
+      ],
+      "tip": [
+       67.0,
+       21.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -16169,7 +19670,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0698,
+       -0.9976
+      ],
+      "tip": [
+       60.7,
+       5.6
+      ],
+      "barrelQ": 0.92
      }
     },
     {
@@ -16192,7 +19702,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0228,
+       -0.9997
+      ],
+      "tip": [
+       63.5,
+       23.7
+      ],
+      "barrelQ": 0.31
      }
     },
     {
@@ -16215,7 +19734,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0,
+       -1.0
+      ],
+      "tip": [
+       63.5,
+       19.5
+      ],
+      "barrelQ": 0.49
      }
     },
     {
@@ -16238,7 +19766,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0,
+       -1.0
+      ],
+      "tip": [
+       61.5,
+       20.5
+      ],
+      "barrelQ": 0.32
      }
     },
     {
@@ -16261,7 +19798,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0165,
+       -0.9999
+      ],
+      "tip": [
+       62.5,
+       32.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -16284,7 +19830,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0225,
+       -0.9997
+      ],
+      "tip": [
+       63.5,
+       30.5
+      ],
+      "barrelQ": 0.75
      }
     }
    ],
@@ -16324,7 +19879,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.766,
+       -0.6428
+      ],
+      "tip": [
+       56.0,
+       42.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -16347,7 +19911,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7665,
+       -0.6423
+      ],
+      "tip": [
+       52.8,
+       30.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -16370,7 +19943,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       65.1,
+       26.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -16393,7 +19975,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2008,
+       -0.9796
+      ],
+      "tip": [
+       64.1,
+       26.7
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -16416,7 +20007,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       58.4,
+       25.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -16439,7 +20039,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4348,
+       -0.9005
+      ],
+      "tip": [
+       52.5,
+       23.0
+      ],
+      "barrelQ": 0.5
      }
     },
     {
@@ -16462,7 +20071,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8694,
+       -0.4941
+      ],
+      "tip": [
+       46.5,
+       32.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -16485,7 +20103,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7071,
+       -0.7071
+      ],
+      "tip": [
+       54.5,
+       25.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -16508,7 +20135,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4237,
+       -0.9058
+      ],
+      "tip": [
+       54.3,
+       24.1
+      ],
+      "barrelQ": 0.63
      }
     },
     {
@@ -16531,7 +20167,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5736,
+       -0.8192
+      ],
+      "tip": [
+       56.1,
+       4.5
+      ],
+      "barrelQ": 1.0
      }
     }
    ],
@@ -16772,7 +20417,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8097,
+       -0.5868
+      ],
+      "tip": [
+       36.3,
+       37.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -16795,7 +20449,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.98,
+       -0.1988
+      ],
+      "tip": [
+       26.9,
+       59.6
+      ],
+      "barrelQ": 0.12
      }
     },
     {
@@ -16818,7 +20481,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9957,
+       -0.0922
+      ],
+      "tip": [
+       24.9,
+       59.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -16841,7 +20513,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.824,
+       -0.5666
+      ],
+      "tip": [
+       35.0,
+       34.6
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -16864,7 +20545,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.8408,
+       -0.5413
+      ],
+      "tip": [
+       38.3,
+       20.4
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -16904,7 +20594,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0085,
+       -1.0
+      ],
+      "tip": [
+       78.5,
+       23.5
+      ],
+      "barrelQ": 0.26
      }
     },
     {
@@ -16927,7 +20626,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.3125,
+       -0.9499
+      ],
+      "tip": [
+       92.4,
+       28.8
+      ],
+      "barrelQ": 0.3
      }
     },
     {
@@ -16950,7 +20658,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3265,
+       -0.9452
+      ],
+      "tip": [
+       67.0,
+       15.0
+      ],
+      "barrelQ": 0.54
      }
     },
     {
@@ -16973,7 +20690,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0279,
+       -0.9996
+      ],
+      "tip": [
+       78.4,
+       20.5
+      ],
+      "barrelQ": 0.24
      }
     },
     {
@@ -16996,7 +20722,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7206,
+       0.6933
+      ],
+      "tip": [
+       22.8,
+       148.6
+      ],
+      "barrelQ": 0.0
      }
     }
    ],
@@ -17036,7 +20771,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4384,
+       -0.8988
+      ],
+      "tip": [
+       63.5,
+       26.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -17059,7 +20803,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0316,
+       -0.9995
+      ],
+      "tip": [
+       71.5,
+       20.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -17082,7 +20835,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.046,
+       -0.9989
+      ],
+      "tip": [
+       75.6,
+       14.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -17105,7 +20867,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.037,
+       -0.9993
+      ],
+      "tip": [
+       72.4,
+       7.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -17128,7 +20899,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0414,
+       -0.9991
+      ],
+      "tip": [
+       67.5,
+       14.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17151,7 +20931,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0663,
+       -0.9978
+      ],
+      "tip": [
+       67.4,
+       13.6
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17174,7 +20963,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0178,
+       -0.9998
+      ],
+      "tip": [
+       72.5,
+       12.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -17197,7 +20995,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.993,
+       -0.1182
+      ],
+      "tip": [
+       36.5,
+       36.9
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17220,7 +21027,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4848,
+       0.8746
+      ],
+      "tip": [
+       28.9,
+       101.0
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17243,7 +21059,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9903,
+       -0.1389
+      ],
+      "tip": [
+       44.2,
+       32.4
+      ],
+      "barrelQ": 0.0
      }
     }
    ],
@@ -17283,7 +21108,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.9989,
+       0.0477
+      ],
+      "tip": [
+       33.5,
+       96.6
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17306,7 +21140,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -1.0,
+       0.0
+      ],
+      "tip": [
+       33.5,
+       81.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17329,7 +21172,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0175,
+       -0.9998
+      ],
+      "tip": [
+       83.5,
+       46.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -17352,7 +21204,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.6033,
+       -0.7975
+      ],
+      "tip": [
+       101.2,
+       68.8
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17375,7 +21236,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.4067,
+       -0.9135
+      ],
+      "tip": [
+       91.4,
+       8.0
+      ],
+      "barrelQ": 0.22
      }
     },
     {
@@ -17398,7 +21268,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0175,
+       -0.9998
+      ],
+      "tip": [
+       82.5,
+       30.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -17421,7 +21300,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5502,
+       -0.835
+      ],
+      "tip": [
+       77.4,
+       42.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -17444,7 +21332,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0374,
+       -0.9993
+      ],
+      "tip": [
+       88.6,
+       37.5
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -17467,7 +21364,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3073,
+       -0.9516
+      ],
+      "tip": [
+       74.6,
+       56.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -17490,7 +21396,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2979,
+       -0.9546
+      ],
+      "tip": [
+       68.4,
+       58.1
+      ],
+      "barrelQ": 0.59
      }
     }
    ],
@@ -17964,7 +21879,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1729,
+       -0.9849
+      ],
+      "tip": [
+       68.1,
+       16.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -17987,7 +21911,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2868,
+       -0.958
+      ],
+      "tip": [
+       58.1,
+       7.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18010,7 +21943,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0589,
+       -0.9983
+      ],
+      "tip": [
+       76.9,
+       10.6
+      ],
+      "barrelQ": 0.5
      }
     },
     {
@@ -18033,7 +21975,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0415,
+       -0.9991
+      ],
+      "tip": [
+       76.5,
+       4.4
+      ],
+      "barrelQ": 0.52
      }
     },
     {
@@ -18056,7 +22007,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5492,
+       -0.8357
+      ],
+      "tip": [
+       47.8,
+       9.6
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -18096,7 +22056,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.309,
+       -0.9511
+      ],
+      "tip": [
+       77.8,
+       33.7
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -18119,7 +22088,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1246,
+       -0.9922
+      ],
+      "tip": [
+       77.8,
+       34.7
+      ],
+      "barrelQ": 0.05
      }
     },
     {
@@ -18142,7 +22120,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0732,
+       -0.9973
+      ],
+      "tip": [
+       79.9,
+       32.3
+      ],
+      "barrelQ": 0.1
      }
     },
     {
@@ -18165,7 +22152,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2543,
+       -0.9671
+      ],
+      "tip": [
+       71.9,
+       24.1
+      ],
+      "barrelQ": 0.38
      }
     },
     {
@@ -18188,7 +22184,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.269,
+       -0.9631
+      ],
+      "tip": [
+       72.6,
+       30.7
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18211,7 +22216,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3253,
+       -0.9456
+      ],
+      "tip": [
+       71.3,
+       30.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18234,7 +22248,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1516,
+       -0.9884
+      ],
+      "tip": [
+       81.2,
+       13.6
+      ],
+      "barrelQ": 0.61
      }
     },
     {
@@ -18257,7 +22280,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0623,
+       -0.9981
+      ],
+      "tip": [
+       80.5,
+       30.5
+      ],
+      "barrelQ": 0.63
      }
     },
     {
@@ -18280,7 +22312,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7815,
+       -0.6239
+      ],
+      "tip": [
+       64.5,
+       38.7
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18303,7 +22344,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0478,
+       -0.9989
+      ],
+      "tip": [
+       79.4,
+       15.4
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -18343,7 +22393,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4261,
+       -0.9047
+      ],
+      "tip": [
+       56.2,
+       71.9
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18366,7 +22425,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4384,
+       -0.8988
+      ],
+      "tip": [
+       56.9,
+       62.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18389,7 +22457,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5785,
+       -0.8157
+      ],
+      "tip": [
+       48.0,
+       74.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18412,7 +22489,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.3096,
+       -0.9509
+      ],
+      "tip": [
+       54.3,
+       66.4
+      ],
+      "barrelQ": 0.17
      }
     },
     {
@@ -18435,7 +22521,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6975,
+       -0.7166
+      ],
+      "tip": [
+       39.5,
+       74.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18458,7 +22553,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0175,
+       -0.9998
+      ],
+      "tip": [
+       54.5,
+       63.5
+      ],
+      "barrelQ": 0.74
      }
     },
     {
@@ -18481,7 +22585,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.1959,
+       -0.9806
+      ],
+      "tip": [
+       56.4,
+       60.4
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18504,7 +22617,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4797,
+       -0.8775
+      ],
+      "tip": [
+       55.2,
+       73.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18527,7 +22649,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5178,
+       -0.8555
+      ],
+      "tip": [
+       55.4,
+       54.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18550,7 +22681,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5007,
+       -0.8656
+      ],
+      "tip": [
+       55.8,
+       27.2
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -18590,7 +22730,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7193,
+       -0.6947
+      ],
+      "tip": [
+       47.9,
+       26.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18613,7 +22762,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5992,
+       -0.8006
+      ],
+      "tip": [
+       37.0,
+       21.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18636,7 +22794,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5902,
+       -0.8073
+      ],
+      "tip": [
+       43.4,
+       18.9
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18659,7 +22826,16 @@
       ],
       "flashFrame": 1,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.788,
+       -0.6157
+      ],
+      "tip": [
+       21.2,
+       10.6
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18682,7 +22858,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2894,
+       -0.9572
+      ],
+      "tip": [
+       47.7,
+       18.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18705,7 +22890,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.809,
+       -0.5878
+      ],
+      "tip": [
+       37.1,
+       17.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18728,7 +22922,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5775,
+       -0.8164
+      ],
+      "tip": [
+       50.3,
+       16.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18751,7 +22954,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7193,
+       -0.6947
+      ],
+      "tip": [
+       47.0,
+       11.0
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18774,7 +22986,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4902,
+       -0.8716
+      ],
+      "tip": [
+       38.3,
+       15.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18797,7 +23018,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.4999,
+       -0.8661
+      ],
+      "tip": [
+       56.9,
+       7.2
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -18837,7 +23067,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6661,
+       -0.7459
+      ],
+      "tip": [
+       40.0,
+       70.8
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18860,7 +23099,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5592,
+       -0.829
+      ],
+      "tip": [
+       34.5,
+       63.2
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18883,7 +23131,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0523,
+       -0.9986
+      ],
+      "tip": [
+       48.3,
+       54.6
+      ],
+      "barrelQ": 0.37
      }
     },
     {
@@ -18906,7 +23163,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.2924,
+       -0.9563
+      ],
+      "tip": [
+       46.4,
+       50.6
+      ],
+      "barrelQ": 0.57
      }
     },
     {
@@ -18929,7 +23195,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6293,
+       -0.7771
+      ],
+      "tip": [
+       38.8,
+       54.6
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18952,7 +23227,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.7353,
+       -0.6777
+      ],
+      "tip": [
+       27.7,
+       55.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -18975,7 +23259,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6561,
+       -0.7547
+      ],
+      "tip": [
+       25.6,
+       49.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -18998,7 +23291,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6691,
+       -0.7431
+      ],
+      "tip": [
+       41.0,
+       41.9
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -19021,7 +23323,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6947,
+       -0.7193
+      ],
+      "tip": [
+       42.5,
+       51.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -19044,7 +23355,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.627,
+       -0.779
+      ],
+      "tip": [
+       30.7,
+       12.6
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -19084,7 +23404,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0184,
+       -0.9998
+      ],
+      "tip": [
+       48.5,
+       27.8
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19107,7 +23436,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.219,
+       -0.9757
+      ],
+      "tip": [
+       43.6,
+       26.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19130,7 +23468,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0087,
+       -1.0
+      ],
+      "tip": [
+       48.5,
+       24.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19153,7 +23500,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0188,
+       -0.9998
+      ],
+      "tip": [
+       47.5,
+       26.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19176,7 +23532,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0175,
+       -0.9998
+      ],
+      "tip": [
+       47.5,
+       21.5
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -19199,7 +23564,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0006,
+       -1.0
+      ],
+      "tip": [
+       48.5,
+       17.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19222,7 +23596,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0393,
+       -0.9992
+      ],
+      "tip": [
+       47.5,
+       21.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19245,7 +23628,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0405,
+       -0.9992
+      ],
+      "tip": [
+       48.5,
+       20.0
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19268,7 +23660,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0238,
+       -0.9997
+      ],
+      "tip": [
+       47.5,
+       18.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19291,7 +23692,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0083,
+       -1.0
+      ],
+      "tip": [
+       48.5,
+       7.1
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -19331,7 +23741,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0444,
+       -0.999
+      ],
+      "tip": [
+       70.5,
+       30.5
+      ],
+      "barrelQ": 0.31
      }
     },
     {
@@ -19354,7 +23773,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6018,
+       0.7986
+      ],
+      "tip": [
+       18.8,
+       107.3
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -19377,7 +23805,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0327,
+       -0.9995
+      ],
+      "tip": [
+       69.0,
+       23.1
+      ],
+      "barrelQ": 0.75
      }
     },
     {
@@ -19400,7 +23837,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0465,
+       -0.9989
+      ],
+      "tip": [
+       67.6,
+       22.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19423,7 +23869,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0507,
+       -0.9987
+      ],
+      "tip": [
+       60.5,
+       16.2
+      ],
+      "barrelQ": 0.99
      }
     },
     {
@@ -19446,7 +23901,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0029,
+       -1.0
+      ],
+      "tip": [
+       67.5,
+       16.3
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19469,7 +23933,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0235,
+       -0.9997
+      ],
+      "tip": [
+       67.0,
+       15.4
+      ],
+      "barrelQ": 1.0
      }
     },
     {
@@ -19492,7 +23965,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.6404,
+       0.768
+      ],
+      "tip": [
+       15.3,
+       107.4
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -19515,7 +23997,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0448,
+       -0.999
+      ],
+      "tip": [
+       67.5,
+       15.5
+      ],
+      "barrelQ": 0.06
      }
     },
     {
@@ -19538,7 +24029,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0198,
+       -0.9998
+      ],
+      "tip": [
+       68.5,
+       3.1
+      ],
+      "barrelQ": 0.85
      }
     }
    ],
@@ -19578,7 +24078,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0896,
+       -0.996
+      ],
+      "tip": [
+       39.5,
+       36.6
+      ],
+      "barrelQ": 0.08
      }
     },
     {
@@ -19601,7 +24110,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.04,
+       -0.9992
+      ],
+      "tip": [
+       37.4,
+       22.5
+      ],
+      "barrelQ": 0.74
      }
     },
     {
@@ -19624,7 +24142,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5971,
+       -0.8021
+      ],
+      "tip": [
+       24.2,
+       20.9
+      ],
+      "barrelQ": 0.55
      }
     },
     {
@@ -19647,7 +24174,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.044,
+       -0.999
+      ],
+      "tip": [
+       37.4,
+       24.3
+      ],
+      "barrelQ": 0.36
      }
     },
     {
@@ -19670,7 +24206,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.4389,
+       -0.8985
+      ],
+      "tip": [
+       48.8,
+       18.9
+      ],
+      "barrelQ": 0.03
      }
     },
     {
@@ -19693,7 +24238,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.5189,
+       0.8548
+      ],
+      "tip": [
+       5.4,
+       84.7
+      ],
+      "barrelQ": 0.0
      }
     },
     {
@@ -19716,7 +24270,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0496,
+       -0.9988
+      ],
+      "tip": [
+       36.4,
+       11.5
+      ],
+      "barrelQ": 0.54
      }
     },
     {
@@ -19739,7 +24302,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0218,
+       -0.9998
+      ],
+      "tip": [
+       38.5,
+       10.5
+      ],
+      "barrelQ": 0.74
      }
     },
     {
@@ -19762,7 +24334,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0032,
+       -1.0
+      ],
+      "tip": [
+       37.5,
+       11.8
+      ],
+      "barrelQ": 0.87
      }
     },
     {
@@ -19785,7 +24366,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0523,
+       -0.9986
+      ],
+      "tip": [
+       36.4,
+       5.5
+      ],
+      "barrelQ": 0.39
      }
     }
    ],
@@ -19825,7 +24415,16 @@
       ],
       "flashFrame": 2,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0772,
+       -0.997
+      ],
+      "tip": [
+       46.1,
+       61.3
+      ],
+      "barrelQ": 0.48
      }
     },
     {
@@ -19848,7 +24447,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.1392,
+       -0.9903
+      ],
+      "tip": [
+       43.2,
+       52.2
+      ],
+      "barrelQ": 0.67
      }
     },
     {
@@ -19871,7 +24479,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0433,
+       -0.9991
+      ],
+      "tip": [
+       43.5,
+       43.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19894,7 +24511,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0062,
+       -1.0
+      ],
+      "tip": [
+       42.5,
+       46.1
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19917,7 +24543,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0233,
+       -0.9997
+      ],
+      "tip": [
+       41.5,
+       48.5
+      ],
+      "barrelQ": 0.27
      }
     },
     {
@@ -19940,7 +24575,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0489,
+       -0.9988
+      ],
+      "tip": [
+       41.5,
+       44.5
+      ],
+      "barrelQ": 0.83
      }
     },
     {
@@ -19963,7 +24607,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0053,
+       -1.0
+      ],
+      "tip": [
+       41.5,
+       37.5
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -19986,7 +24639,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0225,
+       -0.9997
+      ],
+      "tip": [
+       41.0,
+       42.5
+      ],
+      "barrelQ": 0.57
      }
     },
     {
@@ -20009,7 +24671,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       -0.0081,
+       -1.0
+      ],
+      "tip": [
+       42.0,
+       29.2
+      ],
+      "barrelQ": 0.85
      }
     },
     {
@@ -20032,7 +24703,16 @@
       ],
       "flashFrame": 3,
       "frames": 7,
-      "bad": false
+      "bad": false,
+      "barrel": [
+       0.0022,
+       -1.0
+      ],
+      "tip": [
+       42.5,
+       3.5
+      ],
+      "barrelQ": 0.85
      }
     }
    ],

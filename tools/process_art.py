@@ -36,6 +36,9 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import weapon_barrels  # noqa: E402  (barrel axes of the first-person frames)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG = os.path.join(ROOT, "tools", "art_config.json")
 MANIFEST = os.path.join(ROOT, "assets", "manifest.json")
@@ -1123,6 +1126,9 @@ def process_weapon_set(sheet):
                  **{k: v for k, v in w.items() if k != "bad"}, row=i)
         e["fp"] = m
         weapons.append(e)
+    # barrel axis + tip per gun (fp.barrel / fp.tip / fp.barrelQ), measured on
+    # the atlas as saved, exactly like tools/weapon_barrels.py does
+    weapon_barrels.measure_set(np.array(Image.open(os.path.join(ROOT, fp_out)).convert("RGBA")), fw, fh, weapons)
     return {
         "id": sheet["id"],
         "fpFile": fp_out, "fpW": fw, "fpH": fh, "fpFrames": fp_cols,
