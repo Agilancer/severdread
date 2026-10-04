@@ -80,15 +80,20 @@ function buildCore(ctx, Fr) {
   const L = Fr.L, Wd = Fr.Wd;
   if (L < 13 || Wd < 13) return false;
   const top = r.floor + r.ceilH;
-  const yG = r.floor + 4.2;
-  // ---- gallery along the t=0 wall (if a long enough stretch is free of exits)
+  let yG = r.floor + 4.2;
+  // ---- gallery along the t=0 wall (if a long enough stretch is free of exits;
+  // a lower, shorter observation deck when only a short stretch is)
   const gD = L >= 20 ? 3 : 2;
   let gal = null;
   if (r.ceilH >= 9) gal = buildGallery(ctx, Fr, gD, yG, { floorTex: hosp ? TS.FLOOR2 : TS.GRATE, minDeck: 5 });
+  if (!gal && r.ceilH >= 9) { yG = r.floor + 3.0; gal = buildGallery(ctx, Fr, gD, yG, { floorTex: hosp ? TS.FLOOR2 : TS.GRATE, minDeck: 3, twoFlights: false }); }
+  // a second gallery facing it across the well in long cores
+  const Fr2 = frame(r, OPP[Fr.side]);
+  const gal2 = gal && L >= 18 ? buildGallery(ctx, Fr2, gD, yG, { floorTex: hosp ? TS.FLOOR2 : TS.GRATE, minDeck: 5 }) : null;
   // ---- the well: the inner floor (a 3-cell walkway ring stays round the
   // walls) minus a margin round the exit approaches and stair landings, which
   // become railed peninsulas reaching into it; slivers are trimmed off
-  const tA = gal ? gD + 3 : 3, tB = L - 3, sA = 3, sB = Wd - 3;
+  const tA = gal ? gD + 3 : 3, tB = L - (gal2 ? gD + 3 : 3), sA = 3, sB = Wd - 3;
   const cand = new Set();
   for (let t = tA; t < tB; t++) for (let s = sA; s < sB; s++) {
     if (!okL(ctx, Fr, t, s, 1, 1, 1, 1)) continue;
@@ -228,23 +233,25 @@ function buildCore(ctx, Fr) {
       deco.box(px - 0.1, r.floor - depth, pz - 0.1, px + 0.1, r.floor - 0.1, pz + 0.1, TS.PIPE);
     }
   }
-  // ---- gallery furnishing: consoles facing the well, office windows behind
-  if (gal) {
-    for (let s = gal.s0 + 1; s < gal.s1 - 1; s += 3) {
-      const [x, z] = Fr.cell(0, s);
-      if (gD >= 3) deco.console(x, z, yG, Fr.away);
+  // ---- gallery furnishing: consoles (lab) / benches and planters (hospital)
+  // facing the well, office windows behind, a light strip on the deck edge
+  for (const [F2, G2] of [[Fr, gal], [Fr2, gal2]]) {
+    if (!G2) continue;
+    for (let s2 = G2.s0 + 1; s2 < G2.s1 - 1; s2 += 3) {
+      const [x, z] = F2.cell(0, s2);
+      if (gD < 3) continue;
+      if (!hosp) deco.console(x, z, yG, F2.away);
+      else if (s2 + 2 < G2.s1) { const [bx0, bz0, bw2, bh2] = F2.rect(0.25, s2, 0.6, 2); seatRow(ctx, bx0, bz0, bw2 > bh2 ? bw2 : bh2, bw2 > bh2, yG, F2.away); }
     }
-    for (let s = gal.s0; s < gal.s1; s++) {
-      const [x, z] = Fr.cell(0, s);
-      if (s % 2 === 0 && yG + 2.7 < top - 0.5) deco.window(x, z, Fr.toward, yG + 1.0, yG + 2.6, { emissive: 0.55 });
+    for (let s2 = G2.s0; s2 < G2.s1; s2++) {
+      const [x, z] = F2.cell(0, s2);
+      if (s2 % 2 === 0 && yG + 2.7 < top - 0.5) deco.window(x, z, F2.toward, yG + 1.0, yG + 2.6, { emissive: 0.55 });
     }
-    // light strip under the gallery edge (on its face)
-    const [ax, az] = Fr.pt(gD, gal.s0), [bx, bz] = Fr.pt(gD + 0.06, gal.s1);
+    const [ax, az] = F2.pt(gD, G2.s0), [bx, bz] = F2.pt(gD + 0.06, G2.s1);
     deco.box(Math.min(ax, bx), yG - 0.25, Math.min(az, bz), Math.max(ax, bx), yG - 0.15, Math.max(az, bz), TS.LIGHT, { uv: 'fit', emissive: 1 });
   }
   // ---- upper storeys: rows of lit windows on the other walls
-  const galSide = Fr.toward;
-  upperWindows(ctx, r.floor + 5.2, r.floor + 6.8, 2, (x, z, d) => d !== galSide || !gal);
+  upperWindows(ctx, r.floor + 5.2, r.floor + 6.8, 2, (x, z, d) => (d !== Fr.toward || !gal) && (d !== Fr2.toward || !gal2));
   if (r.ceilH >= 12) upperWindows(ctx, r.floor + 9.0, r.floor + 10.6, 2);
   // ---- risers in the corners, machinery / cabinets along the ring walls
   for (const [x, z] of [[r.x, r.z], [r.x + r.w - 1, r.z], [r.x, r.z + r.h - 1], [r.x + r.w - 1, r.z + r.h - 1]]) {

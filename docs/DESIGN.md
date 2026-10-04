@@ -46,6 +46,17 @@ hand rails, AABB colliders, light fixtures). See `docs/ARCHITECTURE.md`.
   street lamps, skyscrapers with setbacks and rooftop machinery, enterable
   lobbies and shops, plazas, parking decks, canals with railed bridges,
   craters, harbours, villages and cemeteries, and a walled boss plaza.
+- `gen_lab.js` (bio lab, abandoned hospital): a sealed complex round a central
+  multi-storey core - a containment well under a giant specimen tank, or a
+  skylit atrium over a collapsed, flooded basement - with galleries up stairs,
+  bridges and glass rails, and wings of purpose-built rooms (`lab_rooms.js`,
+  `lab_extra.js`): reception, decontamination airlocks with glass partitions,
+  wet labs, clean rooms overlooked by observation galleries, specimen halls
+  over bio-hazard sumps, cold stores with walk-in freezers, server rooms,
+  isolation cells, a hydroponics greenhouse, waste processing, flooded pump
+  rooms, offices and security stations; wards, operating theatres with
+  viewing galleries and recovery bays, radiology, a cafeteria, pharmacy and
+  morgue in the hospital.
 - Caves, canyons, mountains, mazes, halls, rooftops, sky islands and convoys
   have their own generators built on the same toolkit.
 

@@ -1,15 +1,24 @@
 // "Lab" archetype: research facilities and hospitals. A sealed complex laid out
 // around a central multi-storey core (gen_arch.js with a custom partition: the
-// core leaf sits in the middle and pinwheel wings around it are BSP-split
-// into rooms). The core is the theme's signature space - the bio lab's
-// containment well under a giant specimen tank, the hospital's skylit atrium
-// over a collapsed, flooded basement - and the wings hold purpose-built rooms
-// (lab_rooms.js): reception lobby, decontamination chamber, wet labs, clean
-// rooms with observation galleries, specimen halls, cold storage, server
-// rooms, a flooded pump room; wards, an operating theatre with a viewing
-// gallery and a morgue in the hospital. Passages between rooms are dressed as
-// airlocks (sliding glass leaves, light strips, hazard lines) and height
-// changes are real stair flights with hand rails.
+// core leaf sits in the middle and pinwheel wings around it are split by a
+// finer BSP into big halls, medium labs and small service rooms). The core is
+// the theme's signature space - the bio lab's containment well under a giant
+// specimen tank, the hospital's skylit atrium over a collapsed, flooded
+// basement - ringed by a walkway with galleries up stairs and railed bridges
+// over the well. The wings hold purpose-built rooms (lab_rooms.js,
+// lab_extra.js): reception lobby, decontamination airlocks, wet labs, clean
+// rooms with observation galleries, specimen halls over bio-hazard sumps, cold
+// stores with walk-in freezers, server rooms, isolation cells, a skylit
+// hydroponics greenhouse, waste processing, flooded pump rooms, offices and
+// security stations; wards, an operating theatre with a viewing gallery,
+// radiology, a cafeteria, pharmacies and a morgue in the hospital. Passages
+// between rooms are dressed as airlocks (steel jambs, parked sliding glass
+// leaves, light strips, hazard lines), height changes are real stair flights
+// with hand rails, keyed gates are gen_arch's 3-wide doorways.
+//
+// Dev hooks (tests / screenshots): globalThis.__LABFORCE = 'decon,office'
+// favours room kinds, globalThis.__LABSTAT (an array) collects template
+// fallbacks.
 import { TS, F, clamp } from './common.js';
 import { FACE } from './deco.js';
 import { genArch, TEMPLATES } from './gen_arch.js';
