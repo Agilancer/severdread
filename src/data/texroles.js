@@ -639,6 +639,8 @@ export const PH = {
   carpet_blue: { type: 'carpet', kind: 'ornate', base: '#1a2a5a', alt: '#c0a050' },
   carpet_green: { type: 'carpet', kind: 'ornate', base: '#1a3a24', alt: '#b09040' },
   carpet_grey: { type: 'carpet', kind: 'office', base: '#4a4e58', alt: '#3a3e46' },
+  linen: { type: 'carpet', kind: 'office', base: '#d4d8d4', alt: '#c0c6c4' },
+  linen_mint: { type: 'carpet', kind: 'office', base: '#a6c8bc', alt: '#90b4a8' },
   // props (uv 'fit': one object face per tile)
   crate_wood: { type: 'crate', kind: 'wood', base: '#7a5430' },
   crate_metal: { type: 'crate', kind: 'metal', base: '#5a6068', accent: '#e0b020' },
@@ -810,7 +812,11 @@ export const THEME_TEX = {
   venus_base: { ground: '7:1,7 6:1,3 5:1,2', rock: '6:0,2 6:0,7 5:0,1' },
   lunar_colony: { ground: '6:1,8 6:0,9 7:1,6', rock: '5:0,0 G:rock_bluegrey', wall2: '5:0,0 G:rock_bluegrey' },
   frozen_outpost: { ground: 'ground@ice', wall2: '15:2,9 15:2,5 G:frost_rock', rock: 'rock@ice' },
-  bio_lab: { wall: '18:1,3 22:2,3 3:0,9', wall2: '3:0,0 4:2,3', floor: 'G:small_tile_floor 22:2,0 22:2,9', ceil: '#ceiling_tile 3:0,9', accent: '1:3,1 4:2,3' },
+  // labs: brushed stainless steel on benches / beds / equipment sides, white
+  // casework and lockers on cabinet fronts, lab instruments on machine fronts,
+  // a cream-and-stripe wainscot, pale clean-room tile for feature floors,
+  // steel columns and linen on cushions / sheets
+  bio_lab: { wall: '18:1,3 22:2,3 3:0,9', wall2: '3:0,0 4:2,3', floor: 'G:small_tile_floor 22:2,0 22:2,9', ceil: '#ceiling_tile 3:0,9', accent: '1:3,1 4:2,3', metal: '22:1,0 22:1,6', crate2: '3:2,9 4:2,8 14:0,5', machine: '4:2,6 3:2,0 3:2,1 4:2,7 3:2,6 4:1,7', panel: '4:2,3 4:0,1', floor3: '22:2,5 22:4,4', pillar: '24:2,5 22:1,9', trim: '22:1,0 3:0,6', carpet: '#linen' },
   crashed_starship: { ground: 'ground@nature', wall2: '4:4,2 12:3,1', rock: 'rock@nature' },
   cave_base: { ground: 'ground@nature', wall2: 'rock@nature', ceil2: 'rock@nature', rock: 'rock@nature' },
   data_core: { wall: '3:2,1 4:1,1 14:3,7', wall2: '14:0,0 22:3,2', floor: '#neon_grid_cyan', floor2: 'G:hex_dark_floor_b 2:0,4', ceil: '14:1,9 8:2,4', side: '14:0,0 22:0,0', accent: '3:2,7 14:3,7' },
@@ -856,7 +862,7 @@ export const THEME_TEX = {
   blood_harbor: { floor: '21:3,9 G:wood_grey_planks', floor2: '21:0,2 22:2,1', wall2: 'G:wood_dark_planks', side: 'G:wood_dark_planks 21:3,9', accent: '14:0,5 2:0,0', legacy: { wall: 'crate2@industrial' } },
   department_store: { wall: '22:2,9 22:2,0', wall2: '18:1,3 G:fleur_green', accent: '#shelves', floor: '22:2,0 #tile_white', floor2: 'G:checker_floor', ceil: '#ceiling_tile', light: '#light_fluor', crate: '#crate_cardboard', crate2: '#crate_cardboard', glass: '#glass_pane', door: '24:3,3 19:2,3' },
   subway_tunnels: { wall: '22:2,3 18:1,4 18:1,3', wall2: '21:3,6 21:3,4', floor: 'G:small_tile_floor 21:0,2', floor2: '8:2,4 14:1,3', ceil: '21:3,6 22:2,4', side: '21:3,4 21:3,6', accent: '1:3,1' },
-  abandoned_hospital: { wall: '18:1,3 18:4,7', wall2: 'G:wallpaper_rotten 18:3,6', floor: '8:2,9 8:2,5 G:small_tile_floor', floor2: 'G:checker_floor', ceil: '#ceiling_tile_dim', accent: '8:2,5 15:2,6', light: '#light_fluor', machine: '3:2,2 4:2,6 4:2,9' },
+  abandoned_hospital: { wall: '18:1,3 18:4,7', wall2: 'G:wallpaper_rotten 18:3,6', floor: '8:2,9 8:2,5 G:small_tile_floor', floor2: 'G:checker_floor', ceil: '#ceiling_tile_dim', accent: '8:2,5 15:2,6', light: '#light_fluor', machine: '3:2,2 4:2,6 4:2,9', metal: '22:1,0 22:1,2', crate2: '3:2,9 4:2,8 14:0,5', panel: '4:0,1 4:2,3', floor3: '22:2,7 22:2,0', pillar: '22:1,9 3:0,5', trim: '22:1,0 12:0,3', carpet: '#linen_mint' },
   backrooms: { wall: '#wallpaper_yellow', wall2: '#wallpaper_yellow', side: '#wallpaper_yellow', accent: 'G:wallpaper_rotten', floor: '#carpet_moist', floor2: '#carpet_moist', carpet: '#carpet_moist', ceil: '#ceiling_tile', ceil2: '#ceiling_tile', light: '4:0,10 #light_fluor', trim: '22:2,9 20:1,7', pillar: '#wallpaper_yellow', door: '19:2,1 19:4,9' },
   concert_hall: { wall: 'G:damask_red', wall2: 'G:marble_columns 22:3,0', floor: 'G:wood_dark_planks 21:3,9', floor2: '#carpet_red', ceil: '22:4,0 G:gold_filigree', accent: 'G:wood_dark_planks 22:3,1 G:wood_grey_planks', side: '22:3,1 G:wood_dark_planks 21:3,9', carpet: '#carpet_red', light: '25:2,5 #light_white', pillar: 'G:marble_columns 22:3,0 24:2,4', trim: 'G:gold_filigree 22:4,0', rail: '22:1,1', door: '24:3,7 24:0,3' },
   movie_theater: { wall: '#curtain_red', wall2: 'G:damask_red', floor: '#carpet_theater', floor2: 'G:marble_black_floor 22:0,7', carpet: '#carpet_theater', ceil: '22:2,4 22:0,7', side: '#carpet_theater', accent: 'G:damask_red #carpet_red', screen: '#cinema', light: '#light_white', trim: 'G:gold_filigree 22:4,0', door: '24:3,7 24:3,5' },

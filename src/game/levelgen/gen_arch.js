@@ -158,7 +158,8 @@ export function genArch(rng, theme, depth, opt = {}) {
   for (const e of adj) {
     if (treeEdges.includes(e) || e.i === boss.id || e.j === boss.id) continue;
     if (rooms[e.i].zone !== rooms[e.j].zone) continue;
-    if (rng.chance(0.42)) edges.push({ ...e, gate: false, loop: true });
+    // opt.loopChance(A, B): generators can thin out loops (e.g. into a signature room)
+    if (rng.chance(opt.loopChance ? opt.loopChance(rooms[e.i], rooms[e.j]) : 0.42)) edges.push({ ...e, gate: false, loop: true });
   }
 
   // ---- base heights along the tree
@@ -230,7 +231,9 @@ export function genArch(rng, theme, depth, opt = {}) {
       const depthA = c.axis === 'x' ? c.A.w : c.A.h, depthB = c.axis === 'x' ? c.B.w : c.B.h;
       const n = Math.ceil(Math.abs(dh) / 0.6 - 1e-6);
       const lowA = c.A.floor < c.B.floor;
-      const okA = depthA >= n + 4, okB = depthB >= n + 4;
+      let okA = depthA >= n + 4, okB = depthB >= n + 4;
+      // opt.noFlight(room): keep flights out of that room whenever the other one can take them
+      if (opt.noFlight && okA && okB) { if (opt.noFlight(c.A)) okA = false; else if (opt.noFlight(c.B)) okB = false; }
       c.flightIn = okA && okB ? (lowA ? (rng.chance(0.75) ? 'A' : 'B') : (rng.chance(0.75) ? 'B' : 'A')) : okA ? 'A' : okB ? 'B' : null;
       c.n = n;
       if (!c.flightIn) c.mode = 'skip';
@@ -264,6 +267,7 @@ export function genArch(rng, theme, depth, opt = {}) {
   for (const c of conns) {
     if (c.mode !== 'flight') continue;
     const sides = [c.flightIn, c.flightIn === 'A' ? 'B' : 'A'];
+    if (opt.noFlight && opt.noFlight(c[sides[0]])) sides.reverse();
     let placed = false;
     for (const side of sides) {
       const r = c[side];

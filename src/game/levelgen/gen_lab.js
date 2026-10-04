@@ -35,7 +35,7 @@ const NEED = {
   wetlab: (r) => r.w >= 8 && r.h >= 8,
   cleanroom: (r) => r.w >= 12 && r.h >= 12,
   specimen: (r) => Math.min(r.w, r.h) >= 9 && Math.max(r.w, r.h) >= 11,
-  decon: (r) => Math.min(r.w, r.h) >= 8 && Math.max(r.w, r.h) >= 10,
+  decon: (r) => Math.min(r.w, r.h) >= 6 && Math.max(r.w, r.h) >= 8 && Math.max(r.w, r.h) <= 16 && r.area <= 200,
   coldstore: (r) => r.area <= 260,
   servers: (r) => r.w >= 8 && r.h >= 8 && r.area <= 320,
   flooded: (r) => r.w >= 10 && r.h >= 10,
@@ -51,8 +51,13 @@ const CEIL = {
   flooded: [5.5, 6.5], ward: [4.5, 5], theatre: [7, 7.5], morgue: [4, 4.5], supply: [4.5, 5],
 };
 
+// at most this many rooms of a kind per level (a complex has one server room,
+// one morgue...); unlisted kinds are unlimited
+const CAP = { servers: 1, coldstore: 1, morgue: 1, theatre: 1, cleanroom: 1, flooded: 1, decon: 2, supply: 2, control: 1, courtyard: 1, split: 1, specimen: 2, wetlab: 3, ward: 3 };
+
 export function genLab(rng, theme, depth) {
   const C = LAB[theme.id] || LAB.bio_lab;
+  const count = {};
   const L = genArch(rng, theme, depth, {
     scale: 1.08,
     style: C.style,
@@ -63,18 +68,36 @@ export function genLab(rng, theme, depth) {
     ceilH: CEIL,
     doorChance: 0.1,
     connWidths: [3, 3, 4, 4, 5],
+    // the core keeps its floor for the well: fewer loops into it, flights in the wings
+    loopChance: (A, B) => (A.leaf.big || B.leaf.big ? 0.22 : 0.42),
+    noFlight: (r) => !!r.leaf.big,
     roomOpts: (r) => {
+      if (r.leaf.big) return [['plain', 1]];          // the core: replaced by the signature template
       const out = [];
-      for (const [k, w] of Object.entries(C.rooms)) if (!NEED[k] || NEED[k](r)) out.push([k, w]);
-      return out.length ? out : [['supply', 1]];
+      for (const [k, w] of Object.entries(C.rooms)) {
+        if ((count[k] || 0) >= (CAP[k] ?? 99)) continue;
+        if (!NEED[k] || NEED[k](r)) out.push([k, w / (1 + (count[k] || 0))]);
+      }
+      if (!out.length) out.push(['supply', 1]);
+      // dev hook (screenshots / tests): globalThis.__LABFORCE = 'decon' favours one kind
+      const force = globalThis.__LABFORCE;
+      if (force && NEED[force] && NEED[force](r)) for (const o of out) if (o[0] === force) o[1] = 1e3;
+      if (force && !out.some((o) => o[0] === force) && NEED[force] && NEED[force](r) && C.rooms[force]) out.push([force, 1e3]);
+      const pick = rng.weighted(out, (o) => o[1])[0];
+      count[pick] = (count[pick] || 0) + 1;
+      r.labKind = pick;
+      return [[pick, 1]];
     },
   });
   dressPassages(L, theme, rng);
+  if (globalThis.__LABSTAT) for (const r of L.rooms) if (r.template === 'plain') globalThis.__LABSTAT.push(['plain', r.labKind || (r.signature ? C.sig : '?')]);
   return L;
 }
 
-// central core leaf + pinwheel wings (each BSP-split by genArch's splitter)
-function coreLayout({ W, H, rng, minLeaf, split, add }) {
+// central core leaf + pinwheel wings. The wings are split by our own BSP
+// (leaves down to 10 cells, rooms 8+): a mix of a few big halls, medium labs
+// and small service rooms (cold stores, server rooms, offices, airlocks)
+function coreLayout({ W, H, rng, minLeaf, add }) {
   const x0 = 1, z0 = 1, x1 = W - 1, z1 = H - 1;
   const iw = x1 - x0, ih = z1 - z0;
   // the core must leave a wing of at least minLeaf on every side
@@ -96,7 +119,23 @@ function coreLayout({ W, H, rng, minLeaf, split, add }) {
     { x: x0, z: cz1, w: cx1 - x0, h: z1 - cz1 },
     { x: x0, z: z0, w: cx0 - x0, h: cz1 - z0 },
   ];
-  for (const wg of wings) split(wg, 2);
+  const MIN = 10;
+  const splitWing = (n, d) => {
+    const area = n.w * n.h;
+    const canH = n.w >= MIN * 2, canV = n.h >= MIN * 2;
+    const roll = rng.next();
+    const stop = (!canH && !canV) || area <= 210 || (area <= 340 && roll < 0.45) || (area <= 520 && d >= 1 && roll < 0.16);
+    if (stop) { add(n); return; }
+    const horiz = canH && (!canV || n.w > n.h * 1.2 || (n.h <= n.w * 1.2 && rng.chance(0.5)));
+    if (horiz) {
+      const cut = rng.int(Math.max(MIN, Math.floor(n.w * 0.3)), Math.min(n.w - MIN, Math.ceil(n.w * 0.7)));
+      splitWing({ x: n.x, z: n.z, w: cut, h: n.h }, d + 1); splitWing({ x: n.x + cut, z: n.z, w: n.w - cut, h: n.h }, d + 1);
+    } else {
+      const cut = rng.int(Math.max(MIN, Math.floor(n.h * 0.3)), Math.min(n.h - MIN, Math.ceil(n.h * 0.7)));
+      splitWing({ x: n.x, z: n.z, w: n.w, h: cut }, d + 1); splitWing({ x: n.x, z: n.z + cut, w: n.w, h: n.h - cut }, d + 1);
+    }
+  };
+  for (const wg of wings) splitWing(wg, 0);
 }
 
 // Passages between rooms become airlocks: steel door frames on both mouths,

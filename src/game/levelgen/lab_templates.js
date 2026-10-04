@@ -19,7 +19,7 @@
 // and must keep room.reserved cells (exit approaches) flat and walkable.
 import { TS, F, OPP, DIR_X, DIR_Z, SKY_H } from './common.js';
 import { FACE } from './deco.js';
-import { TEMPLATES, makePit, freeRect, inRoom, wallConsoles } from './gen_arch.js';
+import { TEMPLATES, makePit, freeRect, inRoom, wallConsoles, HAZ_OF, HAZ_TEX, LIGHT_COL } from './gen_arch.js';
 import { frame } from './hall_templates.js';
 
 const STEP = 0.6;
@@ -131,6 +131,7 @@ function tryFrames(ctx, sides, build, fallback) {
     deco.rollback(m); restore(ctx, s);
   }
   ctx.used = new Set();
+  if (globalThis.__LABSTAT) globalThis.__LABSTAT.push(['fallback', r.template]);
   if (fallback) fallback(ctx);
   return false;
 }
@@ -234,6 +235,172 @@ function pit(ctx, x0, z0, w, h, kind, depth) {
   const { g } = ctx;
   return cellsOf(g, x0, z0, w, h).filter((i) => g.flags[i] & (F.PIT | F.HAZARD | F.WATER));
 }
+// sink an arbitrary set of cells into a pit / pool (makePit for irregular shapes)
+function pitSet(ctx, cells, kind, depth) {
+  const { g, deco, room: r } = ctx;
+  const haz = HAZ_OF[kind], deep = depth > 1.0;
+  const set = new Set(cells);
+  for (const i of set) {
+    const x = i % g.w, z = (i / g.w) | 0;
+    g.open(x, z, r.floor - depth, g.ceil[i], { sky: !!g.sky[i], light: Math.max(g.light[i], kind === 'lava' || kind === 'poison' ? 0.9 : g.light[i]), floorTex: kind === 'spikes' ? TS.PITWALL : HAZ_TEX[kind], wallTex: TS.PITWALL, region: r.id, haz });
+    g.flags[i] |= F.NOSPAWN | (kind === 'water' && !deep ? F.WATER : F.HAZARD) | (deep ? F.PIT : 0);
+    if (kind === 'water' && !deep) g.flags[i] &= ~F.HAZARD;
+  }
+  for (const i of set) {
+    const x = i % g.w, z = (i / g.w) | 0;
+    for (let d = 0; d < 4; d++) {
+      const j = g.idx(x + DIR_X[d], z + DIR_Z[d]);
+      if (!set.has(j) && g.type[j] && !(g.flags[j] & (F.PIT | F.STAIR)) && !g.hazType[j]) g.wallTex[j] = TS.PITWALL;
+    }
+    if ((kind === 'lava' || kind === 'poison') && x % 4 === 1 && z % 4 === 1) deco.light(x + 0.5, r.floor - depth + 0.8, z + 0.5, LIGHT_COL[kind], 6, { pulse: true });
+  }
+  return [...set];
+}
+// morphological opening (3x3): drops slivers under 3 cells wide
+function openShape(g, cand) {
+  const er = new Set();
+  for (const i of cand) {
+    const x = i % g.w, z = (i / g.w) | 0;
+    let all = true;
+    for (let dz = -1; dz <= 1 && all; dz++) for (let dx = -1; dx <= 1; dx++) if (!cand.has(g.idx(x + dx, z + dz))) { all = false; break; }
+    if (all) er.add(i);
+  }
+  const out = new Set();
+  for (const i of cand) {
+    const x = i % g.w, z = (i / g.w) | 0;
+    for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) if (er.has(g.idx(x + dx, z + dz))) out.add(i);
+  }
+  return out;
+}
+// largest 4-connected blob of a cell set
+function largestBlob(g, set) {
+  const seen = new Set();
+  let best = new Set();
+  for (const s0 of set) {
+    if (seen.has(s0)) continue;
+    const comp = new Set([s0]);
+    seen.add(s0);
+    const q = [s0];
+    for (let k = 0; k < q.length; k++) {
+      const i = q[k], x = i % g.w, z = (i / g.w) | 0;
+      for (let d = 0; d < 4; d++) {
+        const j = g.idx(x + DIR_X[d], z + DIR_Z[d]);
+        if (set.has(j) && !seen.has(j)) { seen.add(j); comp.add(j); q.push(j); }
+      }
+    }
+    if (comp.size > best.size) best = comp;
+  }
+  return best;
+}
+// frame-space mask of usable cells: m[t][s] = free of exit approaches (with
+// `margin`) and of cells this template already used, flat and open
+function freeMask(ctx, Fr, margin = 1) {
+  const m = [];
+  for (let t = 0; t < Fr.L; t++) {
+    const row = [];
+    for (let s = 0; s < Fr.Wd; s++) row.push(okL(ctx, Fr, t, s, 1, 1, margin, margin));
+    m.push(row);
+  }
+  return m;
+}
+// biggest rectangle of true cells in a frame mask, within [t0..t1) x [s0..s1),
+// at least minT x minS (and at most maxT x maxS); score(t, s, dt, ds) can
+// bias the choice (default: area). Returns {t, s, dt, ds} or null.
+function bestRect(m, o = {}) {
+  const L = m.length, Wd = L ? m[0].length : 0;
+  const T0 = o.t0 ?? 0, T1 = o.t1 ?? L, S0 = o.s0 ?? 0, S1 = o.s1 ?? Wd;
+  const minT = o.minT ?? 1, minS = o.minS ?? 1, maxT = o.maxT ?? L, maxS = o.maxS ?? Wd;
+  // prefix sums of free cells
+  const P = Array.from({ length: L + 1 }, () => new Int32Array(Wd + 1));
+  for (let t = 0; t < L; t++) for (let s = 0; s < Wd; s++) P[t + 1][s + 1] = P[t][s + 1] + P[t + 1][s] - P[t][s] + (m[t][s] ? 1 : 0);
+  const full = (t, s, dt, ds) => P[t + dt][s + ds] - P[t][s + ds] - P[t + dt][s] + P[t][s] === dt * ds;
+  const score = o.score || ((t, s, dt, ds) => dt * ds);
+  let best = null, bs = -Infinity;
+  for (let dt = Math.min(maxT, T1 - T0); dt >= minT; dt--) for (let ds = Math.min(maxS, S1 - S0); ds >= minS; ds--) {
+    for (let t = T0; t + dt <= T1; t++) for (let s = S0; s + ds <= S1; s++) {
+      if (!full(t, s, dt, ds)) continue;
+      const v = score(t, s, dt, ds);
+      if (v > bs) { bs = v; best = { t, s, dt, ds }; }
+    }
+  }
+  return best;
+}
+const markMask = (m, t, s, dt, ds, pad = 0) => { for (let a = t - pad; a < t + dt + pad; a++) for (let b = s - pad; b < s + ds + pad; b++) if (m[a] && b >= 0 && b < m[a].length) m[a][b] = false; };
+// glass partition along the frame line t (a cell edge) from s = sa to sb, with
+// openings [[s0, s1], ...] left clear; glass to `h` above y (steel frame,
+// mullions, edge bits so pathing respects it)
+function glassLineL(ctx, Fr, t, sa, sb, y, h, openings = [], o = {}) {
+  const segs = [];
+  let a = sa;
+  for (const [o0, o1] of [...openings].sort((p, q) => p[0] - q[0])) { if (o0 > a) segs.push([a, o0]); a = Math.max(a, o1); }
+  if (sb > a) segs.push([a, sb]);
+  for (const [p, q] of segs) {
+    const [ax, az] = Fr.pt(t, p), [bx, bz] = Fr.pt(t, q);
+    glassWall(ctx, Math.round(ax), Math.round(az), Math.round(bx), Math.round(bz), y, h, o);
+  }
+  // headers over the openings up to the glass head, a status light strip
+  for (const [o0, o1] of openings) {
+    if (h > 3.1) lbox(ctx.deco, Fr, t - 0.07, t + 0.07, o0, o1, y + 3.0, y + h, o.header ?? TS.PANEL);
+    lbox(ctx.deco, Fr, t - 0.09, t + 0.09, o0 + 0.1, o1 - 0.1, y + 2.92, y + 3.0, TS.LIGHT, { uv: 'fit', emissive: 1 });
+  }
+  return segs;
+}
+// an opening (s0, s1) on the frame line t (a cell edge) that covers every
+// exit approach / non-flat cell on either side of it, minW..maxW wide, as near
+// the preferred start `pref` as possible; null if none fits
+function lineOpening(ctx, Fr, t, minW = 3, maxW = 4, pref = null) {
+  const { g, room: r } = ctx;
+  const Wd = Fr.Wd;
+  let lo = 1e9, hi = -1;
+  for (let s = 0; s < Wd; s++) for (const tt of [t - 1, t]) {
+    if (tt < 0 || tt >= Fr.L) continue;
+    const [x, z] = Fr.cell(tt, s);
+    const i = g.idx(x, z);
+    if (r.reserved.has(i) || (ctx.used && ctx.used.has(i)) || !flatOpen(ctx, x, z, 1, 1)) { lo = Math.min(lo, s); hi = Math.max(hi, s); }
+  }
+  const p = pref ?? Math.floor((Wd - minW) / 2);
+  if (hi < 0) return [Math.max(0, Math.min(Wd - minW, p)), Math.max(0, Math.min(Wd - minW, p)) + minW];
+  let s0 = lo, s1 = hi + 1;
+  if (s1 - s0 > maxW) return null;
+  while (s1 - s0 < minW) { if (s0 > 0 && (s1 >= Wd || Math.abs(s0 - 1 - p) < Math.abs(s1 - p - minW + 1))) s0--; else s1++; }
+  return s1 <= Wd ? [s0, s1] : null;
+}
+// a sliding glass door leaf parked beside an opening on the line t (s0..s1),
+// on the `side` (+1/-1 along t) face; steel frame, hazard band
+function doorLeafL(ctx, Fr, t, s0, s1, y, side = 1) {
+  const d = 0.1 * side;
+  const a = Math.min(t + d, t + d + 0.05 * side), b = Math.max(t + d, t + d + 0.05 * side);
+  lbox(ctx.deco, Fr, a, b, s0, s1, y + 0.05, y + 2.9, TS.GLASS, { uv: 'fit', emissive: 0.25 });
+  lbox(ctx.deco, Fr, a - 0.01, b + 0.01, s0, s0 + 0.08, y + 0.05, y + 2.9, TS.METAL);
+  lbox(ctx.deco, Fr, a - 0.01, b + 0.01, s1 - 0.08, s1, y + 0.05, y + 2.9, TS.METAL);
+  lbox(ctx.deco, Fr, a - 0.01, b + 0.01, s0, s1, y + 0.95, y + 1.08, TS.PAINT, { uv: 'fit' });
+}
+// open steel shelving unit (posts, four shelves) stocked with boxes / bottles
+function openShelf(ctx, x0, z0, x1, z1, y, h = 2.1, o = {}) {
+  const { deco, rng } = ctx;
+  const alongX = x1 - x0 >= z1 - z0;
+  for (const [px, pz] of [[x0, z0], [x1 - 0.05, z0], [x0, z1 - 0.05], [x1 - 0.05, z1 - 0.05]]) deco.box(px, y, pz, px + 0.05, y + h, pz + 0.05, TS.METAL, { faces: FACE.SIDES | FACE.TOP });
+  const L = alongX ? x1 - x0 : z1 - z0, D = alongX ? z1 - z0 : x1 - x0;
+  const items = o.items ?? [TS.CRATE, TS.CRATE2, TS.GLASS];
+  for (let k = 0; k < 4; k++) {
+    const sy = y + 0.12 + k * (h - 0.2) / 3.4;
+    deco.box(x0, sy - 0.04, z0, x1, sy, z1, TS.METAL);
+    if (k === 3 && o.topEmpty) continue;
+    for (let u = 0.12; u < L - 0.2;) {
+      const w = rng.float(0.22, 0.42);
+      if (u + w > L - 0.08) break;
+      if (rng.chance(0.72)) {
+        const tex = rng.pick(items), hh = tex === TS.GLASS ? rng.float(0.14, 0.3) : rng.float(0.18, Math.min(0.42, (h - 0.2) / 3.4 - 0.08));
+        const dd = Math.min(D - 0.1, rng.float(0.25, 0.45));
+        const v0 = (D - dd) / 2;
+        if (alongX) deco.box(x0 + u, sy, z0 + v0, x0 + u + w * (tex === TS.GLASS ? 0.4 : 1), sy + hh, z0 + v0 + dd * (tex === TS.GLASS ? 0.4 : 1), tex, { uv: 'fit', emissive: tex === TS.GLASS ? 0.3 : 0 });
+        else deco.box(x0 + v0, sy, z0 + u, x0 + v0 + dd * (tex === TS.GLASS ? 0.4 : 1), sy + hh, z0 + u + w * (tex === TS.GLASS ? 0.4 : 1), tex, { uv: 'fit', emissive: tex === TS.GLASS ? 0.3 : 0 });
+      }
+      u += w + rng.float(0.04, 0.12);
+    }
+  }
+  deco.collider(x0, y, z0, x1, y + h, z1);
+}
 // windows high on the walls of the room (upper storeys / offices seen from a tall room)
 function upperWindows(ctx, y0, y1, every = 2, filter) {
   const { g, deco, room: r } = ctx;
@@ -270,8 +437,10 @@ function tank(ctx, cx, cz, y, top, o = {}) {
   const { deco, rng } = ctx;
   const R = o.r ?? 0.42, fluid = o.fluid ?? TS.POISON;
   const P = R + 0.14;
-  deco.box(cx - P, y, cz - P, cx + P, y + 0.42, cz + P, { side: TS.MACHINE, top: TS.METAL, bottom: TS.METAL }, { uv: 'fit' });
-  const y0 = y + 0.42, y1 = Math.max(y0 + 1.4, top - 0.4);
+  // o.hang: a vessel suspended from the ceiling (bottom cap instead of a plinth)
+  if (!o.hang) deco.box(cx - P, y, cz - P, cx + P, y + 0.42, cz + P, { side: TS.MACHINE, top: TS.METAL, bottom: TS.METAL }, { uv: 'fit' });
+  else deco.box(cx - P, y - 0.36, cz - P, cx + P, y, cz + P, { side: TS.MACHINE, top: TS.METAL, bottom: TS.METAL }, { uv: 'fit' });
+  const y0 = o.hang ? y : y + 0.42, y1 = Math.max(y0 + 1.4, top - 0.4);
   if (!o.broken) {
     deco.box(cx - R, y0, cz - R, cx + R, y1, cz + R, fluid, { emissive: 0.7 });
     for (let by = y0 + 0.9; by < y1 - 0.5; by += 1.1) deco.box(cx - R - 0.03, by, cz - R - 0.03, cx + R + 0.03, by + 0.07, cz + R + 0.03, TS.METAL);
@@ -287,7 +456,7 @@ function tank(ctx, cx, cz, y, top, o = {}) {
   for (const [px, pz] of [[cx - R, cz - R], [cx + R, cz - R], [cx - R, cz + R], [cx + R, cz + R]]) deco.box(px - 0.04, y0, pz - 0.04, px + 0.04, y1, pz + 0.04, TS.METAL, { faces: FACE.SIDES });
   deco.box(cx - P, y1, cz - P, cx + P, y1 + 0.32, cz + P, TS.METAL);
   if (o.ceil && o.ceil > y1 + 0.5) deco.box(cx - 0.09, y1 + 0.32, cz - 0.09, cx + 0.09, o.ceil, cz + 0.09, TS.PIPE);
-  deco.collider(cx - P, y, cz - P, cx + P, y1 + 0.32, cz + P);
+  deco.collider(cx - P, o.hang ? y - 0.36 : y, cz - P, cx + P, y1 + 0.32, cz + P, { obstacle: !o.hang });
 }
 
 // lab bench (casework) along a world rect; tex fronts face both long sides
@@ -476,10 +645,13 @@ function glassWall(ctx, x0, z0, x1, z1, y, h = 3.0, o = {}) {
   const a = horiz ? Math.min(x0, x1) : Math.min(z0, z1), b = horiz ? Math.max(x0, x1) : Math.max(z0, z1);
   const L = horiz ? z0 : x0, th = 0.05;
   const seg = (p0, p1, y0, y1, t, tex, opt) => (horiz ? deco.box(p0, y0, L - t, p1, y1, L + t, tex, opt) : deco.box(L - t, y0, p0, L + t, y1, p1, tex, opt));
+  // o.pane: the infill (GLASS by default; PANEL / METAL for insulated partitions)
+  const pane = o.pane ?? TS.GLASS;
   seg(a, b, y, y + 0.12, 0.07, TS.METAL);
-  seg(a, b, y + 0.12, y + h - 0.1, th / 2, TS.GLASS, { emissive: o.emissive ?? 0.22, uv: 'fit', s: 1 });
+  if (pane === TS.GLASS) seg(a, b, y + 0.12, y + h - 0.1, th / 2, TS.GLASS, { emissive: o.emissive ?? 0.22, uv: 'fit', s: 1 });
+  else seg(a, b, y + 0.12, y + h - 0.1, o.thick ?? 0.12, pane);
   seg(a, b, y + h - 0.1, y + h, 0.07, TS.METAL);
-  for (let p = a; p <= b + 1e-6; p += 1) seg(p - 0.035, p + 0.035, y, y + h, 0.06, TS.METAL, { faces: FACE.SIDES });
+  for (let p = a; p <= b + 1e-6; p += pane === TS.GLASS ? 1 : 2) seg(p - 0.035, p + 0.035, y, y + h, (o.thick ?? 0.12) / 2 + 0.03, TS.METAL, { faces: FACE.SIDES });
   if (horiz) deco.collider(a, y, L - 0.06, b, y + h, L + 0.06, { obstacle: false });
   else deco.collider(L - 0.06, y, a, L + 0.06, y + h, b, { obstacle: false });
   // grid edges: the line runs between cells (L-1 | L)
@@ -538,6 +710,7 @@ function rackRow(ctx, x0, z0, x1, z1, y, h = 2.2) {
   deco.collider(x0, y, z0, x1, y + h, z1);
 }
 
+export { pitSet, openShape, largestBlob, freeMask, bestRect, markMask, glassLineL, doorLeafL, openShelf, lineOpening };
 export { lbox, lcollider, cellsOf, canUse, use, flatOpen, canUseL, useL, okL, ok, setHeight, setHeightL, retexFloor, flightRect, flightL, snap, restore, tryFrames, sideOrder, wallSpots, wallBox, lightStrip, hangLight, paint, hazardLines, railAround, deckBridge, pit, upperWindows, edgeCells };
 export { tank, labBench, fumeHood, cabinet, machineBlock, seatRow, counter, monitor, bed, ivStand, vitalsMonitor, trolley, curtain, glassWall, showerGantry, riser, steelTable, rackRow, isHosp };
 export { STEP, nSteps, faced, FACE_KEY, COLD, WHITE, GREEN, RED, TEMPLATES, inRoom, wallConsoles, SKY_H, OPP, DIR_X, DIR_Z };
