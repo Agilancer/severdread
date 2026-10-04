@@ -172,6 +172,7 @@ export class Game {
     this.player.recalc();
     this.world = new World(this, level);
     await this.content.preloadDoors();
+    if (level.padFloor) await this.content.preloadPadFloor();
     this.world.buildGraphics(this.renderer, this.content);
     this.damageNumbers = []; this.shockwaves = []; this.singularities = [];
     this.lens.clear();
@@ -566,12 +567,12 @@ export class Game {
       b.add(info.handle, MODE.CUTOUT, n.x, w.floorAt(n.x, n.z) ?? 0, n.z, qw, qh, { uv: c.monsterUV(info, dir, anim), tint: pal.tint, sat: pal.sat ?? 1, glow: pal.glow ? [...pal.glow, 0] : undefined, anchorY: (info.frameH - info.footY) / info.frameH, light: 1 });
     }
     if (w.level.teleporter) {
-      const tp = w.level.teleporter;
+      const tp = w.level.teleporter, ty = w.floorAt(tp.x, tp.z) ?? 0;
       for (let k = 0; k < 3; k++) {
         const a = t * 1.5 + k * 2.1;
-        b.add(c.fx, MODE.ADD, tp.x + Math.cos(a) * 1.4, 0.4 + ((t * 0.8 + k * 0.33) % 1) * 2.2, tp.z + Math.sin(a) * 1.4, 0.3, 0.3, { uv: [0, 0, 0.25, 1], tint: [0.3, 0.9, 1, 0.8], anchorY: 0.5, spherical: true, fullbright: true });
+        b.add(c.fx, MODE.ADD, tp.x + Math.cos(a) * 1.4, ty + 0.4 + ((t * 0.8 + k * 0.33) % 1) * 2.2, tp.z + Math.sin(a) * 1.4, 0.3, 0.3, { uv: [0, 0, 0.25, 1], tint: [0.3, 0.9, 1, 0.8], anchorY: 0.5, spherical: true, fullbright: true });
       }
-      b.add(c.fx, MODE.ADD, tp.x, 0.3, tp.z, 3.2, 3.4, { uv: [0.75, 0, 1, 1], tint: [0.2, 0.7, 1, 0.35 + 0.1 * Math.sin(t * 4)], fullbright: true });
+      b.add(c.fx, MODE.ADD, tp.x, ty + 0.3, tp.z, 3.2, 3.4, { uv: [0.75, 0, 1, 1], tint: [0.2, 0.7, 1, 0.35 + 0.1 * Math.sin(t * 4)], fullbright: true });
     }
     if (w.portal) {
       const P = w.portal, frames = 8, f = Math.floor(P.t * 10) % frames;

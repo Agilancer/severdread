@@ -224,6 +224,19 @@ export class Content {
     if (!ds) return Promise.resolve();
     return loadImage(ds.file).then((img) => { this._doorImg = img; }).catch(() => {});
   }
+  // hub teleporter pad floor (one image, cut into per-cell layers by World)
+  preloadPadFloor() {
+    if (this.padFloorImg !== undefined) return Promise.resolve(this.padFloorImg);
+    return loadImage('assets/textures/hub_portal_floor.png').then((img) => { this.padFloorImg = img; return img; }).catch(() => { this.padFloorImg = null; return null; });
+  }
+  padFloorCanvases(n) {
+    const img = this.padFloorImg, out = [];
+    if (!img) return null;
+    const s = img.width / n;
+    for (let z = 0; z < n; z++) for (let x = 0; x < n; x++) out.push(cropToCanvas(img, x * s, z * s, s, s, 64, 64));
+    return out;
+  }
+  tileByKey(key) { return this.tiles.find((t) => t.key === key) || null; }
   doorFrameCanvases(ds, color, design) {
     const row = ds.colors.indexOf(color), s = ds.size, out = [];
     for (let f = 0; f < ds.frames; f++) out.push(cropToCanvas(this._doorImg, (design * ds.frames + f) * s, row * s, s, s, 64, 64));

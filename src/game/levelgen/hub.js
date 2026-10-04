@@ -5,12 +5,12 @@
 // trims, counters, signage, consoles, windows onto space and lighting.
 import { HUB_THEME } from '../../data/themes.js';
 import { NPCS } from '../../data/npcs.js';
-import { TS, F, newGrid, carveRect, encloseBorder } from './common.js';
+import { TS, F, newGrid, carveRect, encloseBorder, PAD_CELLS, PAD_SLOT0, PAD_EDGE } from './common.js';
 import { Deco, FACE } from './deco.js';
 import { Rng } from '../../core/rng.js';
 
 export function buildHub() {
-  const W = 38, H = 30;
+  const W = 42, H = 30;
   const g = newGrid(W, H, 9);
   const rng = new Rng(0xae9);
   const deco = new Deco(g, { ...HUB_THEME, railStyle: 'glass' }, rng);
@@ -40,11 +40,14 @@ export function buildHub() {
   }
 
   // ---- teleporter chamber (east) and its connector
-  carveRect(g, 28, 9, 8, 11, { floor: 0, ceil: 7, light: 0.9, floorTex: TS.FLOOR2, ceilTex: TS.CEIL2, wallTex: TS.TRIM });
+  // an 11 x 11 hall around the painted 9 x 9 teleporter pad (raised 0.5, one
+  // floor slot per cell, riser panels from the same sheet)
+  carveRect(g, 28, 9, 11, 11, { floor: 0, ceil: 7, light: 0.9, floorTex: TS.FLOOR2, ceilTex: TS.CEIL2, wallTex: TS.TRIM });
   carveRect(g, 26, 12, 2, 5, { floor: 0, ceil: 4, light: 0.9, floorTex: TS.FLOOR, ceilTex: TS.CEIL, wallTex: TS.TRIM });
-  const pad = { x: 32, z: 14.5, r: 1.8 };
-  g.rect(30, 12, 5, 5, (x, z, i) => {
-    if (Math.hypot(x + 0.5 - pad.x, z + 0.5 - pad.z) <= 2.6) { g.floor[i] = 0.25; g.floorTex[i] = TS.SPECIAL; g.wallTex[i] = TS.TRIM; g.light[i] = 1.2; }
+  const PX0 = 29, PZ0 = 10;
+  const pad = { x: PX0 + PAD_CELLS / 2, z: PZ0 + PAD_CELLS / 2, r: 2.2 };
+  g.rect(PX0, PZ0, PAD_CELLS, PAD_CELLS, (x, z, i) => {
+    g.floor[i] = 0.5; g.floorTex[i] = PAD_SLOT0 + (z - PZ0) * PAD_CELLS + (x - PX0); g.wallTex[i] = PAD_EDGE; g.light[i] = 1.15;
   });
 
   // ---- quarters / storage (west)
@@ -104,23 +107,16 @@ export function buildHub() {
   }
 
   // teleporter chamber: column ring, glass rail around the pad, a ceiling halo, consoles, conduits
-  for (let k = 0; k < 6; k++) {
-    const a = (k / 6) * Math.PI * 2 + Math.PI / 6;
-    const px = pad.x + Math.cos(a) * 3.3, pz = pad.z + Math.sin(a) * 3.3;
-    if (px < 28.4 || px > 35.6) continue;
-    deco.pillar(px, pz, 0.45, 0, 7, { trim: true });
-  }
+  for (const [px, pz] of [[28.5, 9.5], [38.5, 9.5], [28.5, 19.5], [38.5, 19.5]]) deco.pillar(px, pz, 0.42, 0, 7, { trim: true });
   deco.box(pad.x - 2.2, 6.55, pad.z - 2.2, pad.x + 2.2, 6.7, pad.z + 2.2, TS.METAL);
   deco.box(pad.x - 1.9, 6.45, pad.z - 1.9, pad.x + 1.9, 6.55, pad.z + 1.9, TS.LIGHT, { uv: 'fit', emissive: 1, faces: FACE.BOTTOM | FACE.SIDES });
-  deco.console(29, 9, 0, 2);
-  deco.console(34, 9, 0, 2);
-  deco.console(34, 19, 0, 3);
-  for (const z of [9.15, 19.85]) deco.pipe(28, z, 36, z, 5.6, 0.3);
-  deco.window(35, 12, 0, 1.4, 5.2, { emissive: 0.7 });
-  deco.window(35, 14, 0, 1.4, 5.2, { emissive: 0.7 });
-  deco.window(35, 16, 0, 1.4, 5.2, { emissive: 0.7 });
-  deco.lightPanel(29, 10.2, 30.4, 11, 7, [0.6, 0.9, 1], 5);
-  deco.lightPanel(33.6, 18, 35, 18.8, 7, [0.6, 0.9, 1], 5);
+  deco.console(31, 9, 0, 2);
+  deco.console(36, 9, 0, 2);
+  deco.console(36, 19, 0, 3);
+  for (const z of [9.15, 19.85]) deco.pipe(28, z, 39, z, 5.6, 0.3);
+  for (const z of [11, 13.5, 16]) deco.window(38, z, 0, 1.4, 5.2, { emissive: 0.7 });
+  deco.lightPanel(29.2, 9.2, 30.6, 10.0, 7, [0.6, 0.9, 1], 5);
+  deco.lightPanel(36.4, 19.0, 37.8, 19.8, 7, [0.6, 0.9, 1], 5);
   // connector: a framed portal
   deco.box(26, 3.7, 11.85, 28, 4.0, 17.15, TS.TRIM, { faces: FACE.BOTTOM | FACE.SIDES });
 
@@ -140,13 +136,14 @@ export function buildHub() {
     { x: 18, z: 14.5, prop: 'statue' },
   ];
   const lights = [
-    { x: 32, y: 1.0, z: 14.5, color: [0.3, 0.85, 1.0], radius: 6, pulse: true },
+    { x: pad.x, y: 1.5, z: pad.z, color: [0.3, 0.85, 1.0], radius: 7, pulse: true },
     ...deco.lights,
   ];
   return {
     theme: HUB_THEME, depth: 0, grid: g, hub: true,
     start: { x: pad.x - 0.5, z: pad.z, yaw: Math.PI },
     npcs, teleporter: pad, props, lights, deco: deco.result(),
+    padFloor: { x0: PX0, z0: PZ0, edgeTile: 'tx26_station_edges:tx26_station_edges_r0c0', riser: 0.5 },
     spawns: [], doors: [], keys: [], chests: [], voidY: -10, arena: [],
   };
 }

@@ -4315,6 +4315,50 @@
    ]
   },
   {
+   "id": "tx26_station_edges",
+   "type": "texture_grid",
+   "description": "station teleporter pad edges / panels (hub portal sheet bottom rows)",
+   "src": "art/raw/hub/portal_edges.webp",
+   "out": "assets/textures/tx26_station_edges.webp",
+   "cols": 9,
+   "rows": 2,
+   "size": 64,
+   "inset": 0,
+   "tags": [
+    "scifi",
+    "station",
+    "tech"
+   ],
+   "rowTags": [
+    "metal panel wall trim",
+    "metal panel wall trim"
+   ],
+   "tileTags": [
+    [
+     "light strip cyan",
+     "light strip cyan",
+     "vent grille",
+     "grate bars",
+     "door frame amber light",
+     "door frame amber light",
+     "door frame amber light",
+     "door frame amber light",
+     "plain dark"
+    ],
+    [
+     "hatch plate",
+     "grate dark",
+     "circuit cyan cells machinery",
+     "plate x brace",
+     "light strip cyan",
+     "plain dark",
+     "door frame amber light",
+     "door frame amber light",
+     "plain dark"
+    ]
+   ]
+  },
+  {
    "id": "w_common_01",
    "type": "weapon_set",
    "rarity": "common",

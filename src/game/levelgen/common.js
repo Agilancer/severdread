@@ -55,6 +55,9 @@ export const TS = {
   CARPET: 50,     // carpets / rugs / runners
 };
 export const SLOT_COUNT = 56;
+// hub teleporter pad: one painted 9x9 floor (assets/textures/hub_portal_floor.png)
+// cut into a slot per cell after the role slots, plus the riser panel slot
+export const PAD_CELLS = 9, PAD_SLOT0 = SLOT_COUNT, PAD_EDGE = PAD_SLOT0 + PAD_CELLS * PAD_CELLS;
 
 export const KEY_COLORS = ['red', 'blue', 'yellow', 'green', 'purple'];
 export const KEY_HEX = { red: '#ff2a2a', blue: '#2a6aff', yellow: '#ffd21a', green: '#2aff4a', purple: '#c040ff' };

@@ -3,7 +3,7 @@
 import { F, OPEN, HAZ, DIR_X, DIR_Z, EDGE_BIT } from './grid.js';
 import { buildWorldMesh, MeshBuilder } from './worldmesh.js';
 import { buildLevelTextures } from './leveltextures.js';
-import { TS } from './levelgen/common.js';
+import { TS, PAD_CELLS, PAD_SLOT0, PAD_EDGE } from './levelgen/common.js';
 import { SKIES } from '../data/themes.js';
 import { SpriteBatcher, MODE } from './spritebatch.js';
 import { clamp } from '../core/math.js';
@@ -102,6 +102,19 @@ export class World {
         openToFloor(frames[frames.length - 1]);
         this.doorFrames[color] = frames.map((c) => { layers.push(c); return layers.length - 1; });
       }
+    }
+    // hub teleporter pad: the painted floor cut into one layer per cell, and its riser panel
+    const pad = this.level.padFloor;
+    if (pad) {
+      const cells = content.padFloorCanvases && content.padFloorCanvases(PAD_CELLS);
+      const fallback = this.slots[TS.SPECIAL] || this.slots[TS.FLOOR];
+      for (let k = 0; k < PAD_CELLS * PAD_CELLS; k++) {
+        if (cells) { layers.push(cells[k]); this.slots[PAD_SLOT0 + k] = { layer: layers.length - 1, emissive: 0.12, scroll: 0, uvScale: 1 }; }
+        else this.slots[PAD_SLOT0 + k] = fallback;
+      }
+      const edge = content.tileByKey && content.tileByKey(pad.edgeTile);
+      if (edge) { layers.push(content.tileCanvas(edge)); this.slots[PAD_EDGE] = { layer: layers.length - 1, emissive: 0.1, scroll: 0, uvScale: pad.riser || 0.5 }; }
+      else this.slots[PAD_EDGE] = this.slots[TS.TRIM];
     }
     renderer.setWallTextures(layers);
     const voidSlot = this.slots[TS.VOID];
