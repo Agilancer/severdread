@@ -45,6 +45,10 @@ const BARREL_MIN_Q = 0.5;
 // a first-person barrel runs up into the screen: steeper than this slant
 // (|dx/dy|) is a mis-measurement (sideways scope / stock edge)
 const BARREL_MAX_SLANT = 1.8;
+// melee / thrown weapons are sized by the arm at the bottom edge (fp.arm,
+// tools/weapon_arms.py), not by the whole art: a long blade would otherwise
+// shrink the hand far below the guns' hands (pistol arms are ~0.29 H wide)
+const MELEE_ARM = 0.36, MELEE_GROW = [1.35, 2.6];
 
 export class Game {
   constructor(renderer, store, content, hud, ui, touch) {
@@ -652,7 +656,8 @@ export class Game {
     const melee = /blade|mace|club/.test(wpn.archetype), thrown = /shuriken|javelin/.test(wpn.archetype);
     const artH = Math.max(8, m.bottom - m.top), artW = Math.max(8, m.artR - m.artL);
     const K = WEAPON_SCREEN_SHARE[wpn.archetype] ?? 0.44;
-    const s = Math.min((K * H) / artH, (0.58 * W) / artW);
+    let s = Math.min((K * H) / artH, (0.58 * W) / artW);
+    if ((melee || thrown) && m.arm && m.arm[1] - m.arm[0] > 4) s = clamp((MELEE_ARM * H) / (m.arm[1] - m.arm[0]), s * MELEE_GROW[0], s * MELEE_GROW[1]);
     const over = Math.ceil(H * 0.06);                // overscan so the cut-off arm never shows
     const y0 = H + over - m.bottom * s;              // idle frame, no bob / recoil
     const bias = m.hands === 'right' ? 0.11 : m.hands === 'left' ? -0.06 : 0.035;
