@@ -59,7 +59,7 @@ export function genArch(rng, theme, depth, opt = {}) {
   const leaves = [];
   const minLeaf = 12;
   let bigMade = false;  // opt.bigLeaf {minW,minH,maxW,maxH}: keep one large leaf unsplit (signature room)
-  (function split(n, d) {
+  function split(n, d) {
     const area = n.w * n.h;
     const canH = n.w >= minLeaf * 2, canV = n.h >= minLeaf * 2;
     const bl = opt.bigLeaf;
@@ -75,7 +75,11 @@ export function genArch(rng, theme, depth, opt = {}) {
       const cut = rng.int(Math.max(minLeaf, Math.floor(n.h * 0.32)), Math.min(n.h - minLeaf, Math.ceil(n.h * 0.68)));
       two({ x: n.x, z: n.z, w: n.w, h: cut }, { x: n.x, z: n.z + cut, w: n.w, h: n.h - cut });
     }
-  })({ x: 1, z: 1, w: W - 2, h: H - 2 }, 0);
+  }
+  // opt.layout({W, H, rng, minLeaf, split, add}): a custom partition (e.g. a
+  // central core leaf with BSP-split wings around it); add(n, big) pushes a leaf
+  if (opt.layout) opt.layout({ W, H, rng, minLeaf, split, add: (n, big) => leaves.push({ id: leaves.length, ...n, ...(big ? { big: true } : {}) }) });
+  else split({ x: 1, z: 1, w: W - 2, h: H - 2 }, 0);
 
   // rooms = leaves inset by one cell (walls between rooms are 2 thick)
   const rooms = leaves.map((l) => ({
@@ -356,7 +360,7 @@ export function genArch(rng, theme, depth, opt = {}) {
   for (const i of arena) g.flags[i] |= F.ARENA;
   const sx = Math.floor(start.x + start.w / 2), sz = Math.floor(start.z + start.h / 2);
   return {
-    grid: g, rooms, deco, start: { x: sx, z: sz }, arenaCells: arena, noFortify: true,
+    grid: g, rooms, deco, conns, start: { x: sx, z: sz }, arenaCells: arena, noFortify: true,
     boss: { x: boss.x + boss.w / 2, z: boss.z + boss.h / 2 },
   };
 
