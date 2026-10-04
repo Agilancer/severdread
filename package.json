@@ -7,7 +7,7 @@
   "scripts": {
     "start": "npx --yes http-server -c-1 -p 8080 .",
     "art": "python3 tools/process_art.py",
-    "test": "node tests/levelgen.test.js && node tests/doors.test.js && node tests/items.test.js && node tests/mesh.test.js && node tests/physics.test.js && node tests/gore.test.js && node tests/textures.test.js && node tests/levelquality.test.js",
+    "test": "node tests/levelgen.test.js && node tests/doors.test.js && node tests/items.test.js && node tests/mesh.test.js && node tests/physics.test.js && node tests/gore.test.js && node tests/textures.test.js && node tests/levelquality.test.js && node tests/monsterpath.test.js",
     "play": "node tests/play.mjs tests/out",
     "catalog": "python3 tools/catalog_textures.py && python3 tools/catalog_weapons.py"
   },

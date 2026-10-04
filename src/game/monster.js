@@ -14,6 +14,7 @@ import { damagePlayer, fireEnemyProjectile, damageMonster, killMonster } from '.
 import { ELEMENTS, STATUS } from '../data/elements.js';
 
 const ACT = { idle: 0, walk: 1, windup: 5, attack: 6, recover: 7 };
+const BODY_R = 0.3;    // max terrain-collision radius: the player's, so monsters fit wherever the player does
 
 export class Monster {
   constructor(game, spawn, depth, opts = {}) {
@@ -33,6 +34,10 @@ export class Monster {
     this.armor = (def.armor || 0) + B.monsterArmor(d) * (this.boss ? 1.4 : 0.6);
     this.speed = def.speed * (v.speedMult || 1) * (this.elite ? 1.1 : 1);
     this.radius = def.radius * (this.elite ? 1.1 : 1);
+    // terrain body: walls, rails, stairs, ledges and doorways use a slim body so
+    // even bosses fit 1-tile doorways, stairs and platforms (the sprite may
+    // overlap the walls a little); hits, melee reach and crowding keep `radius`
+    this.bodyR = Math.min(this.radius, BODY_R);
     this.height = def.height * (this.elite ? 1.15 : 1);
     this.shield = def.shield || 0;
     this.resist = { ...(CATEGORIES[def.category]?.resist || {}), ...(def.resist || {}), ...(v.resist || {}) };
@@ -210,14 +215,14 @@ export class Monster {
 
   groundY() { return this.mode === 'ceiling' ? this.ceilY() : this.floorY; }
   // ceiling for crawlers: low boxes (tables, beams near the floor) don't count
-  ceilY() { return this.game.world.ceilingOver(this.x, this.z, this.radius, this.floorY + 1.7); }
+  ceilY() { return this.game.world.ceilingOver(this.x, this.z, this.bodyR, this.floorY + 1.7); }
 
   // movement in the current mode; returns true if moved
   move(mx, mz) {
     const w = this.game.world;
     const ox = this.x, oz = this.z;
     if (this.mode === 'ceiling') {
-      const ok = (x, z) => w.forCells(x, z, this.radius, (i) => {
+      const ok = (x, z) => w.forCells(x, z, this.bodyR, (i) => {
         const gr = w.grid;
         if (i < 0 || !gr.type[i] || gr.sky[i] || w.doorByCell.has(i)) return false;
         return gr.ceil[i] - gr.floor[i] > 1.2 || !!(gr.flags[i] & F.VOID);
@@ -228,7 +233,7 @@ export class Monster {
       const flying = this.def.flying;
       const stepH = flying ? 2.5 : 0.6;
       const feet = flying ? this.floorY : this.y - this.lift;
-      const a = { x: this.x, z: this.z, y: feet, radius: this.radius, height: Math.min(this.height, 1.6) };
+      const a = { x: this.x, z: this.z, y: feet, radius: this.bodyR, height: Math.min(this.height, 1.6) };
       const blocked = w.moveActor(a, mx, mz, stepH);
       if (!flying) {
         // never step from safe ground into the void, a pit or a damaging floor
@@ -244,9 +249,18 @@ export class Monster {
       this.x = a.x; this.z = a.z;
       // hop up ledges / onto crates the flow field says are climbable
       if (blocked && !flying && this.vy === 0 && this.onGround) {
-        const ax = this.x + Math.sign(mx) * (this.radius + 0.3), az = this.z + Math.sign(mz) * (this.radius + 0.3);
-        const ahead = w.surfaceBelow(ax, feet + 1.2, az);
-        if (ahead !== null && ahead > feet + 0.5 && ahead < feet + 1.15) { this.vy = 6; this.onGround = false; }
+        // sample a few points ahead: a thin fence / low wall top is easy to step past
+        let ahead = null;
+        for (const k of [0.08, 0.18, 0.3, 0.45]) {
+          const sb = w.surfaceBelow(this.x + Math.sign(mx) * (this.bodyR + k), feet + 1.2, this.z + Math.sign(mz) * (this.bodyR + k));
+          if (sb !== null && (ahead === null || sb > ahead)) ahead = sb;
+        }
+        // low fences / ruined walls are not standable: hop when the space just past
+        // them is clear a little higher up (guard rails block far higher, so no
+        // hopping over them into pits)
+        const ml = Math.hypot(mx, mz) || 1, hx = this.x + (mx / ml) * (this.bodyR + 0.2), hz = this.z + (mz / ml) * (this.bodyR + 0.2);
+        const fence = !w.canOccupy(hx, hz, this.bodyR, feet, a.height, 0.6) && w.canOccupy(hx, hz, this.bodyR, feet + 0.55, a.height, 0.6);
+        if ((ahead !== null && ahead > feet + 0.5 && ahead < feet + 1.15) || fence) { this.vy = 6; this.onGround = false; }
       }
     }
     return Math.abs(this.x - ox) + Math.abs(this.z - oz) > 1e-4;
@@ -255,7 +269,7 @@ export class Monster {
   // vertical: gravity / hover / ceiling / wall lift
   settle(dt) {
     const w = this.game.world;
-    const ground = w.groundUnder(this.x, this.z, this.radius, (this.mode === 'floor' ? this.y - this.lift : this.floorY) + 0.6, 0);
+    const ground = w.groundUnder(this.x, this.z, this.bodyR, (this.mode === 'floor' ? this.y - this.lift : this.floorY) + 0.6, 0);
     if (ground > -Infinity) this.floorY = ground;
     else if (this.mode !== 'ceiling' && !this.def.flying && (w.cellFlags(this.x, this.z) & F.VOID)) this.floorY = (w.level.voidY ?? -30) - 10;   // nothing below: fall
     if (this.mode === 'ceiling') {
@@ -267,7 +281,7 @@ export class Monster {
     if (this.def.flying) {
       const target = this.floorY + this.def.flying + Math.sin(this.animT * 2) * 0.15;
       this.y = lerp(this.y, target, Math.min(1, dt * 3));
-      const c = w.ceilingOver(this.x, this.z, this.radius, this.y);
+      const c = w.ceilingOver(this.x, this.z, this.bodyR, this.y);
       if (this.y + this.height > c) this.y = c - this.height;
       return;
     }
@@ -313,7 +327,7 @@ export class Monster {
   applyKnock(dt) {
     if (Math.abs(this.kx) + Math.abs(this.kz) < 0.01) return;
     if (this.mode === 'ceiling') { this.kx = this.kz = 0; return; }
-    const a = { x: this.x, z: this.z, y: this.y - this.lift, radius: this.radius, height: Math.min(this.height, 1.6) };
+    const a = { x: this.x, z: this.z, y: this.y - this.lift, radius: this.bodyR, height: Math.min(this.height, 1.6) };
     const feet = a.y;
     this.game.world.moveActor(a, this.kx * dt * 6, this.kz * dt * 6, 0.6);
     this.x = a.x; this.z = a.z;
@@ -439,7 +453,7 @@ export class Monster {
       const i = gr.cellAt(x, z);
       if (i < 0 || !gr.type[i] || (gr.flags[i] & (F.VOID | F.HAZARD | F.PIT | F.STAIR | F.OBSTACLE)) || w.doorByCell.has(i)) continue;
       const f = gr.floorAtPos(i, x, z);
-      if (!w.canOccupy(x, z, this.radius, f, Math.min(this.height, 1.6), 0.3)) continue;
+      if (!w.canOccupy(x, z, this.bodyR, f, Math.min(this.height, 1.6), 0.3)) continue;
       if (!w.los(x, f + 1, z, p.x, p.y + 1, p.z)) continue;
       return { x, z, y: f };
     }
@@ -491,7 +505,7 @@ export class Monster {
       const i = gr.idx(nx, nz);
       if (!gr.type[i] || gr.floor[i] > this.floorY + 2) {
         const edge = dx ? (dx > 0 ? cx + 1 - this.x : this.x - cx) : (dz > 0 ? cz + 1 - this.z : this.z - cz);
-        if (edge < this.radius + 0.25) { this.wallDir = [dx, dz]; return true; }
+        if (edge < this.bodyR + 0.25) { this.wallDir = [dx, dz]; return true; }
       }
     }
     return false;
