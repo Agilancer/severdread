@@ -33,7 +33,7 @@ deep pits with lava / poison / spikes / water, bridges, real stair cells,
 railed cell edges) plus detail geometry (`level.deco`: textured boxes, sloped
 hand rails, AABB colliders, light fixtures). See `docs/ARCHITECTURE.md`.
 
-- `gen_arch.js` (stations, bases, labs, castles, mansions, foundries): the
+- `gen_arch.js` (stations, bases, castles, mansions...): the
   map is split into large spaces, each given a room template - colonnaded
   halls with beams and a dais, atriums with railed balconies, pit rooms with
   bridges over lava / poison / spikes, split levels joined by staircases,
@@ -57,6 +57,25 @@ hand rails, AABB colliders, light fixtures). See `docs/ARCHITECTURE.md`.
   rooms, offices and security stations; wards, operating theatres with
   viewing galleries and recovery bays, radiology, a cafeteria, pharmacy and
   morgue in the hospital.
+- `gen_foundry.js` (clockwork foundry, infernal foundry, meat processing
+  plant, volcano base): an industrial plant built round an enormous machine
+  hall (ceiling 11-14) - a molten vat (lava, a blood / acid bath, or a gear
+  pit full of giant wheels) crossed by low catwalks, steel galleries up
+  railed stairs on both long walls joined by a high catwalk, a glazed control
+  booth overlooking the floor, furnaces on the end walls, conveyor lines
+  under hoppers and overhead travelling cranes with a ladle (a gear, a hook).
+  An open-air yard sits at one end (cooling tower, smokestacks, storage
+  tanks, an ore-cart track, a pipe bridge on trestles, a lava channel in the
+  volcano base). The wings are purpose-built rooms (`foundry_rooms.js`,
+  `foundry_wings.js`, props in `foundry_props.js`): the shift house with a
+  glazed foreman's office and locker runs, furnace halls tapping into a
+  molten channel and pouring pit, production lines with presses (band saws
+  and hook rails in the meat plant) and a raised operator platform, control
+  rooms with a supervisor dais and screen wall, loading docks with a sunken
+  truck bay and containers, pipe galleries over sumps, boiler houses with a
+  gallery, ore stores, gear pits (clockwork), carcass hook halls and cold
+  rooms (meat plant), magma breaches where the rock breaks in (volcano
+  base), and the converter house as the boss arena.
 - Caves, canyons, mountains, mazes, halls, rooftops, sky islands and convoys
   have their own generators built on the same toolkit.
 

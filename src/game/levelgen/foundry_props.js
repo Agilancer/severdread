@@ -559,6 +559,9 @@ export function longestRun(Wd, test, minLen = 1) {
 // pick the stretch (frame wall t = 0); otherwise the longest exit-free wall.
 // Decorative only on the room side (thin boulders, no new hazards), so it is
 // safe to apply after the connections are cut.
+// wall cells painted with rock by breachWall, per grid (the room wall pass in
+// gen_foundry leaves them alone)
+export const ROCK_WALLS = new WeakMap();
 export function breachWall(g, deco, rng, r, o = {}) {
   let Fr = o.Fr, s0 = o.s0, s1 = o.s1;
   if (!Fr) {
@@ -585,8 +588,12 @@ export function breachWall(g, deco, rng, r, o = {}) {
     const wx = x + DIR_X[toward], wz = z + DIR_Z[toward];
     if (!g.in(wx, wz)) continue;
     const wi = g.idx(wx, wz);
-    if (!g.type[wi]) g.wallTex[wi] = TS.WALL2;
-    // the neighbouring wall layer too, so the rock reads from both sides of a corner
+    if (!g.type[wi]) {
+      g.wallTex[wi] = TS.WALL2;
+      let set = ROCK_WALLS.get(g);
+      if (!set) ROCK_WALLS.set(g, (set = new Set()));
+      set.add(wi);
+    }
   }
   const i0 = g.idx(...Fr.cell(0, s0));
   const y = g.floor[i0];

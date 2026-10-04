@@ -277,7 +277,7 @@ function buildControl(ctx, Fr, last) {
   if (run) {
     const [a, b] = [Math.max(run[0], 1), Math.min(run[1], Wd - 1)];
     if (b - a >= 5) {
-      const cells = setHeightL(ctx, Fr, 0, a, 3, b - a, yD, { floorTex: TS.FLOOR3, wallTex: TS.TRIM });
+      const cells = setHeightL(ctx, Fr, 0, a, 3, b - a, yD, { floorTex: fv(ctx) === 'clock' || fv(ctx) === 'volcano' ? TS.FLOOR3 : TS.FLOOR, wallTex: TS.TRIM });
       const sm = Math.floor((a + b) / 2) - 1;
       // the steps cut into the dais front: 2 rows climbing toward the wall
       flightL(ctx, Fr, 1, sm, 2, 2, 'toward', r.floor, yD);

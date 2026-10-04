@@ -28,7 +28,7 @@ import { TS, F, clamp, DIR_X, DIR_Z } from './common.js';
 import { FACE } from './deco.js';
 import { genArch, TEMPLATES } from './gen_arch.js';
 import { FT } from './foundry_rooms.js';
-import { fvOf, breachWall } from './foundry_props.js';
+import { fvOf, breachWall, ROCK_WALLS } from './foundry_props.js';
 import './foundry_wings.js';
 
 for (const [k, fn] of Object.entries(FT)) if (!TEMPLATES[k]) TEMPLATES[k] = fn;
@@ -68,8 +68,8 @@ const GRATE_FLOOR = new Set(['fd_pipes', 'fd_boiler', 'fd_gears']);
 const WALL2_ROOMS = {
   clock: new Set(['fd_gears', 'fd_boiler', 'fd_pipes', 'fd_furnace']),
   hell: new Set(['fd_furnace', 'fd_store', 'fd_breach', 'fd_boiler']),
-  meat: new Set(['fd_hooks']),
-  volcano: new Set(['fd_breach']),
+  meat: new Set([]),
+  volcano: new Set([]),             // breachWall paints only the stretch where the rock breaks in
 };
 
 export function genFoundry(rng, theme, depth) {
@@ -165,16 +165,20 @@ function finishFoundry(L, theme, rng) {
   const { grid: g, deco } = L;
   const fv = fvOf(theme);
   // walls: the secondary wall slot only in the rooms it suits
+  // (the converter house - boss arena - in the secondary slot: spiked iron,
+  // brass pipework, volcanic rock; white tile in the meat plant), rock where
+  // the volcano breaks in stays rock
   const w2 = WALL2_ROOMS[fv];
+  const rock = ROCK_WALLS.get(g) || new Set();
   for (const r of L.rooms) {
-    if (r.template === 'fd_arena') continue;
-    const want = w2.has(r.template) ? TS.WALL2 : TS.WALL;
+    const arena = r.template === 'fd_arena';
+    const want = arena ? (fv === 'meat' ? TS.WALL : TS.WALL2) : w2.has(r.template) ? TS.WALL2 : TS.WALL;
     for (let z = r.z - 1; z <= r.z + r.h; z++) for (let x = r.x - 1; x <= r.x + r.w; x++) {
       if (!g.in(x, z)) continue;
       const i = g.idx(x, z);
-      if (g.type[i]) continue;
+      if (g.type[i] || rock.has(i)) continue;
       const ring = x === r.x - 1 || x === r.x + r.w || z === r.z - 1 || z === r.z + r.h;
-      if (ring && (g.wallTex[i] === TS.WALL || g.wallTex[i] === TS.WALL2)) g.wallTex[i] = want;
+      if (ring && (g.wallTex[i] === TS.WALL || g.wallTex[i] === TS.WALL2 || (arena && g.wallTex[i] === TS.ACCENT))) g.wallTex[i] = want;
     }
   }
   // volcano base: the mountain's rock breaks into a few more rooms

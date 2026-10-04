@@ -12,7 +12,7 @@ import { TEMPLATES, freeRect } from './gen_arch.js';
 import {
   cellsOf, canUse, use, flatOpen, canUseL, useL, okL, ok, setHeight, setHeightL, retexFloor, flightRect, flightL, snap, restore, roomOK,
   wallSpots, wallBox, hangLight, paint, hazardLines, deckBridge, pitSet, openShape, largestBlob, upperWindows, edgeCells, freeMask,
-  bestRect, markMask, glassWall, machineBlock, cabinet, riser, nSteps,
+  bestRect, markMask, glassWall, machineBlock, cabinet, riser, nSteps, glassLineL, doorLeafL, monitor,
 } from './lab_templates.js';
 import * as P from './foundry_props.js';
 
@@ -223,21 +223,25 @@ function booth(ctx, G, b0, b1) {
 // stairs, a high catwalk, control booth, crane, furnaces, conveyors, hoppers
 // ======================================================================
 FT.fd_hall = function fdHall(ctx) {
-  const okb = tryFrames(ctx, sidesLong(ctx, true), (Fr) => buildHall(ctx, Fr), null);
-  if (!okb) { TEMPLATES.industrial(ctx); ctx.room.lit = false; }
+  // galleries with a full deck, then short decks (many exits on the long
+  // walls), then the vat, catwalks and machinery without galleries
+  for (const o of [{ minDeck: 6 }, { minDeck: 3 }, { noGallery: true }]) {
+    if (tryFrames(ctx, sidesLong(ctx, true), (Fr) => buildHall(ctx, Fr, o), null)) return;
+  }
+  TEMPLATES.industrial(ctx); ctx.room.lit = false;
 };
-function buildHall(ctx, Fr) {
+function buildHall(ctx, Fr, o = {}) {
   const { g, deco, rng, room: r } = ctx;
   const v = fv(ctx);
   const L = Fr.L, Wd = Fr.Wd;
   if (L < 15 || Wd < 18) return no(ctx, 'Hall1');
   const top = r.floor + r.ceilH;
   const yG = r.floor + 4.2;
-  const gD = L >= 21 ? 3 : 2;
-  const galA = gallery(ctx, Fr, gD, yG, { minDeck: 6 });
-  if (!galA) return no(ctx, 'Hall2');
+  const gD = o.noGallery ? 0 : L >= 21 ? 3 : 2;
+  const galA = o.noGallery ? null : gallery(ctx, Fr, gD, yG, { minDeck: o.minDeck ?? 6 });
+  if (!galA && !o.noGallery) return no(ctx, 'Hall2');
   const FrB = frame(r, OPP[Fr.side]);
-  const galB = L >= 18 ? gallery(ctx, FrB, gD, yG, { minDeck: 6 }) : null;
+  const galB = galA && L >= 18 ? gallery(ctx, FrB, gD, yG, { minDeck: o.minDeck ?? 6 }) : null;
   // ---- the vat: inner floor minus a 3-cell ring (and the end zones)
   const sA = Math.max(4, Math.min(9, Math.round(Wd * 0.2))), sB = Wd - sA;
   const tA = gD + 3, tB = L - (galB ? gD : 0) - 3;
@@ -278,7 +282,7 @@ function buildHall(ctx, Fr) {
       break;
     }
   }
-  if (!high) {
+  if (!high && galA) {
     for (const c of cs) {
       if (!(onDeck(galA, c - 1) && onDeck(galA, c + 2))) continue;
       const tP = tA + 1;
@@ -358,7 +362,7 @@ function buildHall(ctx, Fr) {
   if (!lows && !high) return no(ctx, 'Hall15');
   // ---- control booth on gallery B (or A), next to a flight top
   let boothCells = null;
-  for (const G of galB ? [galB, galA] : [galA]) {
+  for (const G of [galB, galA].filter(Boolean)) {
     if (boothCells) break;
     const bw = G.s1 - G.s0 >= 12 ? 5 : 4;
     const clash = (b0, b1) => high && b0 < high.c + 4 && b1 > high.c - 2;
@@ -373,7 +377,8 @@ function buildHall(ctx, Fr) {
   railAll(ctx, boothCells);
   const pitNow = [...pitCells].filter((i) => g.flags[i] & (F.PIT | F.HAZARD));
   hazardLines(ctx, pitNow);
-  deckFace(ctx, galA); if (galB) deckFace(ctx, galB);
+  if (galA) deckFace(ctx, galA);
+  if (galB) deckFace(ctx, galB);
   // pipes and conduits down the vat walls, a glow from below
   let pk = 0;
   for (const i of pitNow) {
@@ -477,10 +482,10 @@ function gearPit(ctx, Fr, inVat, pitCells, vt0, vt1, vs0, vs1, pitY, highCells, 
   void pitCells;
 }
 // furnaces along an end wall frame (t = 0) where the wall is free of exits
-function endWallFurnaces(ctx, FE, cold) {
+function endWallFurnaces(ctx, FE, cold, max = 3) {
   const { room: r } = ctx;
   let placed = 0;
-  for (let s = 1; s + 3 <= FE.Wd - 1 && placed < 3; s++) {
+  for (let s = 1; s + 3 <= FE.Wd - 1 && placed < max; s++) {
     if (!(canUseL(ctx, FE, 0, s, 3, 3, 0, 1) && okL(ctx, FE, 0, s, 3, 3))) continue;
     // the cell in front of the furnace must stay walkable ground
     if (!groundL(ctx, FE, 3, s, 1, 3)) continue;
@@ -584,22 +589,164 @@ function hallHooks(ctx, Fr) {
 }
 
 // ======================================================================
-// ENTRY (start): locker room / shift office by the plant gate
+// ENTRY (start): the shift house by the plant gate - a glazed foreman's
+// office in a corner, locker runs with benches in front of them, the time
+// clock and card rack by the way in, a water cooler and a vending machine
 // ======================================================================
 FT.fd_entry = function fdEntry(ctx) {
+  tryFrames(ctx, sidesLong(ctx, true), (Fr, last) => buildEntry(ctx, Fr, last), (c) => entrySimple(c));
+};
+// the start cell (room centre) and its ring stay clear
+function keepStartClear(ctx) {
+  const { room: r } = ctx;
+  use(ctx, Math.floor(r.x + r.w / 2) - 1, Math.floor(r.z + r.h / 2) - 1, 3, 3);
+}
+function buildEntry(ctx, Fr, last) {
   const { g, deco, rng, room: r } = ctx;
+  const L = Fr.L, Wd = Fr.Wd;
+  if (L < 6 || Wd < 7) return no(ctx, 'Entry1');
+  keepStartClear(ctx);
+  const y = r.floor;
+  // ---- the foreman's office: a glass box in a corner of the frame wall
+  const oD = L >= 10 ? 4 : 3, oW = Wd >= 14 ? 5 : 4;
+  let office = null;
+  for (const s0 of Wd >= 9 && L >= 7 ? rng.shuffle([0, Wd - oW]) : []) {
+    if (!okL(ctx, Fr, 0, s0, oD + 1, oW, 0, 0)) continue;
+    const sIn = s0 === 0 ? oW : s0;                     // the glazed side line (s)
+    if (!okL(ctx, Fr, 0, s0 === 0 ? oW : s0 - 1, oD + 1, 1, 0, 0)) continue;
+    office = { s0, sIn };
+    break;
+  }
+  if (!office && !last) return no(ctx, 'Entry2');
+  if (office) entryOffice(ctx, Fr, office.s0, office.sIn, oD, oW);
+  // ---- lockers along the opposite wall in runs, benches in front
+  const FrO = frame(r, OPP[Fr.side]);
+  const runs = [];
+  let a = -1;
+  for (let s = 0; s <= Wd; s++) {
+    const fine = s < Wd && okL(ctx, FrO, 0, s, 2, 1, 0, 0);
+    if (fine && a < 0) a = s;
+    if (!fine && a >= 0) { if (s - a >= 3) runs.push([a, s]); a = -1; }
+  }
+  let nLock = 0;
+  for (const [ra, rb] of runs) {
+    const a0 = ra + (rb - ra > 4 ? 1 : 0), b0 = Math.min(rb, a0 + 7);
+    for (let s = a0; s < b0; s++) {
+      const [x, z] = FrO.cell(0, s);
+      P.lockers(ctx, x, z, FrO.toward, y, 1);
+      nLock++;
+    }
+    // the bench: a row of slats 1.2 off the lockers, a gap every 3 cells
+    for (let s = a0; s + 2 <= b0; s += 3) {
+      const [bx0, bz0, bw, bh] = FrO.rect(1.25, s + 0.15, 0.4, 1.7);
+      P.bench(ctx, bx0, bz0, bx0 + bw, bz0 + bh, y);
+    }
+    useL(ctx, FrO, 0, a0, 2, b0 - a0);
+  }
+  if (!nLock) return no(ctx, 'Entry3');
+  // ---- time clock + card racks by an exit, a notice board, vending / water cooler
+  const spots = rng.shuffle(wallSpots(ctx).filter(([x, z]) => canUse(ctx, x, z, 1, 1, 0, 0)));
+  const nearExit = (x, z) => r.exits.some((e) => { const c = e.conn; const ex = c.axis === 'x' ? e.firstIn : c.pos, ez = c.axis === 'x' ? c.pos : e.firstIn; return Math.abs(ex - x) + Math.abs(ez - z) <= 4; });
+  spots.sort((p, q) => (nearExit(q[0], q[1]) ? 1 : 0) - (nearExit(p[0], p[1]) ? 1 : 0));
+  let placed = 0;
+  for (const [x, z, d] of spots) {
+    if (placed >= 4) break;
+    if (!canUse(ctx, x, z, 1, 1, 0, 0)) continue;
+    if (placed === 0) {
+      // time clock with a card rack either side
+      wallBox(ctx, x, z, d, 0.18, y + 1.25, y + 1.75, faced(OPP[d], TS.MACHINE, TS.METAL), { uv: 'fit', inset: 0.32 });
+      wallBox(ctx, x, z, d, 0.06, y + 0.9, y + 2.0, TS.CRATE, { uv: 'fit', inset: 0.05 });
+    } else if (placed === 1) {
+      // vending machine: a steel cabinet with a lit front
+      wallBox(ctx, x, z, d, 0.75, y, y + 1.95, TS.METAL, { inset: 0.12, solid: true });
+      wallBoxR(ctx, x, z, d, 0.75, 0.78, y + 0.5, y + 1.8, TS.SCREEN, { uv: 'fit', inset: 0.2, emissive: 0.6 });
+    } else if (placed === 2) {
+      // water cooler: a cabinet with a bottle on top
+      const px = x + 0.5 + DIR_X[d] * 0.2, pz = z + 0.5 + DIR_Z[d] * 0.2;
+      deco.box(px - 0.22, y, pz - 0.22, px + 0.22, y + 0.95, pz + 0.22, TS.METAL, { solid: true });
+      P.cylV(deco, px, pz, y + 0.95, y + 1.45, 0.17, TS.GLASS, { emissive: 0.2 });
+    } else {
+      // notice board
+      wallBox(ctx, x, z, d, 0.05, y + 1.1, y + 2.1, TS.WOOD, { inset: 0.08 });
+      wallBox(ctx, x, z, d, 0.07, y + 1.25, y + 1.95, TS.SCREEN, { uv: 'fit', inset: 0.2, emissive: 0.3 });
+    }
+    use(ctx, x, z, 1, 1);
+    placed++;
+  }
+  entryLines(ctx);
+  wallLamps(ctx, 4, 2.4, WARM);
+  highBay(ctx, 4, [0.95, 0.97, 1]);
+  return true;
+}
+// the foreman's office: glazing on the room sides, a doorway, desk, chair, cabinets, roof
+function entryOffice(ctx, Fr, s0, sIn, oD, oW) {
+  const { g, deco, room: r } = ctx;
+  const Wd = Fr.Wd, y = r.floor;
+  const office = { s0, sIn };
+  const corner = s0 === 0 ? 0 : 1;                      // 0: office at s = 0 side
+  // front glazing on t = oD with a 2-cell doorway at the end away from the corner
+  const sd = corner === 0 ? oW - 2 : s0;
+  glassLineL(ctx, Fr, oD, s0, s0 + oW, y, 3.0, [[sd, sd + 2]]);
+  doorLeafL(ctx, Fr, oD, corner === 0 ? sd - 1 : sd + 2, corner === 0 ? sd : sd + 3, y, 1);
+  // side glazing along s = office.sIn for t in [0, oD)
+  {
+    const [ax, az] = Fr.pt(0, office.sIn), [bx, bz] = Fr.pt(oD, office.sIn);
+    glassWall(ctx, Math.round(ax), Math.round(az), Math.round(bx), Math.round(bz), y, 3.0);
+  }
+  useL(ctx, Fr, 0, s0, oD + 1, oW);
+  for (const i of cellsOf(g, ...Fr.rect(0, s0, oD, oW))) g.floorTex[i] = TS.WOOD;
+  // inside: the desk along the back wall with a monitor, filing cabinets, a chair
+  const dA = corner === 0 ? 0.3 : s0 + oW - 2.6, dB = dA + 2.3;
+  fbox(deco, Fr, 0.05, 0.8, dA, dB, y, y + 0.76, faced(Fr.away, TS.PANEL, TS.METAL, TS.WOOD), { solid: true });
+  const [mx, mz] = Fr.pt(0.35, dA + 0.8);
+  monitor(ctx, mx, mz, y + 0.76, Fr.away);
+  fbox(deco, Fr, 0.15, 0.55, dA + 1.5, dB - 0.2, y + 0.76, y + 0.8, TS.CRATE, { uv: 'fit' });
+  fbox(deco, Fr, 1.2, 1.65, dA + 0.6, dA + 1.05, y, y + 0.48, TS.METAL);
+  fbox(deco, Fr, 1.55, 1.65, dA + 0.6, dA + 1.05, y + 0.48, y + 1.05, TS.METAL);
+  // filing cabinets against the solid side wall
+  const cabS = corner === 0 ? 0 : Wd - 1;
+  for (let t = 1; t < oD; t++) {
+    const [cx, cz] = Fr.cell(t, cabS);
+    cabinet(ctx, cx, cz, corner === 0 ? Fr.latN : Fr.lat, y, 1.4, 0.55, TS.MACHINE);
+  }
+  // a plan of the plant pinned on the office wall; the office roof with a light panel under it
+  fbox(deco, Fr, 0, 0.04, dA + 0.2, dB - 0.2, y + 1.3, y + 2.2, TS.SCREEN, { uv: 'fit', emissive: 0.5, faces: FACE.SIDES });
+  if (r.ceilH > 3.6) fbox(deco, Fr, 0, oD + 0.07, s0, s0 + oW, y + 3.0, y + 3.15, { top: TS.METAL, bottom: TS.CEIL, side: TS.METAL });
+  const [lx0, lz0, lw, lh] = Fr.rect(oD / 2 - 0.6, s0 + oW / 2 - 0.8, 1.2, 1.6);
+  deco.lightPanel(lx0, lz0, lx0 + lw, lz0 + lh, Math.min(y + 3.0, r.floor + r.ceilH), [0.85, 0.95, 1], 5);
+}
+// safety walkway lines toward the exits
+function entryLines(ctx) {
+  const { g, room: r } = ctx;
+  for (const e of r.exits) {
+    const c = e.conn;
+    for (let k = 0; k < c.width; k++) {
+      const a = e.firstIn, b = c.pos + k;
+      const x = c.axis === 'x' ? a : b, z = c.axis === 'x' ? b : a;
+      if (g.in(x, z) && g.type[g.idx(x, z)] && !(g.flags[g.idx(x, z)] & F.STAIR)) paint(ctx, x + 0.42, z + 0.42, x + 0.58, z + 0.58, g.floor[g.idx(x, z)]);
+    }
+  }
+}
+// a box against the wall of cell (x, z) on side d (dir to the wall) from depth d0 to d1 off it
+function wallBoxR(ctx, x, z, d, d0, d1, y0, y1, tex, o = {}) {
+  const ins = o.inset ?? 0.04;
+  const x0 = d === 0 ? x + 1 - d1 : d === 1 ? x + d0 : x + ins, x1 = d === 0 ? x + 1 - d0 : d === 1 ? x + d1 : x + 1 - ins;
+  const z0 = d === 2 ? z + 1 - d1 : d === 3 ? z + d0 : z + ins, z1 = d === 2 ? z + 1 - d0 : d === 3 ? z + d1 : z + 1 - ins;
+  return ctx.deco.box(x0, y0, z0, x1, y1, z1, tex, o);
+}
+// fallback: lockers on free wall cells, two benches, a time clock
+function entrySimple(ctx) {
+  const { rng, room: r } = ctx;
   ctx.used = new Set();
-  // lockers along the walls, benches in front of them
+  keepStartClear(ctx);
   let lk = 0;
   for (const [x, z, d] of rng.shuffle(wallSpots(ctx))) {
     if (lk >= Math.max(3, Math.floor((r.w + r.h) / 3))) break;
     if (!canUse(ctx, x, z, 1, 1, 0, 0)) continue;
-    // keep the middle of each wall clear-ish: lockers in runs near corners
     P.lockers(ctx, x, z, d, r.floor, 1);
     use(ctx, x, z, 1, 1);
     lk++;
   }
-  // a time clock + notice board on a free wall, a bench row in the middle
   const cx = Math.floor(r.x + r.w / 2), cz = Math.floor(r.z + r.h / 2);
   for (const [bx, bz] of [[cx - 2, cz + 2], [cx + 1, cz - 3]]) {
     if (ok(ctx, bx, bz, 2, 1, 0, 1)) { P.bench(ctx, bx + 0.1, bz + 0.3, bx + 1.9, bz + 0.7, r.floor); use(ctx, bx, bz, 2, 1); }
@@ -610,19 +757,10 @@ FT.fd_entry = function fdEntry(ctx) {
     use(ctx, x, z, 1, 1);
     break;
   }
-  // safety walkway lines toward the exits
-  for (const e of r.exits) {
-    const c = e.conn;
-    for (let k = 0; k < c.width; k++) {
-      const a = e.firstIn, b = c.pos + k;
-      const x = c.axis === 'x' ? a : b, z = c.axis === 'x' ? b : a;
-      if (g.in(x, z) && g.type[g.idx(x, z)] && !(g.flags[g.idx(x, z)] & F.STAIR)) paint(ctx, x + 0.42, z + 0.42, x + 0.58, z + 0.58, g.floor[g.idx(x, z)]);
-    }
-  }
+  entryLines(ctx);
   wallLamps(ctx, 4, 2.4, WARM);
   highBay(ctx, 4, [0.95, 0.97, 1]);
-  void deco;
-};
+}
 
 // ======================================================================
 // YARD (open air): cooling towers, stacks, tanks, ore carts, slag heaps
@@ -744,14 +882,34 @@ FT.fd_yard = function fdYard(ctx) {
 // pouring pit, cover blocks, raised platforms up stairs, crane overhead
 // ======================================================================
 FT.fd_arena = function fdArena(ctx) {
+  const { deco, room: r } = ctx;
+  // full build first, then lighter ones when the room stops working (exits
+  // cut off by cover / furnaces in a small arena)
+  for (const lvl of [3, 2, 1, 0]) {
+    const m = deco.mark(), sn = snap(ctx);
+    ctx.used = new Set();
+    let okb = false;
+    try { buildArena(ctx, lvl); okb = roomOK(ctx, 0.8); } catch (e) { stat('error', 'fd_arena', String((e && e.stack) || e).slice(0, 400)); }
+    if (okb) return;
+    stat('try', 'fd_arena', lvl, 'roomOK');
+    deco.rollback(m); restore(ctx, sn);
+  }
+  ctx.used = new Set();
+  wallPipes(ctx, r.floor + 5.2, 0.2, 2);
+};
+// lvl 3: cover pillars, pools and platforms (generic arena), converter,
+// furnaces, crane; 2: no furnaces; 1: converter, furnaces and crane only;
+// 0: crane only
+function buildArena(ctx, lvl) {
   const { g, deco, rng, room: r } = ctx;
-  TEMPLATES.arena(ctx);
+  if (lvl >= 2) TEMPLATES.arena(ctx);
+  else r.lit = false;
   const v = fv(ctx);
   const top = r.floor + r.ceilH;
   // the converter: a big banded vessel on trunnion stands at the room centre
   const cx = r.x + r.w / 2, cz = r.z + r.h / 2;
   const cxI = Math.floor(cx), czI = Math.floor(cz);
-  if (ok(ctx, cxI - 2, czI - 2, 4, 4, 0, 0)) {
+  if (lvl >= 1 && ok(ctx, cxI - 2, czI - 2, 4, 4, 0, 0)) {
     const R = 1.5;
     P.cylV(deco, cx, cz, r.floor, r.floor + 0.4, R + 0.4, TS.SIDE);
     P.cylV(deco, cx, cz, r.floor + 0.4, r.floor + 3.4, R, TS.METAL, { s: 1.5 });
@@ -763,11 +921,22 @@ FT.fd_arena = function fdArena(ctx) {
     deco.collider(cx - R - 0.4, r.floor, cz - R * 0.8, cx + R + 0.4, r.floor + 4.1, cz + R * 0.8);
     if (top > r.floor + 6) deco.box(cx - 0.5, r.floor + 4.4, cz - 0.5, cx + 0.5, top, cz + 0.5, TS.PIPE);
   }
+  use(ctx, cxI - 2, czI - 2, 5, 5);
+  // the converter house's furnaces on the short walls, an overhead crane
+  // carrying a ladle (a gear / a hook) on the long axis, clear of the vessel
+  const longX = r.w >= r.h;
+  if (lvl === 3 || lvl === 1) for (const es of longX ? [1, 0] : [3, 2]) endWallFurnaces(ctx, frame(r, es), v === 'meat', 1);
+  const Fc = frame(r, longX ? 3 : 1);
+  if (r.ceilH >= 8) {
+    const sc = rng.chance(0.5) ? Math.max(2.5, Fc.Wd * 0.22) : Math.min(Fc.Wd - 2.5, Fc.Wd * 0.78);
+    const load = v === 'clock' ? 'gear' : v === 'meat' ? 'hook' : 'ladle';
+    P.crane(ctx, Fc, 0, Fc.Wd, top - 2.2, sc, Fc.L * rng.float(0.35, 0.65), { load, yLoad: top - (load === 'ladle' ? 4.0 : 4.6) });
+  }
+  hazardLines(ctx, ctx.cells.filter((i) => g.flags[i] & F.HAZARD));
   wallPipes(ctx, r.floor + 5.2, 0.2, 2);
   upperWindows(ctx, top - 3.2, top - 1.7, 3);
   if (v === 'hell' || v === 'clock') chains(ctx, 5);
-  void rng; void FIRE;
-};
+}
 
 export { FT };
 export { sparseSpikes, no, hookRail, tryFrames, sidesLong, fv, groundL, cellL, vatKind, moltenKind, railAll, highBay, wallLamps, wallPipes, chains, gallery, deckFace, booth, gearPit, dressFloor, stat };
