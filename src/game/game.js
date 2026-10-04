@@ -42,6 +42,9 @@ const WEAPON_SCREEN_SHARE = { pistol: 0.38, revolver: 0.4, smg: 0.42, shuriken: 
 // measured barrels (fp.barrel / fp.tip, tools/weapon_barrels.py) below this
 // confidence keep the old fixed placement
 const BARREL_MIN_Q = 0.5;
+// a first-person barrel runs up into the screen: steeper than this slant
+// (|dx/dy|) is a mis-measurement (sideways scope / stock edge)
+const BARREL_MAX_SLANT = 1.8;
 
 export class Game {
   constructor(renderer, store, content, hud, ui, touch) {
@@ -654,18 +657,25 @@ export class Game {
     const y0 = H + over - m.bottom * s;              // idle frame, no bob / recoil
     const bias = m.hands === 'right' ? 0.11 : m.hands === 'left' ? -0.06 : 0.035;
     let x0 = W * 0.5 + bias * H - m.gripX * s;
-    const b = m.barrel, aimed = !melee && !thrown && !!b && !!m.tip && (m.barrelQ ?? 0) >= BARREL_MIN_Q && b[1] < -0.1;
+    const gun = !melee && !thrown;
+    let b = m.barrel, tip = m.tip;
+    let aimed = gun && !!b && !!tip && (m.barrelQ ?? 0) >= BARREL_MIN_Q && b[1] < -0.1 && Math.abs(b[0] / b[1]) <= BARREL_MAX_SLANT;
+    if (!aimed && gun && m.muzzle) {
+      // doubtful barrel measurement: aim along the grip-to-muzzle line instead
+      const gx = m.muzzle[0] - m.gripX, gy = m.muzzle[1] - m.bottom, gl = Math.hypot(gx, gy);
+      if (gl > 8 && gy < -0.3 * gl && Math.abs(gx / gy) <= BARREL_MAX_SLANT) { b = [gx / gl, gy / gl]; tip = m.muzzle; aimed = true; }
+    }
     if (aimed) {
       // tip + t*barrel meets the crosshair row at t = (H/2 - tipY) / by
-      const ty = y0 + m.tip[1] * s;
-      x0 = W * 0.5 - ((H * 0.5 - ty) * b[0]) / b[1] - m.tip[0] * s;
+      const ty = y0 + tip[1] * s;
+      x0 = W * 0.5 - ((H * 0.5 - ty) * b[0]) / b[1] - tip[0] * s;
       // at least ~70% of the art, the arm cut and the barrel tip stay on
       // screen; the tip stays within 0.42 H of the centre (a barrel leaning
       // almost sideways would otherwise push the gun off the edge - it then
       // points a little beside the crosshair). With touch controls the tip
       // stays left of the FIRE / JUMP / DASH cluster and the art does not run
       // past the FIRE button (CSS-sized, so measured in CSS px).
-      const aw = artW * s, tipX = m.tip[0] * s;
+      const aw = artW * s, tipX = tip[0] * s;
       let hi = Math.min(W + 0.3 * aw - m.artR * s, W * 0.97 - m.gripX * s, W * 0.92 - tipX, W * 0.5 + 0.42 * H - tipX);
       const lo = Math.max(-0.3 * aw - m.artL * s, W * 0.03 - m.gripX * s, W * 0.08 - tipX, W * 0.5 - 0.42 * H - tipX);
       if (input.mode === 'touch') {
@@ -686,11 +696,11 @@ export class Game {
     const dyf = (m.dy && m.dy[frame]) || 0;
     const x = Math.round(x0 + view.ox), y = Math.round(y0 + dyf * s + oy);
     // the drawn muzzle (barrel tip of this frame) - shots leave from it
-    const tip = aimed ? m.tip : (m.muzzle && !melee ? m.muzzle : null);
-    const mx = tip ? x + tip[0] * s : null, my = tip ? y + tip[1] * s : null;
-    p.muzzleNDC = tip ? [(mx / W) * 2 - 1, 1 - (my / H) * 2] : null;
+    const mt = aimed ? tip : (m.muzzle && !melee ? m.muzzle : null);
+    const mx = mt ? x + mt[0] * s : null, my = mt ? y + mt[1] * s : null;
+    p.muzzleNDC = mt ? [(mx / W) * 2 - 1, 1 - (my / H) * 2] : null;
     p.muzzleDir = aimed ? b : null;                  // barrel direction on screen (low-res px, y down)
-    return { fp, m, s, x, y, x0, y0, frame, view, melee, thrown, aimed, mx, my, W, H };
+    return { fp, m, s, x, y, x0, y0, frame, view, melee, thrown, aimed, b, mx, my, W, H };
   }
 
   // Shots fired since the last frame were spawned on the camera ray through
@@ -765,7 +775,7 @@ export class Game {
     const dot = (x, y, c, k = 1) => r.drawQuad(null, Math.round(x) - (k >> 1), Math.round(y) - (k >> 1), k, k, [0, 0, 1, 1], { tint: c });
     dot(W / 2, H / 2, [1, 1, 1, 1], 3);
     if (L.mx === null) return;
-    const b = L.m.barrel;
+    const b = L.b || L.m.barrel;
     if (b) {
       const c = L.aimed ? [0.2, 1, 1, 1] : [1, 0.6, 0.1, 1];
       for (let t = -H * 0.3; t < H * 1.2; t += 1) {
