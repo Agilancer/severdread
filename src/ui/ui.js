@@ -10,6 +10,7 @@ import { fmt } from '../core/math.js';
 import { audio } from '../engine/audio.js';
 import { input, requestLock, releaseLock } from '../engine/input.js';
 import { TitleBlood, loadTitleBlood } from './title.js';
+import { LevelMap } from './map.js';
 
 const SLOT_LABELS = { weapon0: '1', weapon1: '2', weapon2: '3', weapon3: '4', head: 'HEAD', body: 'BODY', legs: 'LEGS', ring0: 'RING', ring1: 'RING', ring2: 'RING', ring3: 'RING' };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -23,6 +24,8 @@ export class UI {
     this.toastWrap.className = 'toast-wrap';
     root.appendChild(this.toastWrap);
     this.selected = null;
+    this.invView = 'gear';     // equipment screen tab: 'gear' | 'map' (remembered between openings)
+    this.levelMap = null;      // mounted LevelMap while the MAP tab is showing
   }
   bind(game) { this.game = game; }
 
@@ -40,6 +43,7 @@ export class UI {
   }
   close() {
     if (this.titleBlood) { this.titleBlood.stop(); this.titleBlood = null; }
+    if (this.levelMap) { this.levelMap.unmount(); this.levelMap = null; }   // stops its animation loop + listeners
     if (this.layer) { this.layer.remove(); this.layer = null; }
   }
   closeAll() {
@@ -209,9 +213,9 @@ export class UI {
           <div><b>Left click</b> fire · <b>Right click / Shift</b> dash</div>
           <div><b>Space</b> jump (again in mid-air with multi-jump rings)</div>
           <div><b>1-4</b> / <b>wheel</b> switch weapon · <b>Q</b> last weapon</div>
-          <div><b>E</b> talk / open / use · <b>Tab / I</b> equipment</div>
+          <div><b>E</b> talk / open / use · <b>Tab / I</b> equipment · <b>M</b> map</div>
           <div><b>Esc / P</b> pause · <b>Arrow keys</b> turn</div>
-          <div style="margin-top:8px"><b>Touch:</b> left side = move stick, right side = look, FIRE also aims while held. Tap 1-4 to switch weapons, BAG for equipment.</div>
+          <div style="margin-top:8px"><b>Touch:</b> left side = move stick, right side = look, FIRE also aims while held. Tap 1-4 to switch weapons, BAG for equipment, MAP for the level radar.</div>
         </div>
         <p style="font-size:17px;color:#bba">Kill every enemy and the boss on each level to open the portal. Keys open matching coloured doors. Dying ends the run: you keep your level, gear and bag, but start again at depth 1.</p>
         <div style="text-align:right"><button class="btn red" data-a="back">Back</button></div>
@@ -336,13 +340,63 @@ export class UI {
   }
 
   // ------------------------------------------------------------------ inventory
-  openInventory(mode = 'inventory', npc = null) {
-    const g = this.game;
+  openInventory(mode = 'inventory', npc = null, view = null) {
     this.setMenuState();
     this.invMode = mode;
     this.npc = npc;
+    if (view) this.invView = view;
     this.selected = this.selected && this.lookup(this.selected) ? this.selected : null;
     this.renderInventory();
+  }
+  // M key / touch MAP button: open the equipment screen on its MAP tab, flip
+  // an open equipment screen to it, or close it when the map is already up
+  toggleMap() {
+    const g = this.game;
+    if (g.state === 'playing') { this.openInventory('inventory', null, 'map'); return; }
+    if (g.state !== 'menu' || this.invMode !== 'inventory' || !this.layer?.classList.contains('inv')) return;
+    if (this.invView === 'map') this.closeAll();
+    else { this.invView = 'map'; this.renderInventory(); }
+  }
+  viewTabsHTML(cur) {
+    const kb = input.mode === 'keyboard';
+    return `<div class="views">
+      <button class="view ${cur === 'gear' ? 'on' : ''}" data-view="gear">EQUIPMENT${kb ? '<kbd>I</kbd>' : ''}</button>
+      <button class="view ${cur === 'map' ? 'on' : ''}" data-view="map">MAP${kb ? '<kbd>M</kbd>' : ''}</button></div>`;
+  }
+  bindViewTabs(el) {
+    el.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => {
+      if (b.dataset.view === this.invView) return;
+      this.invView = b.dataset.view;
+      this.renderInventory();
+    }));
+  }
+
+  // MAP tab: level map + radar (src/ui/map.js). Re-rendering or closing goes
+  // through this.open()/close(), which unmounts the map and stops its loop.
+  renderMap() {
+    const g = this.game, s = g.save;
+    const el = this.open(`
+      <div class="panel modal">
+        <button class="btn small close-x" data-act="close">X</button>
+        <div class="modal-head">
+          ${this.viewTabsHTML('map')}
+          <div class="wallet">¢ ${fmt(s.credits)}<span class="bag">BAG ${s.bag.length}/${s.bagSize}</span></div>
+        </div>
+        <div class="modal-body map-body">
+          <div class="map-wrap">
+            <canvas class="map-canvas"></canvas>
+            <div class="map-ctl">
+              <button class="btn small" data-zoom="1" aria-label="Zoom in">+</button><span class="map-zoom">x1</span><button class="btn small" data-zoom="-1" aria-label="Zoom out">-</button>
+              <button class="btn small" data-center aria-label="Centre on me"><i class="ctr-ic"></i></button>
+            </div>
+          </div>
+          <div class="col scroll map-side"></div>
+        </div>
+      </div>`, 'screen dim inv');
+    this.bindViewTabs(el);
+    el.querySelector('[data-act=close]').addEventListener('click', () => this.closeAll());
+    this.levelMap = new LevelMap(g);
+    this.levelMap.mount(el.querySelector('.map-wrap'), el.querySelector('.map-side'));
   }
 
   lookup(sel) {
@@ -357,6 +411,7 @@ export class UI {
   renderInventory() {
     const g = this.game, s = g.save, eq = s.equipment;
     const mode = this.invMode;
+    if (mode === 'inventory' && this.invView === 'map' && g.world) { this.renderMap(); return; }
     const sel = this.lookup(this.selected);
     const tab = this.tab || 'all';
     const filter = (it) => tab === 'all' || (tab === 'armor' ? ['head', 'body', 'legs'].includes(it.kind) : it.kind === tab);
@@ -405,7 +460,7 @@ export class UI {
       <div class="panel modal">
         <button class="btn small close-x" data-act="close">X</button>
         <div class="modal-head">
-          <h2>${mode === 'inventory' ? 'EQUIPMENT' : esc(this.npc.title.toUpperCase())}</h2>
+          ${mode === 'inventory' ? this.viewTabsHTML('gear') : `<h2>${esc(this.npc.title.toUpperCase())}</h2>`}
           <div class="tabs">${tabs}</div>
           <div class="wallet">¢ ${fmt(s.credits)}<span class="bag">BAG ${s.bag.length}/${s.bagSize}</span></div>
         </div>
@@ -415,7 +470,8 @@ export class UI {
           <div class="col" style="flex:1.2"><h3>BAG</h3><div class="grid-bag scroll" style="flex:1">${sorted.map(({ it, i }) => this.slotHTML(it, `data-bag="${i}"`)).join('')}${Array.from({ length: Math.max(0, Math.min(12, s.bagSize - s.bag.length)) }, () => '<div class="slot empty" data-label=""></div>').join('')}</div></div>
           <div class="col scroll" style="flex:1.3">${card}${mode === 'inventory' ? this.reagentsHTML() : ''}</div>
         </div>
-      </div>`);
+      </div>`, 'screen dim inv');
+    this.bindViewTabs(el);
     // fix class attr duplication from slotHTML (attrs may include class)
     el.querySelectorAll('[data-eq],[data-bag],[data-shop]').forEach((n) => {
       const isSel = (n.dataset.eq && this.selected?.where === 'eq' && this.selected.slot === n.dataset.eq) ||

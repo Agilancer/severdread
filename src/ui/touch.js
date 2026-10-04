@@ -1,6 +1,6 @@
 // On-screen touch controls for phones/tablets (landscape).
 // Left half: floating move stick. Right half: drag to look. Buttons: FIRE
-// (also drags to aim), JUMP, DASH, USE, weapon slots 1-4, BAG and PAUSE.
+// (also drags to aim), JUMP, DASH, USE, weapon slots 1-4, MAP, BAG and PAUSE.
 import { input, press } from '../engine/input.js';
 
 export class TouchControls {
@@ -43,7 +43,7 @@ export class TouchControls {
       <div class="tbtn dash" data-role="dash">DASH</div>
       <div class="tbtn use hide" data-role="use">USE</div>
       <div class="wslots">${[1, 2, 3, 4].map((n) => `<div class="tbtn w" data-role="weapon${n - 1}">${n}</div>`).join('')}</div>
-      <div class="menu-btns"><div class="tbtn" data-role="menu">BAG</div><div class="tbtn" data-role="pause">II</div></div>`;
+      <div class="menu-btns"><div class="tbtn" data-role="map">MAP</div><div class="tbtn" data-role="menu">BAG</div><div class="tbtn" data-role="pause">II</div></div>`;
     this.base = r.querySelector('.stick-base');
     this.knob = r.querySelector('.stick-knob');
     this.useBtn = r.querySelector('.use');

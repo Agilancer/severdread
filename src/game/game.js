@@ -291,6 +291,7 @@ export class Game {
     if (consume('menu') && (this.state === 'playing' || this.state === 'menu')) {
       if (this.state === 'menu') this.ui.closeAll(); else this.ui.openInventory();
     }
+    if (consume('map') && (this.state === 'playing' || this.state === 'menu')) this.ui.toggleMap();   // M / touch MAP: equipment screen's map tab
     if (this.state !== 'playing' && this.state !== 'dead') { endFrame(); return; }
     const w = this.world, p = this.player;
     w.time += dt;
