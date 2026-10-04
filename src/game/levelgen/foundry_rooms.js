@@ -5,7 +5,7 @@
 // away from that wall, s = along it), checks the room still works (every
 // exit reaches the others, most of the floor reachable) and tries the next
 // wall or falls back to a simpler layout when it does not.
-import { TS, F, OPP, DIR_X, DIR_Z, SKY_H } from './common.js';
+import { TS, F, HAZ, OPP, DIR_X, DIR_Z, SKY_H } from './common.js';
 import { FACE } from './deco.js';
 import { frame } from './hall_templates.js';
 import { TEMPLATES, freeRect } from './gen_arch.js';
@@ -17,7 +17,7 @@ import {
 import * as P from './foundry_props.js';
 
 const FT = {};
-const { faced, fbox, fcollider, MOLTEN, FIRE, COLD, WARM, SODIUM } = P;
+const { faced, fbox, fcollider, MOLTEN, FIRE, COLD, WARM, SODIUM, breachWall } = P;
 const stat = (...a) => { if (globalThis.__FOUNDRYSTAT) globalThis.__FOUNDRYSTAT.push(a); };
 // build failure with a reason (collected in dev stats)
 const no = (ctx, why) => { ctx.why = why; return false; };
@@ -199,7 +199,8 @@ function booth(ctx, G, b0, b1) {
     const [ax, ls] = key.split('|'); const line = +ls;
     arr.sort((p, q) => p - q);
     let s0 = arr[0], prev = arr[0];
-    const flush = (p, q) => (ax === 'x' ? glassWall(ctx, line, p, line, q + 1, y, 2.9) : glassWall(ctx, p, line, q + 1, line, y, 2.9));
+    // one framed pane per cell (a stretched picture over a long run reads as a sheet)
+    const flush = (p, q) => { for (let k = p; k <= q; k++) { if (ax === 'x') glassWall(ctx, line, k, line, k + 1, y, 2.9); else glassWall(ctx, k, line, k + 1, line, y, 2.9); } };
     for (let k = 1; k < arr.length; k++) { if (arr[k] !== prev + 1) { flush(s0, prev); s0 = arr[k]; } prev = arr[k]; }
     flush(s0, prev);
   }
@@ -386,7 +387,7 @@ function buildHall(ctx, Fr) {
   }
   // ---- the vat's contents: gears in the gear pit, a ladle over the molten metal
   const [wx0, wz0, wW, wH] = Fr.rect(vt0, vs0, vt1 - vt0, vs1 - vs0);
-  if (kind === 'spikes') gearPit(ctx, Fr, inVat, pitCells, vt0, vt1, vs0, vs1, r.floor - depth, highCells, lowCells);
+  if (kind === 'spikes') { sparseSpikes(ctx, pitCells); gearPit(ctx, Fr, inVat, pitCells, vt0, vt1, vs0, vs1, r.floor - depth, highCells, lowCells); }
   // ---- crane over the vat (clear of the high catwalk), a second one parked
   const yRail = top - 2.3;
   let sc = Math.round(mid);
@@ -427,6 +428,20 @@ function buildHall(ctx, Fr) {
 // overhead crane over a frame with a load hanging at yLoad (cable bottom)
 function crane(ctx, Fr, sc, tt, yRail, load, yLoad) {
   P.crane(ctx, Fr, 0, Fr.Wd, yRail, sc, tt, { load, yLoad });
+}
+// a gear pit is mostly bare machine floor with clusters of spikes between the
+// wheels (a deep pit all the same: falling in still needs a rescue); keeps
+// the spike mesh affordable
+function sparseSpikes(ctx, cells, frac = 0.22) {
+  const { g } = ctx;
+  for (const i of cells) {
+    if (g.hazType[i] !== HAZ.SPIKES || (g.flags[i] & F.BRIDGE)) continue;
+    const x = i % g.w, z = (i / g.w) | 0;
+    const hsh = ((x * 73856093) ^ (z * 19349663)) >>> 0;
+    if ((hsh % 1000) / 1000 < frac) continue;
+    g.hazType[i] = HAZ.NONE;
+    g.flags[i] &= ~F.HAZARD;
+  }
 }
 // giant gear wheels standing in / lying in the gear pit, clear of the catwalks
 function gearPit(ctx, Fr, inVat, pitCells, vt0, vt1, vs0, vs1, pitY, highCells, lowCells) {
@@ -617,64 +632,76 @@ FT.fd_yard = function fdYard(ctx) {
   const v = fv(ctx);
   ctx.used = new Set();
   for (const i of ctx.cells) { g.flags[i] |= F.OUTDOOR; g.floorTex[i] = TS.SIDEWALK; }
-  // the big structures in the corners away from the exits
-  const m = { cool: 0, stack: 0, tank: 0 };
-  const corners = rng.shuffle([[0, 0], [1, 0], [0, 1], [1, 1]]);
-  for (const [cxF, czF] of corners) {
-    for (const sz of [7, 6, 5, 4]) {
-      const x = cxF ? r.x + r.w - sz - 1 : r.x + 1, z = czF ? r.z + r.h - sz - 1 : r.z + 1;
-      if (!ok(ctx, x, z, sz, sz, 1, 1)) continue;
-      const cx = x + sz / 2, cz = z + sz / 2;
-      if (sz >= 6 && !m.cool && v !== 'meat') { P.coolingTower(ctx, cx, cz, r.floor, sz / 2 - 0.2, rng.pick([11, 13, 15])); m.cool++; }
-      else if (sz >= 5 && m.tank < 2 && (m.stack || rng.chance(0.5))) { P.storageTank(ctx, cx, cz, r.floor, sz / 2 - 0.6, rng.pick([4, 5, 6])); m.tank++; }
-      else { P.stack(ctx, cx, cz, r.floor, Math.min(0.9, sz / 4), rng.pick([16, 19, 22]), { glow: v !== 'meat' }); m.stack++; }
-      use(ctx, x, z, sz, sz);
+  const Fr = frame(r, r.w >= r.h ? 3 : 1);           // s along the yard's long axis
+  const L = Fr.L, Wd = Fr.Wd;
+  // volcano base: a lava channel runs in from one end of the yard to a sump
+  if (v === 'volcano' && Wd >= 14 && L >= 10) {
+    const len = Math.min(Wd - 5, Math.max(6, Math.round(Wd * 0.55)));
+    for (const tc of [Math.floor(L / 2) - 1, Math.floor(L / 2), Math.floor(L / 2) - 2]) {
+      const fromEnd = rng.chance(0.5);
+      const s0 = fromEnd ? Wd - len : 0;
+      if (!okL(ctx, Fr, tc - 1, s0, 4, len, 0, 0) || !canUseL(ctx, Fr, tc - 1, s0, 4, len, 1, 0)) continue;
+      const cells = cellsOf(g, ...Fr.rect(tc, s0, 2, len));
+      pitSet(ctx, cells, 'lava', 2.0);
+      for (const i of cells) ctx.used.add(i);
+      useL(ctx, Fr, tc - 1, s0, 4, len);
+      const bs = s0 + Math.floor(len / 2) - 1;
+      for (const i of cellsOf(g, ...Fr.rect(tc, bs, 2, 2))) { const x = i % g.w, z = (i / g.w) | 0; deckBridge(ctx, x, z, 1, 1, r.floor); }
+      breachWall(g, deco, rng, r, { Fr: frame(r, fromEnd ? (Fr.side < 2 ? 2 : 0) : (Fr.side < 2 ? 3 : 1)), s0: tc - 2, s1: tc + 4, big: true });
       break;
     }
   }
+  // the big structures, pushed toward the walls: cooling tower, stacks, tanks
+  const m = freeMask(ctx, Fr, 1);
+  const edgeScore = (t, s, dt, ds) => dt * ds * 4 - Math.min(t, L - t - dt) * 3 - Math.min(s, Wd - s - ds);
+  const place = (minSz, maxSz) => {
+    const rc = bestRect(m, { minT: minSz, maxT: maxSz, minS: minSz, maxS: maxSz, score: (t, s, dt, ds) => (dt === ds ? edgeScore(t, s, dt, ds) : -1e9) });
+    if (!rc || rc.dt !== rc.ds) return null;
+    markMask(m, rc.t, rc.s, rc.dt, rc.ds, 1);
+    useL(ctx, Fr, rc.t, rc.s, rc.dt, rc.ds);
+    const [cx, cz] = Fr.pt(rc.t + rc.dt / 2, rc.s + rc.ds / 2);
+    return { cx, cz, sz: rc.dt };
+  };
+  if (v !== 'meat') {
+    const c = place(5, 7);
+    if (c) P.coolingTower(ctx, c.cx, c.cz, r.floor, c.sz / 2 - 0.25, c.sz >= 6 ? rng.pick([13, 15, 17]) : rng.pick([11, 12]));
+  }
+  for (let k = 0; k < (v === 'meat' ? 3 : 2); k++) {
+    const c = place(4, 4);
+    if (c) P.storageTank(ctx, c.cx, c.cz, r.floor, rng.pick([1.4, 1.6]), rng.pick([4.5, 5.5, 6.5]), { face: Fr.away });
+  }
+  for (let k = 0; k < 2; k++) {
+    const c = place(2, 3);
+    if (c) P.stack(ctx, c.cx, c.cz, r.floor, c.sz >= 3 ? 0.9 : 0.6, rng.pick([16, 19, 23]), { glow: v !== 'meat' });
+  }
   // a rail track with ore carts along the long axis
-  const alongX = r.w >= r.h;
-  const L = alongX ? r.w : r.h, Wd = alongX ? r.h : r.w;
-  for (const off of [Math.floor(Wd / 2), Math.floor(Wd / 2) - 2, Math.floor(Wd / 2) + 2]) {
-    const [x0, z0, w, h] = alongX ? [r.x, r.z + off, r.w, 1] : [r.x + off, r.z, 1, r.h];
-    const cells = cellsOf(g, x0, z0, w, h);
-    if (cells.some((i) => ctx.used.has(i))) continue;
-    // sleepers and two rails
-    for (let k = 0; k < L; k++) {
-      const [sx, sz] = alongX ? [x0 + k, z0] : [x0, z0 + k];
-      const i = g.idx(sx, sz);
-      if (!g.type[i] || Math.abs(g.floor[i] - r.floor) > 0.01 || (g.flags[i] & F.STAIR)) continue;
-      for (const u of [0.1, 0.6]) {
-        if (alongX) deco.box(sx + u, r.floor, sz + 0.05, sx + u + 0.25, r.floor + 0.05, sz + 0.95, TS.WOOD, { faces: FACE.TOP | FACE.SIDES });
-        else deco.box(sx + 0.05, r.floor, sz + u, sx + 0.95, r.floor + 0.05, sz + u + 0.25, TS.WOOD, { faces: FACE.TOP | FACE.SIDES });
-      }
-      for (const b of [0.22, 0.72]) {
-        if (alongX) deco.box(sx, r.floor + 0.05, sz + b, sx + 1, r.floor + 0.11, sz + b + 0.06, TS.METAL, { faces: FACE.TOP | FACE.SIDES });
-        else deco.box(sx + b, r.floor + 0.05, sz, sx + b + 0.06, r.floor + 0.11, sz + 1, TS.METAL, { faces: FACE.TOP | FACE.SIDES });
-      }
+  for (const off of [Math.floor(L / 2), Math.floor(L / 2) - 2, Math.floor(L / 2) + 2, 2, L - 3]) {
+    if (off < 1 || off > L - 2) continue;
+    const cells = cellsOf(g, ...Fr.rect(off, 0, 1, Wd));
+    if (cells.some((i) => ctx.used.has(i) || !g.type[i] || (g.flags[i] & (F.PIT | F.STAIR | F.BRIDGE)))) continue;
+    for (let s = 0; s < Wd; s++) {
+      const i = cellL(ctx, Fr, off, s);
+      if (Math.abs(g.floor[i] - r.floor) > 0.01) continue;
+      for (const u of [0.1, 0.6]) fbox(deco, Fr, off + 0.05, off + 0.95, s + u, s + u + 0.25, r.floor, r.floor + 0.05, TS.WOOD, { faces: FACE.TOP | FACE.SIDES });
+      for (const b of [0.22, 0.72]) fbox(deco, Fr, off + b, off + b + 0.06, s, s + 1, r.floor + 0.05, r.floor + 0.11, TS.METAL, { faces: FACE.TOP | FACE.SIDES });
       g.floorTex[i] = TS.GROUND;
     }
-    // carts
-    for (let k = 2; k < L - 3; k += rng.int(4, 7)) {
-      const [px, pz] = alongX ? [x0 + k, z0] : [x0, z0 + k];
-      if (!ok(ctx, px, pz, alongX ? 2 : 1, alongX ? 1 : 2, 0, 0)) continue;
-      const [a0, b0, a1, b1] = alongX ? [px + 0.1, pz + 0.1, px + 1.9, pz + 0.9] : [px + 0.1, pz + 0.1, px + 0.9, pz + 1.9];
-      deco.box(a0, r.floor + 0.25, b0, a1, r.floor + 1.05, b1, TS.METAL, { solid: true });
-      deco.box(a0 + 0.08, r.floor + 1.05, b0 + 0.08, a1 - 0.08, r.floor + 1.3, b1 - 0.08, v === 'meat' ? TS.WALL2 : TS.ROCK);
-      for (const [wx, wz] of alongX ? [[a0 + 0.2, b0 - 0.04], [a1 - 0.5, b0 - 0.04], [a0 + 0.2, b1 - 0.1], [a1 - 0.5, b1 - 0.1]] : [[a0 - 0.04, b0 + 0.2], [a0 - 0.04, b1 - 0.5], [a1 - 0.1, b0 + 0.2], [a1 - 0.1, b1 - 0.5]]) {
-        deco.box(wx, r.floor + 0.05, wz, wx + (alongX ? 0.3 : 0.14), r.floor + 0.35, wz + (alongX ? 0.14 : 0.3), TS.METAL, { lightMul: 0.4 });
-      }
-      use(ctx, px, pz, alongX ? 2 : 1, alongX ? 1 : 2);
+    for (let s = 2; s < Wd - 3; s += rng.int(4, 7)) {
+      if (!okL(ctx, Fr, off, s, 1, 2, 0, 0)) continue;
+      fbox(deco, Fr, off + 0.1, off + 0.9, s + 0.1, s + 1.9, r.floor + 0.25, r.floor + 1.05, TS.METAL, { solid: true });
+      fbox(deco, Fr, off + 0.18, off + 0.82, s + 0.18, s + 1.82, r.floor + 1.05, r.floor + 1.3, v === 'meat' ? TS.WALL2 : TS.ROCK);
+      for (const [tw, sw] of [[0.02, 0.3], [0.02, 1.4], [0.84, 0.3], [0.84, 1.4]]) fbox(deco, Fr, off + tw, off + tw + 0.14, s + sw, s + sw + 0.3, r.floor + 0.05, r.floor + 0.35, TS.METAL, { lightMul: 0.4 });
+      useL(ctx, Fr, off, s, 1, 2);
     }
-    use(ctx, x0, z0, w, h);
+    useL(ctx, Fr, off, 0, 1, Wd);
     break;
   }
   // slag / ore heaps and pallets
-  for (let k = 0; k < Math.floor(r.area / 45); k++) {
+  for (let k = 0; k < Math.floor(r.area / 55); k++) {
     const x = rng.int(r.x + 1, r.x + r.w - 4), z = rng.int(r.z + 1, r.z + r.h - 4);
     if (!ok(ctx, x, z, 3, 3, 0, 1)) continue;
     let near = false;
-    for (const i of cellsOf(g, x - 1, z - 1, 5, 5)) if (r.reserved.has(i)) near = true;
+    for (const i of cellsOf(g, x - 1, z - 1, 5, 5)) if (r.reserved.has(i) || (g.flags[i] & (F.PIT | F.BRIDGE))) near = true;
     if (near) continue;
     if (rng.chance(0.6)) {
       P.heap(ctx, x + 1.5, z + 1.5, r.floor, 1.4, 1.4, rng.float(1.0, 1.8), v === 'meat' ? TS.GROUND : TS.ROCK);
@@ -682,28 +709,32 @@ FT.fd_yard = function fdYard(ctx) {
     } else { P.pallet(ctx, x + 1, z + 1, r.floor, rng.pick(['crates', 'drums'])); P.pallet(ctx, x + 2.2, z + 2, r.floor, 'crates'); }
     use(ctx, x, z, 3, 3);
   }
-  // overhead pipe bridge across the yard on trestles
-  if (Wd >= 10) {
-    const off = rng.chance(0.5) ? 2 : Wd - 3;
+  // overhead pipe bridge along the yard on trestles
+  if (L >= 10) {
+    const off = rng.chance(0.5) ? 1 : L - 2;
     const y = r.floor + 5.5;
     for (let k = 0; k < 2; k++) {
-      if (alongX) P.cylH(deco, r.x, r.x + r.w, y + k * 0.55, r.z + off + 0.3 + k * 0.45, 0.22, true, TS.PIPE);
-      else P.cylH(deco, r.z, r.z + r.h, y + k * 0.55, r.x + off + 0.3 + k * 0.45, 0.22, false, TS.PIPE);
+      const [ax, az] = Fr.pt(off + 0.3 + k * 0.45, 0), [bx, bz] = Fr.pt(off + 0.3 + k * 0.45, Wd);
+      const alongX = Math.abs(bx - ax) > Math.abs(bz - az);
+      P.cylH(deco, alongX ? Math.min(ax, bx) : Math.min(az, bz), alongX ? Math.max(ax, bx) : Math.max(az, bz), y + k * 0.55, alongX ? az : ax, 0.22, alongX, TS.PIPE);
     }
-    for (let k = 3; k < L - 2; k += 6) {
-      const [px, pz] = alongX ? [r.x + k, r.z + off] : [r.x + off, r.z + k];
-      const i = g.idx(px, pz);
-      if (!g.type[i] || ctx.used.has(i) || r.reserved.has(i) || (g.flags[i] & (F.STAIR | F.OBSTACLE))) continue;
-      deco.box(px + 0.35, r.floor, pz + 0.35, px + 0.65, y - 0.25, pz + 0.65, TS.BEAM, { solid: true });
-      if (alongX) deco.box(px + 0.2, y - 0.25, pz, px + 0.8, y - 0.1, pz + 1.3, TS.BEAM);
-      else deco.box(px, y - 0.25, pz + 0.2, px + 1.3, y - 0.1, pz + 0.8, TS.BEAM);
+    for (let s = 3; s < Wd - 2; s += 6) {
+      const i = cellL(ctx, Fr, off, s);
+      if (!g.type[i] || ctx.used.has(i) || r.reserved.has(i) || (g.flags[i] & (F.STAIR | F.OBSTACLE | F.PIT | F.BRIDGE))) continue;
+      fbox(deco, Fr, off + 0.35, off + 0.65, s + 0.35, s + 0.65, r.floor, y - 0.25, TS.BEAM, { solid: true });
+      fbox(deco, Fr, off - 0.1, off + 1.2, s + 0.25, s + 0.75, y - 0.25, y - 0.1, TS.BEAM);
     }
   }
-  // flood lights
-  for (const [x, z] of [[r.x + 0.7, r.z + r.h / 2], [r.x + r.w - 0.7, r.z + r.h / 2], [r.x + r.w / 2, r.z + 0.7], [r.x + r.w / 2, r.z + r.h - 0.7]]) {
-    const i = g.idx(Math.floor(x), Math.floor(z));
-    if (!g.type[i] || ctx.used.has(i) || r.reserved.has(i) || (g.flags[i] & (F.STAIR | F.OBSTACLE))) continue;
-    deco.streetLamp(x, z, r.floor, { height: 6.5, armX: x < r.x + 2 ? 0.6 : x > r.x + r.w - 2 ? -0.6 : 0, armZ: z < r.z + 2 ? 0.6 : z > r.z + r.h - 2 ? -0.6 : 0, radius: 10, color: SODIUM });
+  // floodlight masts round the yard
+  let lamps = 0;
+  for (const [x, z, d] of rng.shuffle(edgeCells(ctx))) {
+    if (lamps >= Math.max(3, Math.floor((r.w + r.h) / 9))) break;
+    const i = g.idx(x, z);
+    if (ctx.used.has(i) || r.reserved.has(i) || (g.flags[i] & (F.STAIR | F.OBSTACLE | F.PIT | F.BRIDGE | F.HAZARD))) continue;
+    const px = x + 0.5 + DIR_X[d] * 0.3, pz = z + 0.5 + DIR_Z[d] * 0.3;
+    deco.streetLamp(px, pz, r.floor, { height: 7.5, armX: -DIR_X[d] * 0.7, armZ: -DIR_Z[d] * 0.7, radius: 13, color: SODIUM });
+    use(ctx, x, z, 1, 1);
+    lamps++;
   }
   r.lit = true;
 };
@@ -739,5 +770,5 @@ FT.fd_arena = function fdArena(ctx) {
 };
 
 export { FT };
-export { no, hookRail, tryFrames, sidesLong, fv, groundL, cellL, vatKind, moltenKind, railAll, highBay, wallLamps, wallPipes, chains, gallery, deckFace, booth, gearPit, dressFloor, stat };
+export { sparseSpikes, no, hookRail, tryFrames, sidesLong, fv, groundL, cellL, vatKind, moltenKind, railAll, highBay, wallLamps, wallPipes, chains, gallery, deckFace, booth, gearPit, dressFloor, stat };
 void SKY_H; void retexFloor; void setHeight; void flightRect; void markMask; void riser; void freeRect; void COLD;

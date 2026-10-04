@@ -826,7 +826,7 @@ export const THEME_TEX = {
   large_freighter: { wall: '2:0,0 14:0,5 2:0,9', wall2: '20:0,8 20:0,3 13:0,2', floor: '8:2,4 8:2,2', floor2: '12:2,0 14:0,8' },
   volcano_base: { wall2: 'rock@hell', ground: 'ground@hell', rock: 'rock@hell', glass: '#glass_pane' },
   // foundry archetype: brass PANEL (gear wheels, locker doors), dark framed control-room glass
-  clockwork_foundry: { wall: '13:0,1 13:0,5 12:3,8 12:3,2', wall2: '17:1,5 17:0,1 14:1,8', floor: '8:2,2 8:2,3', ceil: '8:1,5 14:1,3', accent: 'G:rusty_chains 17:1,1', machine: '17:1,5 14:1,8 2:2,6', pipe: '17:1,7 17:0,1 17:1,4', metal: '13:0,0 12:3,0', panel: '22:1,5 22:1,1', glass: '#glass_pane_dark' },
+  clockwork_foundry: { wall: '13:0,1 13:0,5 12:3,8 12:3,2', wall2: '17:1,5 17:0,1 14:1,8', floor: '8:2,2 8:2,3', ceil: '8:1,5 14:1,3', accent: 'G:rusty_chains 17:1,1', machine: '17:1,5 14:1,8 2:2,6', pipe: '17:1,7 17:0,1 17:1,4', metal: '13:0,0 12:3,0', panel: '22:1,1 22:1,4', glass: '#glass_pane_dark' },
   oil_rig: { wall: '8:1,0 14:1,0 12:2,2', wall2: '12:2,2 13:0,0', floor: '8:2,4 14:1,3 8:2,2', floor2: '12:2,0 8:2,3', side: '12:2,0 13:0,0', accent: '1:3,1 14:2,8' },
   semi_trucks: { wall: '#truck_trailer', side: '#truck_trailer', wall2: '2:0,9 20:0,3 20:0,8', floor: '22:1,6 12:1,0', floor2: '21:3,9 G:wood_grey_planks', accent: '1:3,1' },
   subway_trains: { wall: '#train_subway', side: '#train_subway', wall2: '12:0,8 3:0,4', floor: '22:1,6 12:0,0', floor2: '8:2,2 8:2,4', accent: '21:3,4 18:2,5 21:3,6', ceil: '21:3,6 22:2,4' },

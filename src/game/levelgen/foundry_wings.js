@@ -14,11 +14,11 @@ import {
 } from './lab_templates.js';
 import * as P from './foundry_props.js';
 import {
-  FT, no, hookRail, tryFrames, sidesLong, fv, groundL, cellL, moltenKind, railAll, highBay, wallLamps, wallPipes, chains, gallery,
+  FT, sparseSpikes, no, hookRail, tryFrames, sidesLong, fv, groundL, cellL, moltenKind, railAll, highBay, wallLamps, wallPipes, chains, gallery,
   deckFace, gearPit, dressFloor,
 } from './foundry_rooms.js';
 
-const { faced, fbox, fcollider, MOLTEN, COLD, WARM, SODIUM, BLOODL } = P;
+const { faced, fbox, fcollider, MOLTEN, COLD, WARM, SODIUM, BLOODL, breachWall } = P;
 
 // longest run [a, b) of s in [0, Wd) where test(s) holds
 function longestRun(Wd, test, minLen = 1) {
@@ -665,6 +665,7 @@ function buildGears(ctx, Fr) {
   if (t1 - t0 >= 5) for (const s of [ms, ms - 2, ms + 2]) if (spanT(s)) { n++; break; }
   if (!n) return no(ctx, 'Gears7');
   const lowC = new Set(low), highC = new Set();
+  sparseSpikes(ctx, pitC);
   gearPit(ctx, Fr, inP, pitC, t0, t1, s0, s1, r.floor - depth, highC, lowC);
   // gear trains on the long walls (thin, standing proud of the wall)
   for (const FrW of [Fr, frame(r, OPP[Fr.side])]) {
@@ -868,59 +869,6 @@ function buildBreach(ctx, Fr, last) {
   hazardLines(ctx, flow.filter((i) => g.flags[i] & (F.PIT | F.HAZARD)));
   wallLamps(ctx, 4, 2.8, WARM);
   highBay(ctx, 5, SODIUM);
-  return true;
-}
-
-// A stretch of wall gives way to the mountain: rock wall texture, boulders
-// standing proud of the wall, glowing lava seams in the face. o.Fr / s0 / s1
-// pick the stretch (frame wall t = 0); otherwise the longest exit-free wall.
-// Decorative only on the room side (thin boulders, no new hazards), so it is
-// safe to apply after the connections are cut.
-export function breachWall(g, deco, rng, r, o = {}) {
-  let Fr = o.Fr, s0 = o.s0, s1 = o.s1;
-  if (!Fr) {
-    let best = null;
-    for (const side of rng.shuffle([0, 1, 2, 3])) {
-      const F2 = frame(r, side);
-      const run = longestRun(F2.Wd, (s) => {
-        const [x, z] = F2.cell(0, s);
-        const i = g.idx(x, z);
-        const wx = x + DIR_X[F2.toward], wz = z + DIR_Z[F2.toward];
-        if (!g.in(wx, wz) || g.type[g.idx(wx, wz)]) return false;
-        return g.type[i] && !(g.flags[i] & (F.DOOR | F.STAIR | F.PIT | F.HAZARD | F.BRIDGE)) && !r.reserved.has(i) && Math.abs(g.floor[i] - r.floor) < 0.01 && !g.edge[i];
-      }, 4);
-      if (run && (!best || run[1] - run[0] > best.run[1] - best.run[0])) best = { F2, run };
-    }
-    if (!best) return false;
-    Fr = best.F2;
-    const len = Math.min(best.run[1] - best.run[0], o.small ? rng.int(4, 6) : rng.int(6, 9));
-    s0 = best.run[0] + rng.int(0, best.run[1] - best.run[0] - len); s1 = s0 + len;
-  }
-  const { toward } = Fr;
-  for (let s = s0; s < s1; s++) {
-    const [x, z] = Fr.cell(0, s);
-    const wx = x + DIR_X[toward], wz = z + DIR_Z[toward];
-    if (!g.in(wx, wz)) continue;
-    const wi = g.idx(wx, wz);
-    if (!g.type[wi]) g.wallTex[wi] = TS.WALL2;
-    // the neighbouring wall layer too, so the rock reads from both sides of a corner
-  }
-  const i0 = g.idx(...Fr.cell(0, s0));
-  const y = g.floor[i0];
-  const ceil = g.sky[i0] ? y + 8 : g.ceil[i0];
-  for (let s = s0; s < s1; s += rng.float(0.8, 1.6)) {
-    const wdt = rng.float(0.7, 1.4), h = rng.float(0.8, Math.min(3.2, ceil - y - 0.5));
-    const dep = o.big ? rng.float(0.3, 0.6) : rng.float(0.2, 0.38);
-    fbox(deco, Fr, 0, dep, s, Math.min(s1, s + wdt), y, y + h, TS.ROCK, { s: 2 });
-    if (rng.chance(0.6)) fbox(deco, Fr, 0, dep * 0.6, s + 0.1, Math.min(s1, s + wdt) - 0.1, y + h, y + h + rng.float(0.4, 1.2), TS.ROCK, { s: 2 });
-  }
-  // lava seams glowing in the rock face
-  for (let k = 0; k < (o.big ? 4 : 2); k++) {
-    const s = rng.float(s0 + 0.3, s1 - 0.6), yy = y + rng.float(1.2, Math.min(4, ceil - y - 0.8));
-    fbox(deco, Fr, 0, 0.04, s, s + rng.float(0.15, 0.3), yy, yy + rng.float(0.6, 1.6), TS.LAVA, { emissive: 1 });
-  }
-  const [lx, lz] = Fr.pt(0.8, (s0 + s1) / 2);
-  deco.light(lx, y + 1.5, lz, MOLTEN, o.big ? 7 : 5, { flicker: true });
   return true;
 }
 

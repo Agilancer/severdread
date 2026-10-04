@@ -14,7 +14,8 @@
 // cab and booth windows, WALL2 for carcasses in the meat plant (flesh).
 import { TS } from './common.js';
 import { FACE } from './deco.js';
-import { DIR_X, DIR_Z } from '../grid.js';
+import { F, DIR_X, DIR_Z } from '../grid.js';
+import { frame } from './hall_templates.js';
 
 const FK = ['px', 'nx', 'pz', 'nz'];
 export const faced = (dir, front, side, top = side) => ({ side, top, bottom: side, [FK[dir]]: front });
@@ -63,34 +64,44 @@ export function cylH(deco, a0, a1, cy, c, r, alongX, tex, o = {}) {
 // band (ring) round a vertical cylinder
 export function bandV(deco, cx, cz, y, r, h = 0.14, tex = TS.TRIM) { cylV(deco, cx, cz, y, y + h, r + 0.05, tex); }
 
-// Gear wheel. plane 'x': the disc stands in the x-y plane (axle along z),
+// Gear wheel. plane 'x': the wheel stands in the x-y plane (axle along z),
 // 'z': in the z-y plane (axle along x), 'y': lying flat (axle vertical).
-// Disc of concentric slabs, teeth round the rim, a spoke cross and a hub.
+// Big wheels are an octagonal rim on spokes round a hub (you see through
+// them), small ones a solid disc; teeth all round the rim.
 export function gear(deco, cx, cy, cz, R, plane, th, tex, o = {}) {
   const box = (u0, u1, v0, v1, w0, w1, t, opt) => {
     if (plane === 'x') return deco.box(cx + u0, cy + v0, cz + w0, cx + u1, cy + v1, cz + w1, t, opt);
     if (plane === 'z') return deco.box(cx + w0, cy + v0, cz + u0, cx + w1, cy + v1, cz + u1, t, opt);
     return deco.box(cx + u0, cy + w0, cz + v0, cx + u1, cy + w1, cz + v1, t, opt);
   };
-  const N = Math.max(3, Math.min(6, Math.round(R * 1.5)));
   const h = th / 2;
-  for (let k = 0; k < N; k++) {
-    const v = R * (k + 1) / N, u = R * Math.sqrt(Math.max(0, 1 - ((k + 0.55) / N) ** 2));
-    box(-u, u, -v, v, -h, h, tex);
+  const hub = Math.max(0.16, R * 0.2);
+  if (R < 0.9) {
+    for (let k = 0; k < 3; k++) {
+      const v = R * (k + 1) / 3, u = R * Math.sqrt(Math.max(0, 1 - ((k + 0.55) / 3) ** 2));
+      box(-u, u, -v, v, -h, h, tex);
+    }
+  } else {
+    const rt = Math.max(0.12, R * 0.2), a = R * 0.42, c = R * 0.8;
+    box(-a, a, R - rt, R, -h, h, tex); box(-a, a, -R, -R + rt, -h, h, tex);
+    box(R - rt, R, -a, a, -h, h, tex); box(-R, -R + rt, -a, a, -h, h, tex);
+    for (const [su, sv] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+      const u0 = su > 0 ? a - 0.02 : -c, u1 = su > 0 ? c : -a + 0.02, v0 = sv > 0 ? a - 0.02 : -c, v1 = sv > 0 ? c : -a + 0.02;
+      box(u0, u1, v0, v1, -h, h, tex);
+    }
+    // spokes from the hub to the rim
+    const sp = Math.max(0.07, R * 0.08);
+    box(-R + rt * 0.5, R - rt * 0.5, -sp, sp, -h * 0.7, h * 0.7, o.spokeTex ?? tex);
+    box(-sp, sp, -R + rt * 0.5, R - rt * 0.5, -h * 0.7, h * 0.7, o.spokeTex ?? tex);
   }
-  const teeth = o.teeth ?? Math.max(8, Math.min(18, Math.round(R * 5.5)));
+  const teeth = o.teeth ?? Math.max(8, Math.min(16, Math.round(R * 5)));
   const tl = Math.min(0.42, 0.14 + R * 0.08), tw = Math.min(0.5, (Math.PI * R / teeth) * 0.95);
   for (let k = 0; k < teeth; k++) {
-    const a = (k + (o.phase ?? 0)) / teeth * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
-    const pu = c * (R + tl / 2 - 0.04), pv = s * (R + tl / 2 - 0.04);
-    const eu = Math.abs(c) * tl / 2 + Math.abs(s) * tw / 2, ev = Math.abs(s) * tl / 2 + Math.abs(c) * tw / 2;
+    const an = (k + (o.phase ?? 0)) / teeth * Math.PI * 2, co = Math.cos(an), si = Math.sin(an);
+    const pu = co * (R + tl / 2 - 0.04), pv = si * (R + tl / 2 - 0.04);
+    const eu = Math.abs(co) * tl / 2 + Math.abs(si) * tw / 2, ev = Math.abs(si) * tl / 2 + Math.abs(co) * tw / 2;
     box(pu - eu, pu + eu, pv - ev, pv + ev, -h, h, tex);
   }
-  // spoke cross and hub stand proud of the disc faces
-  const sp = Math.max(0.06, R * 0.07), hw = h + 0.04;
-  box(-R * 0.86, R * 0.86, -sp, sp, -hw, hw, o.spokeTex ?? tex);
-  box(-sp, sp, -R * 0.86, R * 0.86, -hw, hw, o.spokeTex ?? tex);
-  const hub = Math.max(0.16, R * 0.2);
   box(-hub, hub, -hub, hub, -h - 0.14, h + 0.14, o.hubTex ?? TS.METAL);
   if (o.axle) box(-hub * 0.45, hub * 0.45, -hub * 0.45, hub * 0.45, -o.axle, o.axle, TS.METAL);
 }
@@ -530,3 +541,69 @@ export function shutter(ctx, x, z, d, y, w = 3, h = 3.2) {
   B(0, 0.14, a1, a1 + 0.15, y, y + h + 0.3, TS.PAINT, { uv: 'fit' });
   B(0, 0.3, a0 - 0.15, a1 + 0.15, y + h, y + h + 0.45, TS.METAL);
 }
+
+// longest run [a, b) of s in [0, Wd) where test(s) holds
+export function longestRun(Wd, test, minLen = 1) {
+  let best = null;
+  for (let a = 0; a < Wd; a++) {
+    let b = a;
+    while (b < Wd && test(b)) b++;
+    if (b - a >= minLen && (!best || b - a > best[1] - best[0])) best = [a, b];
+    a = b;
+  }
+  return best;
+}
+
+// A stretch of wall gives way to the mountain: rock wall texture, boulders
+// standing proud of the wall, glowing lava seams in the face. o.Fr / s0 / s1
+// pick the stretch (frame wall t = 0); otherwise the longest exit-free wall.
+// Decorative only on the room side (thin boulders, no new hazards), so it is
+// safe to apply after the connections are cut.
+export function breachWall(g, deco, rng, r, o = {}) {
+  let Fr = o.Fr, s0 = o.s0, s1 = o.s1;
+  if (!Fr) {
+    let best = null;
+    for (const side of rng.shuffle([0, 1, 2, 3])) {
+      const F2 = frame(r, side);
+      const run = longestRun(F2.Wd, (s) => {
+        const [x, z] = F2.cell(0, s);
+        const i = g.idx(x, z);
+        const wx = x + DIR_X[F2.toward], wz = z + DIR_Z[F2.toward];
+        if (!g.in(wx, wz) || g.type[g.idx(wx, wz)]) return false;
+        return g.type[i] && !(g.flags[i] & (F.DOOR | F.STAIR | F.PIT | F.HAZARD | F.BRIDGE)) && !r.reserved.has(i) && Math.abs(g.floor[i] - r.floor) < 0.01 && !g.edge[i];
+      }, 4);
+      if (run && (!best || run[1] - run[0] > best.run[1] - best.run[0])) best = { F2, run };
+    }
+    if (!best) return false;
+    Fr = best.F2;
+    const len = Math.min(best.run[1] - best.run[0], o.small ? rng.int(4, 6) : rng.int(6, 9));
+    s0 = best.run[0] + rng.int(0, best.run[1] - best.run[0] - len); s1 = s0 + len;
+  }
+  const { toward } = Fr;
+  for (let s = s0; s < s1; s++) {
+    const [x, z] = Fr.cell(0, s);
+    const wx = x + DIR_X[toward], wz = z + DIR_Z[toward];
+    if (!g.in(wx, wz)) continue;
+    const wi = g.idx(wx, wz);
+    if (!g.type[wi]) g.wallTex[wi] = TS.WALL2;
+    // the neighbouring wall layer too, so the rock reads from both sides of a corner
+  }
+  const i0 = g.idx(...Fr.cell(0, s0));
+  const y = g.floor[i0];
+  const ceil = g.sky[i0] ? y + 8 : g.ceil[i0];
+  for (let s = s0; s < s1; s += rng.float(0.8, 1.6)) {
+    const wdt = rng.float(0.7, 1.4), h = rng.float(0.8, Math.min(3.2, ceil - y - 0.5));
+    const dep = o.big ? rng.float(0.3, 0.6) : rng.float(0.2, 0.38);
+    fbox(deco, Fr, 0, dep, s, Math.min(s1, s + wdt), y, y + h, TS.ROCK, { s: 2 });
+    if (rng.chance(0.6)) fbox(deco, Fr, 0, dep * 0.6, s + 0.1, Math.min(s1, s + wdt) - 0.1, y + h, y + h + rng.float(0.4, 1.2), TS.ROCK, { s: 2 });
+  }
+  // lava seams glowing in the rock face
+  for (let k = 0; k < (o.big ? 4 : 2); k++) {
+    const s = rng.float(s0 + 0.3, s1 - 0.6), yy = y + rng.float(1.2, Math.min(4, ceil - y - 0.8));
+    fbox(deco, Fr, 0, 0.04, s, s + rng.float(0.15, 0.3), yy, yy + rng.float(0.6, 1.6), TS.LAVA, { emissive: 1 });
+  }
+  const [lx, lz] = Fr.pt(0.8, (s0 + s1) / 2);
+  deco.light(lx, y + 1.5, lz, MOLTEN, o.big ? 7 : 5, { flicker: true });
+  return true;
+}
+

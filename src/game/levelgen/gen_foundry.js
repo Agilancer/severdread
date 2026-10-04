@@ -28,12 +28,13 @@ import { TS, F, clamp, DIR_X, DIR_Z } from './common.js';
 import { FACE } from './deco.js';
 import { genArch, TEMPLATES } from './gen_arch.js';
 import { FT } from './foundry_rooms.js';
-import { breachWall } from './foundry_wings.js';
-import { fvOf } from './foundry_props.js';
+import { fvOf, breachWall } from './foundry_props.js';
+import './foundry_wings.js';
 
 for (const [k, fn] of Object.entries(FT)) if (!TEMPLATES[k]) TEMPLATES[k] = fn;
 
-const STYLE = { family: 'industrial', lights: 'hanging', wain: 0, crown: false, pillars: 'girder', outdoor: 0.1 };
+// steel kick-plate wainscot (PANEL) under the plant walls breaks up the tall halls
+const STYLE = { family: 'industrial', lights: 'hanging', wain: 1.1, crown: false, pillars: 'girder', outdoor: 0.1 };
 // per-theme room mix (weights) for the wings
 const FOUNDRY = {
   clockwork_foundry: { rooms: { fd_gears: 2.6, fd_line: 2.2, fd_furnace: 2.0, fd_boiler: 2.0, fd_pipes: 1.5, fd_control: 1.2, fd_dock: 1.3, fd_store: 1.2 } },
