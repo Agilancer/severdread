@@ -117,16 +117,43 @@ function restore(ctx, s) {
     g.floorTex[i] = ft; g.wallTex[i] = wt; g.ceilTex[i] = ct; g.roof[i] = rf; g.light[i] = li;
   }
 }
+// the room still works: every exit mouth reaches the others inside the room
+// (rails, glass, furniture and stairs respected) and most of the floor is
+// reachable - the same test gen_arch applies after the connections are cut
+function roomOK(ctx, frac = 0.85) {
+  const { g, room: r } = ctx;
+  const set = new Set(ctx.cells);
+  const ex = [];
+  for (const e of r.exits) {
+    const c = e.conn;
+    for (let k = 0; k < c.width; k++) {
+      const a = e.firstIn, b = c.pos + k;
+      const x = c.axis === 'x' ? a : b, z = c.axis === 'x' ? b : a;
+      if (g.in(x, z)) ex.push(g.idx(x, z));
+    }
+  }
+  if (!ex.length) return true;
+  const dist = g.bfs([ex[0]], { blocked: (b) => !set.has(b), avoid: F.OBSTACLE });
+  for (const i of ex) if (dist[i] < 0) return false;
+  let walk = 0, reach = 0;
+  for (const i of ctx.cells) {
+    if (!g.type[i] || (g.flags[i] & (F.PIT | F.VOID | F.OBSTACLE | F.HAZARD))) continue;
+    walk++; if (dist[i] >= 0) reach++;
+  }
+  return reach >= walk * frac;
+}
 // edge bits set by a failed attempt also live on the neighbours outside the
 // room ring; snap() covers the ring, so restoring it restores both sides
 function tryFrames(ctx, sides, build, fallback) {
   const { deco, room: r } = ctx;
-  for (const side of sides) {
-    const Fr = frame(r, side);
+  // build(Fr, last): `last` is true on the final wall, where templates relax
+  // their wishes (skip a counter, accept a single cell...) instead of failing
+  for (let k = 0; k < sides.length; k++) {
+    const Fr = frame(r, sides[k]);
     ctx.used = new Set();
     const m = deco.mark(), s = snap(ctx);
     let okb = false;
-    try { okb = build(Fr); } catch (e) { okb = false; if (typeof console !== 'undefined') console.warn('lab template', r.template, e); }
+    try { okb = build(Fr, k === sides.length - 1) && roomOK(ctx); } catch (e) { okb = false; if (typeof console !== 'undefined') console.warn('lab template', r.template, e); }
     if (okb) return true;
     deco.rollback(m); restore(ctx, s);
   }
@@ -649,9 +676,10 @@ function glassWall(ctx, x0, z0, x1, z1, y, h = 3.0, o = {}) {
   const pane = o.pane ?? TS.GLASS;
   seg(a, b, y, y + 0.12, 0.07, TS.METAL);
   if (pane === TS.GLASS) seg(a, b, y + 0.12, y + h - 0.1, th / 2, TS.GLASS, { emissive: o.emissive ?? 0.22, uv: 'fit', s: 1 });
+  else if (pane === 'bars') { for (let p = a + 0.09; p < b - 0.05; p += 0.18) seg(p - 0.025, p + 0.025, y + 0.12, y + h - 0.1, 0.05, TS.RAIL, { faces: FACE.SIDES }); }
   else seg(a, b, y + 0.12, y + h - 0.1, o.thick ?? 0.12, pane);
   seg(a, b, y + h - 0.1, y + h, 0.07, TS.METAL);
-  for (let p = a; p <= b + 1e-6; p += pane === TS.GLASS ? 1 : 2) seg(p - 0.035, p + 0.035, y, y + h, (o.thick ?? 0.12) / 2 + 0.03, TS.METAL, { faces: FACE.SIDES });
+  for (let p = a; p <= b + 1e-6; p += pane === TS.PANEL || pane === TS.METAL || pane === TS.WALL ? 2 : 1) seg(p - 0.035, p + 0.035, y, y + h, (o.thick ?? 0.12) / 2 + 0.03, TS.METAL, { faces: FACE.SIDES });
   if (horiz) deco.collider(a, y, L - 0.06, b, y + h, L + 0.06, { obstacle: false });
   else deco.collider(L - 0.06, y, a, L + 0.06, y + h, b, { obstacle: false });
   // grid edges: the line runs between cells (L-1 | L)
@@ -710,7 +738,7 @@ function rackRow(ctx, x0, z0, x1, z1, y, h = 2.2) {
   deco.collider(x0, y, z0, x1, y + h, z1);
 }
 
-export { pitSet, openShape, largestBlob, freeMask, bestRect, markMask, glassLineL, doorLeafL, openShelf, lineOpening };
+export { roomOK, pitSet, openShape, largestBlob, freeMask, bestRect, markMask, glassLineL, doorLeafL, openShelf, lineOpening };
 export { lbox, lcollider, cellsOf, canUse, use, flatOpen, canUseL, useL, okL, ok, setHeight, setHeightL, retexFloor, flightRect, flightL, snap, restore, tryFrames, sideOrder, wallSpots, wallBox, lightStrip, hangLight, paint, hazardLines, railAround, deckBridge, pit, upperWindows, edgeCells };
 export { tank, labBench, fumeHood, cabinet, machineBlock, seatRow, counter, monitor, bed, ivStand, vitalsMonitor, trolley, curtain, glassWall, showerGantry, riser, steelTable, rackRow, isHosp };
 export { STEP, nSteps, faced, FACE_KEY, COLD, WHITE, GREEN, RED, TEMPLATES, inRoom, wallConsoles, SKY_H, OPP, DIR_X, DIR_Z };

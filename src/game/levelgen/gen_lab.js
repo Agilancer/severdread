@@ -14,27 +14,33 @@ import { TS, F, clamp } from './common.js';
 import { FACE } from './deco.js';
 import { genArch, TEMPLATES } from './gen_arch.js';
 import { LT } from './lab_rooms.js';
+import { LX, dressRoom } from './lab_extra.js';
 
-for (const [k, fn] of Object.entries(LT)) if (!TEMPLATES[k]) TEMPLATES[k] = fn;
+// register the lab templates (wing rooms get a dressing pass of loose props)
+for (const [k, fn] of Object.entries({ ...LT, ...LX })) {
+  if (TEMPLATES[k]) continue;
+  TEMPLATES[k] = k === 'lab_core' || k === 'lab_arena' ? fn : (ctx) => { fn(ctx); dressRoom(ctx); };
+}
 
 // per-theme setup
 const LAB = {
   bio_lab: {
     sig: 'lab_core', start: 'lab_lobby', arena: 'lab_arena',
     style: { family: 'lab', lights: 'panel', wain: 1.1, crown: true, pillars: 'square', hazards: ['poison', 'poison', 'water'], outdoor: 0 },
-    rooms: { wetlab: 3.0, cleanroom: 2.4, specimen: 2.6, decon: 1.6, coldstore: 1.4, servers: 1.4, flooded: 1.0, supply: 0.8, control: 0.8, split: 0.6 },
+    rooms: { wetlab: 3.0, cleanroom: 2.2, specimen: 2.4, decon: 1.6, isolation: 1.6, hydroponics: 1.3, coldstore: 1.2, servers: 1.2, waste: 1.0, flooded: 0.9, supply: 0.9, office: 1.0, security: 1.0 },
+    grateRooms: ['servers', 'flooded', 'waste', 'hydroponics', 'coldstore'],
   },
   abandoned_hospital: {
     sig: 'lab_core', start: 'lab_lobby', arena: 'lab_arena',
     style: { family: 'lab', lights: 'panel', wain: 1.2, crown: false, pillars: 'square', hazards: ['water', 'poison', 'spikes'], outdoor: 0.12 },
-    rooms: { ward: 3.2, theatre: 2.2, morgue: 1.6, wetlab: 1.2, supply: 1.2, flooded: 1.2, coldstore: 0.6, servers: 0.4, courtyard: 0.9, control: 0.6, split: 0.6 },
+    rooms: { ward: 3.2, theatre: 2.2, isolation: 1.4, radiology: 1.3, cafeteria: 1.3, morgue: 1.4, supply: 1.2, flooded: 1.1, wetlab: 1.0, office: 1.0, courtyard: 0.9, coldstore: 0.7, security: 0.5, servers: 0.4 },
   },
 };
-// minimum room sizes per template (rooms are leaves - 2)
+// minimum (and maximum) room sizes per template (rooms are leaves - 2)
 const NEED = {
   wetlab: (r) => r.w >= 8 && r.h >= 8,
   cleanroom: (r) => r.w >= 12 && r.h >= 12,
-  specimen: (r) => Math.min(r.w, r.h) >= 9 && Math.max(r.w, r.h) >= 11,
+  specimen: (r) => Math.min(r.w, r.h) >= 8 && Math.max(r.w, r.h) >= 11,
   decon: (r) => Math.min(r.w, r.h) >= 6 && Math.max(r.w, r.h) >= 8 && Math.max(r.w, r.h) <= 16 && r.area <= 200,
   coldstore: (r) => r.area <= 260,
   servers: (r) => r.w >= 8 && r.h >= 8 && r.area <= 320,
@@ -43,17 +49,27 @@ const NEED = {
   theatre: (r) => r.w >= 11 && r.h >= 11,
   morgue: (r) => r.area <= 260,
   courtyard: (r) => r.area >= 120,
-  supply: () => true, control: () => true, split: (r) => r.w >= 12 || r.h >= 12,
+  isolation: (r) => Math.min(r.w, r.h) >= 7 && Math.max(r.w, r.h) >= 9,
+  hydroponics: (r) => r.w >= 9 && r.h >= 9,
+  office: (r) => r.w >= 7 && r.h >= 7,
+  security: (r) => r.w >= 7 && r.h >= 7 && r.area <= 260,
+  waste: (r) => r.w >= 8 && r.h >= 8,
+  cafeteria: (r) => r.w >= 9 && r.h >= 9,
+  radiology: (r) => Math.min(r.w, r.h) >= 7 && Math.max(r.w, r.h) >= 10,
+  supply: () => true,
 };
 const CEIL = {
   lab_core: [13, 14, 15], lab_lobby: [5, 6], lab_arena: [9, 10, 11],
   decon: [4.5, 5], wetlab: [4.5, 5, 5.5], cleanroom: [8, 8.5], specimen: [6.5, 7, 8], coldstore: [4, 4.5], servers: [4, 4.5],
   flooded: [5.5, 6.5], ward: [4.5, 5], theatre: [7, 7.5], morgue: [4, 4.5], supply: [4.5, 5],
+  isolation: [4.5, 5], hydroponics: [7, 8], office: [4, 4.5], security: [4.5, 5], waste: [5.5, 6.5], cafeteria: [4.5, 5], radiology: [4.5, 5],
 };
-
 // at most this many rooms of a kind per level (a complex has one server room,
 // one morgue...); unlisted kinds are unlimited
-const CAP = { servers: 1, coldstore: 1, morgue: 1, theatre: 1, cleanroom: 1, flooded: 1, decon: 2, supply: 2, control: 1, courtyard: 1, split: 1, specimen: 2, wetlab: 3, ward: 3 };
+const CAP = {
+  servers: 1, coldstore: 1, morgue: 1, theatre: 1, cleanroom: 1, flooded: 1, decon: 2, supply: 2, courtyard: 1, specimen: 2, wetlab: 3, ward: 3,
+  isolation: 1, hydroponics: 1, office: 2, security: 1, waste: 1, cafeteria: 1, radiology: 1,
+};
 
 export function genLab(rng, theme, depth) {
   const C = LAB[theme.id] || LAB.bio_lab;
@@ -66,6 +82,9 @@ export function genLab(rng, theme, depth) {
     arenaTemplate: C.arena,
     startTemplate: () => C.start,
     ceilH: CEIL,
+    skyTemplates: ['hydroponics'],
+    // bio lab FLOOR2 is grating: only plant / service rooms get it, the rest tile
+    floorSlot: (r, fs) => (C.grateRooms ? (C.grateRooms.includes(r.template) ? TS.FLOOR2 : TS.FLOOR) : fs),
     doorChance: 0.1,
     connWidths: [3, 3, 4, 4, 5],
     // the core keeps its floor for the well: fewer loops into it, flights in the wings
@@ -80,9 +99,11 @@ export function genLab(rng, theme, depth) {
       }
       if (!out.length) out.push(['supply', 1]);
       // dev hook (screenshots / tests): globalThis.__LABFORCE = 'decon' favours one kind
-      const force = globalThis.__LABFORCE;
-      if (force && NEED[force] && NEED[force](r)) for (const o of out) if (o[0] === force) o[1] = 1e3;
-      if (force && !out.some((o) => o[0] === force) && NEED[force] && NEED[force](r) && C.rooms[force]) out.push([force, 1e3]);
+      for (const force of (globalThis.__LABFORCE || '').split(',').filter(Boolean)) {
+        if (!C.rooms[force] || (NEED[force] && !NEED[force](r))) continue;
+        const o = out.find((q) => q[0] === force);
+        if (o) o[1] = 1e3; else out.push([force, 1e3]);
+      }
       const pick = rng.weighted(out, (o) => o[1])[0];
       count[pick] = (count[pick] || 0) + 1;
       r.labKind = pick;

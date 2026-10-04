@@ -77,6 +77,8 @@ export const THEME_SCATTER = {
   meat_plant: { pillar: ['flesh', 'rust', 'industrial'], spike: ['flesh', 'metal'] },
   possessed_military: { pillar: ['industrial', 'hell'], spike: ['metal', 'hell'] },
   bio_lab: { elements: ['poison', 'fire', 'ice'] },
+  // a hospital has no stone colonnades: plain service columns, fewer of them
+  abandoned_hospital: { pillar: ['rust', 'industrial'], pedestal: ['tech', 'industrial'], density: 0.8 },
   toxic_swamp: { elements: ['poison'] },
   sewer_labyrinth: { elements: ['poison', 'fire'] },
   concert_hall: { pillar: ['marble', 'gold', 'stone'] },

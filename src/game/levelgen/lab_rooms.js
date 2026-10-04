@@ -716,10 +716,18 @@ function buildSpecimen(ctx, Fr) {
     if (!okL(ctx, Fr, t, s, 1, 1, 1, 1)) continue;
     const [x, z] = Fr.cell(t, s); cand.add(g.idx(x, z));
   }
-  const sump = largestBlob(g, openShape(g, cand));
+  const shaped = openShape(g, cand);
+  const sumps = [];
+  for (let k = 0; k < 3; k++) {
+    const b = largestBlob(g, shaped);
+    if (b.size < 9) break;
+    sumps.push(b);
+    for (const i of b) shaped.delete(i);
+  }
   let pc = [];
-  if (sump.size >= 9) {
-    pc = pitSet(ctx, sump, kind, 3.5);
+  for (const sump of sumps) {
+    const pcs = pitSet(ctx, sump, kind, 3.5);
+    pc.push(...pcs);
     for (const i of sump) ctx.used.add(i);
     // grate bridges across (along s) where both ends land on floor
     const inS = (t, s) => { const [x, z] = Fr.cell(t, s); return sump.has(g.idx(x, z)); };
@@ -741,7 +749,7 @@ function buildSpecimen(ctx, Fr) {
       if (far.length && L >= 16) picks.push(far[rng.int(0, far.length - 1)]);
       for (const [t, a, b] of picks) br.push(...deckBridge(ctx, ...Fr.rect(t, a, 2, b - a + 1), r.floor));
     }
-    const rest = pc.filter((i) => !br.includes(i));
+    const rest = pcs.filter((i) => !br.includes(i));
     railAround(ctx, rest, { style: ctx.style.railStyle });
     hazardLines(ctx, rest);
     // drums sunk in the sludge
@@ -1233,9 +1241,30 @@ function buildTheatre(ctx, Fr) {
     } else if (rng.chance(0.6)) cabinet(ctx, x, z, d, r.floor, 2.0, 0.5);
     use(ctx, x, z, 1, 1);
   }
-  // floor drain under the table, a blood-stained instrument tray
+  // floor drain under the table
   const [dx, dz] = Fr.cell(tc, sc);
   if (g.type[g.idx(dx, dz)]) g.floorTex[g.idx(dx, dz)] = TS.GRATE;
+  // big theatres: recovery bays along the free walls (beds, curtains, drips)
+  if (r.area >= 150) {
+    let n = 0;
+    for (const [x, z, d] of rng.shuffle(wallSpots(ctx))) {
+      if (n >= Math.floor(r.area / 45)) break;
+      const fx = x - DIR_X[d], fz = z - DIR_Z[d];
+      if (!canUse(ctx, x, z, 1, 1, 0, 1) || !ok(ctx, fx, fz, 1, 1, 0, 1)) continue;
+      // keep a cell free on each side for the next bay / the curtain
+      const lx = DIR_Z[d] !== 0 ? 1 : 0, lz = DIR_X[d] !== 0 ? 1 : 0;
+      if (!canUse(ctx, x - lx, z - lz, 1, 1, 0, 0) || !canUse(ctx, x + lx, z + lz, 1, 1, 0, 0)) continue;
+      bed(ctx, x, z, d, r.floor, { shift: 0 });
+      // privacy curtain on the cell boundary beside the bed, a drip on the other side
+      const wl = d === 0 ? x + 1 : d === 1 ? x : d === 2 ? z + 1 : z;
+      if (d < 2) curtain(ctx, wl, z + 1, wl - DIR_X[d] * 2.1, z + 1, r.floor, rng.float(0.4, 1));
+      else curtain(ctx, x + 1, wl, x + 1, wl - DIR_Z[d] * 2.1, r.floor, rng.float(0.4, 1));
+      if (rng.chance(0.6)) { if (d < 2) ivStand(ctx, x + 0.5 + DIR_X[d] * 0.2, z - 0.3, r.floor); else ivStand(ctx, x - 0.3, z + 0.5 + DIR_Z[d] * 0.2, r.floor); }
+      use(ctx, x - lx, z - lz, 1 + 2 * lx, 1 + 2 * lz);
+      use(ctx, fx, fz, 1, 1);
+      n++;
+    }
+  }
   panelGrid(ctx, 4, WHITE, 6);
   return true;
 }
@@ -1289,15 +1318,19 @@ LT.supply = function supply(ctx) {
   if (isHosp(ctx) && ctx.rng.chance(0.5) && tryFrames(ctx, sideOrder(ctx, true), (Fr) => buildPharmacy(ctx, Fr), null)) return;
   const { deco, rng, room: r } = ctx;
   ctx.used = new Set();
-  const alongX = r.w >= r.h;
-  const Lr = alongX ? r.w : r.h, Wr = alongX ? r.h : r.w;
-  for (let s = 2; s < Wr - 2; s += 3) {
-    for (let t = 2; t + 3 <= Lr - 2; t += 5) {
-      const x = alongX ? r.x + t : r.x + s, z = alongX ? r.z + s : r.z + t;
-      const w = alongX ? 3 : 1, h = alongX ? 1 : 3;
-      if (!ok(ctx, x, z, w, h, 1, 1)) continue;
-      openShelf(ctx, x + (alongX ? 0.05 : 0.15), z + (alongX ? 0.15 : 0.05), x + w - (alongX ? 0.05 : 0.15), z + h - (alongX ? 0.15 : 0.05), r.floor, 2.2);
-      use(ctx, x, z, w, h);
+  // shelf rows along the long axis, 2-wide aisles, wherever the exits leave room
+  const Fr = frame(r, r.w >= r.h ? 1 : 3);
+  const m = freeMask(ctx, Fr, 1);
+  for (let s = 2; s < Fr.Wd - 2; s += 3) {
+    let t = 2;
+    while (t < Fr.L - 2) {
+      let len = 0;
+      while (t + len < Fr.L - 2 && len < 4 && m[t + len][s]) len++;
+      if (len < 2) { t++; continue; }
+      const [x0, z0, w, h] = Fr.rect(t + 0.05, s + 0.12, len - 0.1, 0.76);
+      openShelf(ctx, x0, z0, x0 + w, z0 + h, r.floor, 2.2);
+      useL(ctx, Fr, t, s, len, 1);
+      t += len + 2;
     }
   }
   let k = 0;

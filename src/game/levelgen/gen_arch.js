@@ -302,7 +302,9 @@ export function genArch(rng, theme, depth, opt = {}) {
       arena: rng.pick([9, 10, 12]), entry: rng.pick([4, 5]), plain: 4 }[r.template] || (opt.ceilH?.[r.template] ? rng.pick(opt.ceilH[r.template]) : 4);
     r.sky = r.template === 'courtyard' || !!opt.skyTemplates?.includes(r.template);
     r.wallSlot = r === boss ? TS.ACCENT : rng.chance(0.35) ? TS.WALL2 : TS.WALL;
-    r.floorSlot = rng.chance(0.3) ? TS.FLOOR2 : TS.FLOOR;
+    const fs = rng.chance(0.3) ? TS.FLOOR2 : TS.FLOOR;
+    // opt.floorSlot(room, slot): generators can pick the floor that fits the room's use
+    r.floorSlot = opt.floorSlot ? opt.floorSlot(r, fs) : fs;
     r.ceilSlot = r.ceilH >= 6 ? TS.CEIL2 : TS.CEIL;
     if (r.template === 'courtyard') { r.floorSlot = TS.GROUND; r.wallSlot = TS.WALL2; }
     if (r.template === 'chapel' && style.family !== 'tech') r.floorSlot = TS.FLOOR3;
