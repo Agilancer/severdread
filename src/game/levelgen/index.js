@@ -343,7 +343,9 @@ function pickVariant(depth, rng, boss = false) {
 }
 
 function monsterPool(theme, depth, rng) {
-  const all = Object.entries(MONSTERS).filter(([, m]) => !m.boss && (m.minDepth || 1) <= depth);
+  // every normal monster type can appear on any level (bosses keep their depth gates);
+  // a deeper-tier monster met early is toned down in Monster (TIER_EARLY)
+  const all = Object.entries(MONSTERS).filter(([, m]) => !m.boss);
   const scored = all.map(([id, m]) => ({ id, w: m.weight * (theme.monsterBias?.[m.category] || 1) * (m.placeholder ? 0.6 : 1) }));
   // 2-4 types per level keeps encounters coherent
   rng.shuffle(scored);

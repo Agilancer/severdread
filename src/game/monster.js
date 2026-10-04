@@ -14,6 +14,7 @@ import { damagePlayer, fireEnemyProjectile, damageMonster, killMonster } from '.
 import { ELEMENTS, STATUS } from '../data/elements.js';
 
 const ACT = { idle: 0, walk: 1, windup: 5, attack: 6, recover: 7 };
+const TIER_EARLY = 0.05;   // hp / damage cut per tier a monster type is above the current depth
 const BODY_R = 0.3;    // max terrain-collision radius: the player's, so monsters fit wherever the player does
 
 export class Monster {
@@ -28,9 +29,11 @@ export class Monster {
     this.summoned = !!opts.summoned;
     const v = this.variant;
     const d = Math.max(1, depth);
-    this.maxHp = Math.round(def.hp * B.monsterHpMult(d) * (v.hpMult || 1) * (this.elite ? 2.3 : 1) * (opts.hpMult || 1));
+    // deeper-tier types appear on any level: met early they are a little weaker
+    const early = !def.boss && def.minDepth > d ? Math.max(0.72, 1 - TIER_EARLY * (def.minDepth - d)) : 1;
+    this.maxHp = Math.round(def.hp * B.monsterHpMult(d) * (v.hpMult || 1) * (this.elite ? 2.3 : 1) * (opts.hpMult || 1) * early);
     this.hp = this.maxHp;
-    this.dmg = def.damage * B.monsterDmgMult(d) * (v.dmgMult || 1) * (this.elite ? 1.35 : 1);
+    this.dmg = def.damage * B.monsterDmgMult(d) * (v.dmgMult || 1) * (this.elite ? 1.35 : 1) * early;
     this.armor = (def.armor || 0) + B.monsterArmor(d) * (this.boss ? 1.4 : 0.6);
     this.speed = def.speed * (v.speedMult || 1) * (this.elite ? 1.1 : 1);
     this.radius = def.radius * (this.elite ? 1.1 : 1);
