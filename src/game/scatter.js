@@ -9,15 +9,19 @@
 //   traps       animated spike plates: retracted -> rising (warning) -> extended
 //               (damage + bleed to the player and walking monsters) -> retracting
 //   chests      closed / open pairs matching the theme (drawn for game.js chests)
+//   terminals   solid consoles (backs to a wall or alone in a room) and flat
+//               wall panels; screens glow (emissive twin of the sheet drawn
+//               additively, the nearest few cast a faint light), shots spark
+//               them and make the screen flicker
 // Hot paths (update / submit) do not allocate: sprites go through addRaw.
-import { F } from './grid.js';
+import { F, DIR_X, DIR_Z } from './grid.js';
 import { MODE } from './spritebatch.js';
 import { fx, Rng } from '../core/rng.js';
 import { ELEMENTS } from '../data/elements.js';
 import { RARITY } from '../data/rarities.js';
 import {
   SIZE, DAMAGED_AT, EXPLODE_FRAME_TIME, SPIKE_TIMING, SPIKE_TIMING_CHOKE, explosiveStats, chainDelay, spikeState, spikeDamage,
-  pickScatterObject, sizeFromPx, pedestalMinRarity, PEDESTAL_KINDS,
+  pickScatterObject, sizeFromPx, pedestalMinRarity, PEDESTAL_KINDS, TERM_WALL, terminalSize, terminalFits, wallTerminalSize, pickTerminal,
 } from '../data/scatter.js';
 import { explode, damagePlayer, damageMonster, applyStatus, itemGlowColor } from './combat.js';
 import { generateItem, rollItemLevel } from './items.js';
@@ -26,6 +30,11 @@ const DRAW_DIST2 = 60 * 60;
 const GONE = -1e5;                     // collider y of a destroyed explosive (never collides)
 const TRAP_HALF = 0.42;                // spike plate reach from the cell centre
 const ELEM_STATUS = { fire: 'burn', ice: 'chill', poison: 'poison', void: 'rend', lightning: null };
+const TERM_LIGHTS = 3;                 // closest screens that light their surroundings
+const TERM_LIGHT_D2 = 11 * 11;
+const FLICKER_T = 0.6;                 // screen flicker after a hit (s)
+const BB_WALLX = 3, BB_WALLZ = 4;      // sprite billboard modes: wall plane x = const / z = const
+const SPARK = [1, 0.82, 0.42];
 
 export class Scatter {
   constructor(game, world) {
@@ -43,10 +52,18 @@ export class Scatter {
     this.traps = (S.traps || []).map((t) => ({ ...t, obj: null, timing: t.choke ? SPIKE_TIMING_CHOKE : SPIKE_TIMING, stage: -1, frame: 0, cycle: -1, pHit: -1, element: 'physical', light: 0.8, scale: 1 }));
     this.chestStyle = S.chest || { style: 'tech', hues: null };
     this.chestPairs = null;
-    // collider index -> explosive (projectiles / hitscan report the box they hit)
+    // terminals: free-standing consoles + wall panels in one list (k = index)
+    const term = (t, k, wall) => ({ ...t, k, panel: wall, obj: null, w: 0, h: 0, cy: 0, px: t.x ?? 0, pz: t.z ?? 0, light: 0.8, glowK: 0.6, hitT: -9, zapT: -9, lamp: null });
+    this.terms = (S.terminals || []).map((t, k) => term(t, k, false));
+    for (const t of S.wallTerminals || []) this.terms.push(term(t, this.terms.length, true));
+    // collider index -> explosive / terminal (projectiles / hitscan report the box they hit)
     this.boxOwner = new Int32Array(Math.max(1, world.nBoxes || 0)).fill(-1);
     for (const e of this.explosives) if (e.ci >= 0 && e.ci < this.boxOwner.length) this.boxOwner[e.ci] = e.k;
+    this.boxTerm = new Int32Array(Math.max(1, world.nBoxes || 0)).fill(-1);
+    for (const t of this.terms) if (t.ci >= 0 && t.ci < this.boxTerm.length) this.boxTerm[t.ci] = t.k;
     this._st = { stage: 0, frame: 0, k: 0, cycle: 0 };
+    this._near = new Int32Array(TERM_LIGHTS);
+    this._nearD = new Float32Array(TERM_LIGHTS);
   }
 
   // ------------------------------------------------------------------ art
@@ -84,6 +101,60 @@ export class Scatter {
       if (t.obj) { t.scale = SIZE.spikeWidth / t.obj.pxW; t.element = t.obj.element || 'physical'; }
       t.light = lightAt(t.x, t.z);
     }
+    // terminals: art that suits the slot in the theme's styles, sized from the
+    // sheet; colliders fitted to the sprite; a lamp object each (reused)
+    const tr = sc.terminal || [], tw = sc.terminal_wall || [], range = sc.range.terminal;
+    const B = this.world.box, nB = this.world.nBoxes || 0;
+    // the same machine at most twice per level while the styles have others
+    const used = new Map();
+    const pickVaried = (list, styles, seed, fits) => {
+      let best = null, bestN = 1e9;
+      for (let k = 0; k < 6; k++) {
+        const o = pickTerminal(list, styles, (seed + k * 7919) | 0, fits);
+        if (!o) return null;
+        const c = used.get(o.id) || 0;
+        if (c < bestN) { best = o; bestN = c; }
+        if (c < 2) break;
+      }
+      used.set(best.id, bestN + 1);
+      return best;
+    };
+    for (const t of this.terms) {
+      const q = t.ci >= 0 && t.ci < nB ? t.ci * 6 : -1;
+      const nx = t.wall >= 0 ? -DIR_X[t.wall] : 0, nz = t.wall >= 0 ? -DIR_Z[t.wall] : 0;   // into the room
+      if (t.panel) {
+        t.obj = pickVaried(tw, t.styles, t.seed);
+        if (!t.obj) continue;
+        const s = wallTerminalSize(t.obj, t.maxW, Math.min(TERM_WALL.maxH, t.hi - t.lo));
+        t.w = s.w; t.h = s.h;
+        t.cy = Math.min(t.hi - t.h / 2, Math.max(t.lo + t.h / 2, t.y + TERM_WALL.centre + (t.dy || 0)));
+        // the panel plane: a hair off the wall (and off any trim skin under it)
+        const o = t.off + TERM_WALL.off;
+        t.px = t.wall < 2 ? t.line + nx * o : t.along;
+        t.pz = t.wall < 2 ? t.along : t.line + nz * o;
+        if (q >= 0) {
+          if (t.wall < 2) { B[q + 2] = t.along - t.w / 2; B[q + 5] = t.along + t.w / 2; } else { B[q] = t.along - t.w / 2; B[q + 3] = t.along + t.w / 2; }
+          B[q + 1] = t.cy - t.h / 2; B[q + 4] = t.cy + t.h / 2;
+        }
+        t.light = lightAt(t.px + nx * 0.5, t.pz + nz * 0.5);
+        t.lamp = { x: t.px + nx * 0.45, y: t.cy, z: t.pz + nz * 0.45, r: 0, g: 0, b: 0, radius: 2.6, intensity: 0 };
+      } else {
+        const fits = (o) => terminalFits(o, t.slot, range), tagged = (o) => !t.tags || t.tags.some((tg) => o.tags?.includes(tg));
+        let o = t.tags ? pickVaried(tr, t.styles, t.seed, (x) => fits(x) && tagged(x)) : null;
+        if (!o || !fits(o) || !tagged(o)) o = pickVaried(tr, t.styles, t.seed, fits);
+        t.obj = o;
+        if (!o) continue;
+        const s = terminalSize(o, t.slot, range, t.maxH);
+        t.w = s.w; t.h = s.h;
+        if (q >= 0) B[q + 4] = t.y + Math.min(t.maxH, t.h * 0.92);
+        t.light = lightAt(t.x, t.z);
+        t.lamp = { x: t.x + nx * 0.4, y: t.y + t.h * 0.75, z: t.z + nz * 0.4, r: 0, g: 0, b: 0, radius: 2.6, intensity: 0 };
+      }
+      // lamp in the screen colour (brightest channel 1); glow stronger in dark rooms
+      const lc = t.obj.light || [80, 200, 255], m = Math.max(lc[0], lc[1], lc[2], 1);
+      t.lamp.r = lc[0] / m; t.lamp.g = lc[1] / m; t.lamp.b = lc[2] / m;
+      t.glowK = 0.62 * Math.min(1, Math.max(0.4, 1.35 - t.light));
+    }
     // chests: closed / open pairs of the theme's style (hue preference for tech chests)
     const chests = sc.chest || [];
     const cs = this.chestStyle;
@@ -111,9 +182,34 @@ export class Scatter {
   hitBox(b, dmg, element) {
     if (b < 0 || b >= this.boxOwner.length) return false;
     const k = this.boxOwner[b];
-    if (k < 0) return false;
-    this.damageExplosive(this.explosives[k], dmg, element);
-    return true;
+    if (k >= 0) { this.damageExplosive(this.explosives[k], dmg, element); return true; }
+    const tk = this.boxTerm[b];
+    if (tk >= 0) { this.zapTerminal(this.terms[tk]); return true; }
+    return false;
+  }
+  // a terminal took a hit: sparks off its front and a stuttering screen
+  // (they are not destructible)
+  zapTerminal(tm) {
+    if (!tm.obj) return;
+    const w = this.world, t = w.time;
+    tm.hitT = t;
+    if (t - tm.zapT < 0.12) return;          // rapid fire: one shower per burst
+    tm.zapT = t;
+    const nx = tm.wall >= 0 ? -DIR_X[tm.wall] : 0, nz = tm.wall >= 0 ? -DIR_Z[tm.wall] : 0;
+    const x = (tm.panel ? tm.px : tm.x) + nx * 0.12, z = (tm.panel ? tm.pz : tm.z) + nz * 0.12;
+    const y = tm.panel ? tm.cy : tm.y + tm.h * 0.62;
+    w.burst(x, y, z, SPARK, 9, { speed: 4.5, up: 1.2, life: 0.4, size: 0.045, gravity: 11, drag: 0.8 });
+    const L = tm.lamp;
+    if (L) w.flash(x, y, z, [L.r, L.g, L.b], 2.2, 0.1, 1.1);
+    this.game.sfx('zap', { dist: this.distP({ x, z }), pitch: 1.3 });
+  }
+  // terminals near a blast or in front of a melee swing flicker and spark too
+  zapNear(x, y, z, r) {
+    for (const tm of this.terms) {
+      if (!tm.obj) continue;
+      const dx = (tm.panel ? tm.px : tm.x) - x, dz = (tm.panel ? tm.pz : tm.z) - z, dy = (tm.panel ? tm.cy : tm.y + tm.h * 0.5) - y;
+      if (dx * dx + dy * dy + dz * dz < r * r) this.zapTerminal(tm);
+    }
   }
   damageExplosive(e, dmg, element) {
     if (e.state !== 'intact' || !(dmg > 0)) return;
@@ -133,6 +229,7 @@ export class Scatter {
   // explosion of any kind at (x, y, z): set off explosives in reach (chain reactions)
   blast(x, y, z, radius, dmg, src) {
     const w = this.world;
+    if (this.terms.length) this.zapNear(x, y, z, radius * 0.8);
     for (const e of this.explosives) {
       if (e === src || e.state !== 'intact') continue;
       const dx = e.x - x, dz = e.z - z, dy = (e.y + 0.5) - y;
@@ -148,6 +245,7 @@ export class Scatter {
   }
   // melee swing (player): hits explosives in front within range
   melee(px, pz, py, yaw, range, arc, dmg, element) {
+    if (this.terms.length) this.zapNear(px + Math.cos(yaw) * range * 0.6, py + 1.1, pz + Math.sin(yaw) * range * 0.6, range * 0.55);
     for (const e of this.explosives) {
       if (e.state !== 'intact') continue;
       const dx = e.x - px, dz = e.z - pz, d = Math.hypot(dx, dz);
@@ -274,6 +372,26 @@ export class Scatter {
       const c = itemGlowColor(ped.item);
       out.push({ x: ped.x, y: ped.y + ped.h + 0.5, z: ped.z, r: c[0], g: c[1], b: c[2], radius: 3.2, intensity: 0.9 });
     }
+    // the closest few screens cast a faint light in their colour (reused lamp objects)
+    const p = this.game.player;
+    if (!this.terms.length || !p) return;
+    const near = this._near, nd = this._nearD;
+    near.fill(-1); nd.fill(TERM_LIGHT_D2);
+    for (const tm of this.terms) {
+      const L = tm.lamp;
+      if (!L) continue;
+      const dx = L.x - p.x, dz = L.z - p.z, d2 = dx * dx + dz * dz;
+      if (d2 >= nd[TERM_LIGHTS - 1]) continue;
+      let j = TERM_LIGHTS - 1;
+      while (j > 0 && nd[j - 1] > d2) { nd[j] = nd[j - 1]; near[j] = near[j - 1]; j--; }
+      nd[j] = d2; near[j] = tm.k;
+    }
+    const t = this.world.time;
+    for (let j = 0; j < TERM_LIGHTS && near[j] >= 0; j++) {
+      const tm = this.terms[near[j]], ht = t - tm.hitT;
+      tm.lamp.intensity = ht < FLICKER_T ? (Math.sin(ht * 70 + tm.k) > 0.2 ? 0.75 : 0.04) : 0.4;
+      out.push(tm.lamp);
+    }
   }
 
   submit(b, cam) {
@@ -322,6 +440,34 @@ export class Scatter {
       const f = o.frames[Math.min(tr.frame, o.frames.length - 1)], sc = tr.scale;
       const glow = o.light && o.tags?.includes('glow');
       b.addRaw(o.handle, MODE.CUTOUT, tr.x, tr.y - 0.02, tr.z, f.pw * sc, f.ph * sc, f.uv[0], f.uv[1], f.uv[2], f.uv[3], 1, 1, 1, 1, 0, 0, !!glow && tr.frame > 0, tr.light, 0);
+    }
+    for (const tm of this.terms) {
+      const o = tm.obj;
+      if (!o || !near(cam, tm.px, tm.pz)) continue;
+      const f = o.frames[0];
+      // the screen breathes a little; after a hit it stutters and the casing dims
+      let gk = tm.glowK * (0.9 + 0.1 * Math.sin(t * 2.3 + tm.k * 1.7)), tint = 1;
+      const ht = t - tm.hitT;
+      if (ht < FLICKER_T) { const on = Math.sin(ht * 70 + tm.k) > 0.2; gk *= on ? 1.7 : 0.06; tint = on ? 1.05 : 0.78; }
+      if (tm.panel) {
+        // flat on the wall plane, u running to the viewer's right (never mirrored)
+        const flip = tm.wall === 1 || tm.wall === 2, mode = tm.wall < 2 ? BB_WALLX : BB_WALLZ;
+        const u0 = flip ? f.uv[2] : f.uv[0], u1 = flip ? f.uv[0] : f.uv[2];
+        b.addRaw(o.handle, MODE.CUTOUT, tm.px, tm.cy, tm.pz, tm.w, tm.h, u0, f.uv[1], u1, f.uv[3], tint, tint, tint, 1, 0, 0.5, false, tm.light, mode);
+        if (o.glow) b.addRaw(o.glow, MODE.ADD, tm.px, tm.cy, tm.pz, tm.w, tm.h, u0, f.uv[1], u1, f.uv[3], gk, gk, gk, 1, 0, 0.5, true, 1, mode);
+        continue;
+      }
+      let w = tm.w;
+      if (tm.wall >= 0) {
+        // turned toward a glancing view, the camera-facing sprite would cut
+        // into the wall behind it: it narrows instead (reads like the
+        // console's foreshortened side)
+        const vx = cam.x - tm.x, vz = cam.z - tm.z, len = Math.sqrt(vx * vx + vz * vz) || 1;
+        const sn = Math.abs(DIR_X[tm.wall] * vz - DIR_Z[tm.wall] * vx) / len;
+        w = Math.min(w, 2 * (tm.gap - 0.03) / Math.max(0.05, sn));
+      }
+      b.addRaw(o.handle, MODE.CUTOUT, tm.x, tm.y, tm.z, w, tm.h, f.uv[0], f.uv[1], f.uv[2], f.uv[3], tint, tint, tint, 1, 0, 0, false, tm.light, 0);
+      if (o.glow) b.addRaw(o.glow, MODE.ADD, tm.x, tm.y, tm.z, w, tm.h, f.uv[0], f.uv[1], f.uv[2], f.uv[3], gk, gk, gk, 1, 0, 0, true, 1, 0);
     }
   }
 

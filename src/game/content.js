@@ -88,9 +88,15 @@ export class Content {
       if (handle.failed) continue;
       const W = ss.w, H = ss.h;
       const list = sc[ss.kind] || (sc[ss.kind] = []);
+      // terminals: an emissive twin of the sheet (screens / LEDs only) drawn
+      // additively over the lit sprite, so screens glow in dark rooms
+      let glow = null;
+      if (ss.kind.startsWith('terminal') && handle.image) {
+        try { glow = this.store.fromCanvas('glow_' + ss.id, terminalGlowCanvas(handle.image, ss.objects)); } catch (e) { glow = null; }
+      }
       for (const o of ss.objects) {
         const frames = o.frames.map(([x, y, w, h]) => ({ uv: [(x + 0.5) / W, (y + 0.5) / H, (x + w - 0.5) / W, (y + h - 0.5) / H], pw: w, ph: h, aspect: w / h, rect: [x, y, w, h] }));
-        list.push({ ...o, frames, handle, set: ss.id });
+        list.push({ ...o, frames, handle, glow, set: ss.id });
       }
     }
     for (const k of Object.keys(sc)) {
@@ -461,4 +467,49 @@ function measureFPStrip(canvas, fw, fh, frames, melee) {
     else meta.muzzle = [(l + r) / 2, top];
   }
   return meta;
+}
+
+// Emissive twin of a terminal sheet: only the screen glyphs, LEDs and
+// holograms survive (bright + saturated, or near white), in their own colour,
+// alpha 0 elsewhere. Yellow-painted industrial bodies are bright and saturated
+// too, so on those their yellow only glows on a dark screen.
+function terminalGlowCanvas(img, objects) {
+  const W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
+  const c = makeCanvas(W, H), ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const im = ctx.getImageData(0, 0, W, H), d = im.data;
+  const ss = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+  const wgt = new Float32Array(W * H);
+  for (let i = 0, p = 0; i < W * H; i++, p += 4) {
+    if (d[p + 3] < 128) continue;
+    const r = d[p], g = d[p + 1], b = d[p + 2];
+    const mx = Math.max(r, g, b), sat = (mx - Math.min(r, g, b)) / Math.max(mx, 1), v = mx / 255;
+    wgt[i] = Math.max(ss(0.38, 0.62, sat) * ss(0.5, 0.78, v), ss(0.86, 0.97, v) * ss(0.1, 0.3, sat) * 0.8);
+  }
+  for (const o of objects) {
+    if (o.style !== 'industrial' || !o.tags?.includes('yellow') || o.tags.includes('hazard')) continue;
+    const [x0, y0, fw, fh] = o.frames[0];
+    for (let y = y0; y < y0 + fh; y++) for (let x = x0; x < x0 + fw; x++) {
+      const i = y * W + x, p = i * 4;
+      if (!wgt[i]) continue;
+      const r = d[p], g = d[p + 1], b = d[p + 2];
+      const hue = ((Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b) * 180 / Math.PI) + 360) % 360;
+      if (hue <= 28 || hue >= 64) continue;
+      // mean luminance of the opaque pixels around: dark screen vs painted body
+      let s = 0, k = 0;
+      for (let yy = Math.max(y0, y - 5); yy <= Math.min(y0 + fh - 1, y + 5); yy++) for (let xx = Math.max(x0, x - 5); xx <= Math.min(x0 + fw - 1, x + 5); xx++) {
+        const q = (yy * W + xx) * 4;
+        if (d[q + 3] < 128) continue;
+        s += (0.299 * d[q] + 0.587 * d[q + 1] + 0.114 * d[q + 2]) / 255; k++;
+      }
+      wgt[i] *= 1 - ss(0.16, 0.24, k ? s / k : 1);
+    }
+  }
+  for (let i = 0, p = 0; i < W * H; i++, p += 4) {
+    const w = wgt[i];
+    if (w < 0.02) { d[p] = d[p + 1] = d[p + 2] = d[p + 3] = 0; continue; }
+    d[p] *= w; d[p + 1] *= w; d[p + 2] *= w; d[p + 3] = 255;
+  }
+  ctx.putImageData(im, 0, 0);
+  return c;
 }

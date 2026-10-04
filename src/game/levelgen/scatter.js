@@ -10,8 +10,9 @@
 // of locked doors still shut) may become unreachable, so doorways, stairs,
 // bridges and key paths are never blocked. Spike traps never form an
 // unavoidable wall unless they are a lone, slow chokepoint trap.
-import { F, OPEN, DIR_X, DIR_Z } from '../grid.js';
-import { scatterStyle, scatterCounts, PILLAR_HALF, EXPLOSIVE_HALF, PEDESTAL_HALF, SIZE } from '../../data/scatter.js';
+import { F, OPEN, DIR_X, DIR_Z, OPP } from '../grid.js';
+import { TS } from './common.js';
+import { scatterStyle, scatterCounts, PILLAR_HALF, EXPLOSIVE_HALF, PEDESTAL_HALF, SIZE, TERM, TERM_WALL } from '../../data/scatter.js';
 
 const BAD = F.VOID | F.PIT | F.HAZARD | F.DOOR | F.START | F.OBSTACLE | F.STAIR | F.BRIDGE | F.WATER | F.SCROLL | F.NOSPAWN;
 const NEAR_BAD = F.DOOR | F.STAIR | F.BRIDGE;
@@ -21,7 +22,7 @@ export function placeScatter(ctx) {
   const { g, deco, rng, theme, depth } = ctx;
   const W = g.w, n = g.w * g.h;
   const style = scatterStyle(theme);
-  const out = { pillars: [], explosives: [], pedestals: [], traps: [], chest: { style: style.chest, hues: style.chestHues || null } };
+  const out = { pillars: [], explosives: [], pedestals: [], traps: [], terminals: [], wallTerminals: [], chest: { style: style.chest, hues: style.chestHues || null } };
   const bfsOut = new Int32Array(n), bfsQueue = new Int32Array(n);
   const baseOpts = { jumpGap: ctx.jumpGap || 0, avoid: F.OBSTACLE, out: bfsOut, queue: bfsQueue };
   const start = ctx.startIdx;
@@ -163,7 +164,7 @@ export function placeScatter(ctx) {
   const farFrom = (i, list, r) => list.every((o) => cheb(o.cell, i) >= r);
   const cx = (i) => (i % W) + 0.5, cz = (i) => ((i / W) | 0) + 0.5;
 
-  const counts = scatterCounts(reachN, depth, style.density ?? 1);
+  const counts = scatterCounts(reachN, depth, style.density ?? 1, style.term ?? 0);
   const arena = ctx.arenaSet || new Set();
 
   // ------------------------------------------------------------ pillars
@@ -299,6 +300,209 @@ export function placeScatter(ctx) {
       let ok = false;
       for (const i of edge) if (tryPed(i)) { ok = true; break; }
       if (!ok) for (const c of cand) if (tryPed(c.i)) break;
+    }
+  }
+
+  // neighbour of cell i in direction d (-1 off the map)
+  const nb = (i, d) => { const x = (i % W) + DIR_X[d], z = ((i / W) | 0) + DIR_Z[d]; return g.in(x, z) ? z * W + x : -1; };
+  const sameFloor = (a, b) => Math.abs(g.floor[a] - g.floor[b]) < 0.05;
+
+  // ------------------------------------------------------------ terminals
+  // Free-standing consoles stand with their backs to room walls, in small
+  // clusters along one wall (a kiosk or rack, a desk spanning two cells,
+  // another rack...), plus a few islands (hologram tables, globes, tanks) in
+  // big rooms. Solid and reach-checked like the pillars; the art is picked at
+  // load (game/scatter.js) to fit the slot: narrow / wide / island.
+  if (counts.terminals > 0) {
+    // the procedural placeholder terminal props give way to the real consoles
+    const pr = ctx.props || [], hints = [];
+    for (let k = pr.length - 1; k >= 0; k--) if (pr[k].prop === 'terminal') { hints.push({ cell: pr[k].cell }); pr.splice(k, 1); }
+    // two open, flat, free cells in front of a wall-backed spot (never lines a corridor)
+    const roomInFront = (i, d) => {
+      let j = i;
+      for (let k = 0; k < 2; k++) {
+        j = nb(j, OPP[d]);
+        if (j < 0 || g.type[j] !== OPEN || (g.flags[j] & (F.VOID | F.PIT | F.STAIR | F.DOOR | F.HAZARD | F.OBSTACLE)) || blocked[j] || !sameFloor(i, j)) return false;
+      }
+      return true;
+    };
+    const spots = new Set(), list = [];   // wall-backed spots: i * 4 + wall dir
+    for (let i = 0; i < n; i++) {
+      if (!free(i, 2.2) || arena.has(i) || !clearAround(i, 1)) continue;
+      const room = roominess(i);
+      if (room < 11) continue;
+      for (let d = 0; d < 4; d++) {
+        const j = nb(i, d);
+        if (j < 0 || g.type[j] === OPEN || !roomInFront(i, d)) continue;
+        spots.add(i * 4 + d);
+        list.push({ i, d, s: 1 + room * 0.03 + (farFrom(i, hints, 3) ? 0 : 1.5) + rng.float(0, 1.5) });
+      }
+    }
+    list.sort((a, b) => b.s - a.s);
+    const placeTerm = (cells, d, slot, seed) => {
+      for (const c of cells) if (!free(c, 2.2)) return false;
+      const i0 = cells[0], i1 = cells[cells.length - 1], f = g.floor[i0];
+      let room = 9;
+      for (const c of cells) if (!g.sky[c]) room = Math.min(room, g.ceil[c] - g.floor[c]);
+      const mx = (cx(i0) + cx(i1)) / 2, mz = (cz(i0) + cz(i1)) / 2;
+      let x = mx, z = mz, gap = 0, x0 = mx - TERM.half, x1 = mx + TERM.half, z0 = mz - TERM.half, z1 = mz + TERM.half;
+      if (d >= 0) {
+        // sprite plane `gap` off the wall; collider from the wall line into the room
+        gap = rng.float(TERM.gap[0], TERM.gap[1]);
+        x = mx + DIR_X[d] * (0.5 - gap); z = mz + DIR_Z[d] * (0.5 - gap);
+        const wx = mx + DIR_X[d] * 0.5, wz = mz + DIR_Z[d] * 0.5, ha = cells.length * 0.5 - 0.08;
+        if (d < 2) { x0 = Math.min(wx, wx - DIR_X[d] * TERM.depth); x1 = Math.max(wx, wx - DIR_X[d] * TERM.depth); z0 = mz - ha; z1 = mz + ha; }
+        else { z0 = Math.min(wz, wz - DIR_Z[d] * TERM.depth); z1 = Math.max(wz, wz - DIR_Z[d] * TERM.depth); x0 = mx - ha; x1 = mx + ha; }
+      }
+      const flags0 = cells.map((c) => g.flags[c]), nCol = deco.colliders.length;
+      deco.collider(x0, f, z0, x1, f + Math.min(TERM.colH, room - 0.1), z1);
+      for (const c of cells) g.flags[c] |= F.OBSTACLE | F.NOSPAWN;
+      if (!keepsReach(cells, null, cells.length === 1 ? i0 : undefined)) {
+        deco.colliders.length = nCol;
+        cells.forEach((c, k) => { g.flags[c] = flags0[k]; });
+        return false;
+      }
+      commitBlocked(cells);
+      out.terminals.push({ cell: i0, cells, x, z, y: f, wall: d, gap, slot, maxH: room - 0.1, styles: style.terminal, tags: style.terminalTags || null, seed, ci: nCol });
+      return true;
+    };
+    const islands = Math.min(2, Math.floor(counts.terminals / 4));
+    const budget = counts.terminals - islands;
+    for (const c of list) {
+      if (out.terminals.length >= budget) break;
+      if (!spots.has(c.i * 4 + c.d) || !free(c.i, 2.2) || !farFrom(c.i, out.terminals, 4)) continue;
+      // the run of wall-backed spots along this wall through c.i
+      const a = c.d < 2 ? 2 : 0, run = [c.i];
+      for (const dir of [a, OPP[a]]) {
+        let j = c.i;
+        for (let k = 0; k < 3; k++) {
+          j = nb(j, dir);
+          if (j < 0 || !spots.has(j * 4 + c.d) || !free(j, 2.2) || !sameFloor(j, c.i)) break;
+          if (dir === a) run.push(j); else run.unshift(j);
+        }
+      }
+      const L = Math.min(run.length, rng.pick([1, 2, 2, 3, 3, 3, 4]));
+      const at = run.indexOf(c.i), s0 = rng.int(Math.max(0, at - L + 1), Math.min(at, run.length - L));
+      const win = run.slice(s0, s0 + L);
+      const pattern = L === 1 ? ['narrow'] : L === 2 ? (rng.chance(0.6) ? ['wide'] : ['narrow', 'narrow'])
+        : L === 3 ? rng.pick([['narrow', 'wide'], ['wide', 'narrow'], ['narrow', 'narrow', 'narrow']])
+          : (rng.chance(0.7) ? ['narrow', 'wide', 'narrow'] : ['wide', 'wide']);
+      let k = 0;
+      for (const slot of pattern) {
+        if (out.terminals.length >= budget) break;
+        const cells = win.slice(k, k + (slot === 'wide' ? 2 : 1));
+        k += cells.length;
+        placeTerm(cells, c.d, slot, rng.int(0, 1e9));
+      }
+    }
+    // islands: a hologram table / globe / tank alone in the middle of a big room
+    if (islands) {
+      const isl = [];
+      for (let i = 0; i < n; i++) {
+        if (!free(i, 2.4) || arena.has(i) || bits(wallSides(i)) || !clearAround(i, 2) || !flatAround(i)) continue;
+        const room = roominess(i);
+        if (room >= 23) isl.push({ i, s: room * 0.1 + rng.float(0, 1) });
+      }
+      isl.sort((a, b) => b.s - a.s);
+      let got = 0;
+      for (const c of isl) {
+        if (got >= islands) break;
+        if (!free(c.i, 2.4) || !farFrom(c.i, out.terminals, 5) || !farFrom(c.i, out.pillars, 2) || !farFrom(c.i, out.explosives, 2)) continue;
+        if (placeTerm([c.i], -1, 'island', rng.int(0, 1e9))) got++;
+      }
+    }
+  }
+
+  // ------------------------------------------------------------ wall terminals
+  // Flat panels on wall faces of open floor cells at console height (never on
+  // doors, jambs, stairs, rails, pits, windows, behind detail geometry or on
+  // a ledge's drop), spaced apart, preferring walls near consoles and the
+  // corridors of tech levels. Decoration: their thin collider on the wall
+  // face only lets shots spark them (obstacle: false, no pathing effect).
+  if (counts.wallTerminals > 0) {
+    const BAD_WALL = new Set([TS.GLASS, TS.FACADE, TS.FACADE2, TS.FACADE3, TS.DOOR, TS.DOOR_RED, TS.DOOR_BLUE, TS.DOOR_YELLOW, TS.DOOR_GREEN, TS.DOOR_PURPLE,
+      TS.SCREEN, TS.NEON, TS.LIGHT, TS.FOLIAGE, TS.HAZARD, TS.LAVA, TS.POISON, TS.WATER, TS.VOID, TS.SPIKES]);
+    const GLOWY = new Set([TS.GLASS, TS.LIGHT, TS.SCREEN, TS.NEON]);
+    // deco boxes by the cells their footprint touches
+    const boxIdx = new Map();
+    const consoleNear = new Uint8Array(n);
+    const mark = (i, r) => { const x = i % W, z = (i / W) | 0; for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (g.in(x + dx, z + dz)) consoleNear[(z + dz) * W + x + dx] = 1; };
+    deco.boxes.forEach((b, k) => {
+      const machine = b.tex === TS.MACHINE || (typeof b.tex === 'object' && Object.values(b.tex).includes(TS.MACHINE));
+      for (let z = Math.max(0, Math.floor(b.z0 - 0.05)); z <= Math.min(g.h - 1, Math.floor(b.z1 + 0.05)); z++) {
+        for (let x = Math.max(0, Math.floor(b.x0 - 0.05)); x <= Math.min(W - 1, Math.floor(b.x1 + 0.05)); x++) {
+          const c = z * W + x;
+          let a = boxIdx.get(c);
+          if (!a) boxIdx.set(c, (a = []));
+          a.push(k);
+          if (machine) mark(c, 1);
+        }
+      }
+    });
+    for (const t of out.terminals) for (const c of t.cells) mark(c, 2);
+    const wallFace = (k, d) => { const j = nb(k, d); return j >= 0 && g.type[j] !== OPEN && !BAD_WALL.has(g.wallTex[j]); };
+    const panelSpot = (i, d) => {
+      if (!wallFace(i, d)) return null;
+      const x = i % W, z = (i / W) | 0, f = g.floor[i], j = nb(i, d);
+      let lo = f + TERM_WALL.minBottom, hi = Math.min((g.sky[i] ? g.floor[j] : g.ceil[i]) - 0.1, f + TERM_WALL.top);
+      if (hi - lo < 0.6) return null;
+      // a wide panel may overhang the cell where the same clean wall runs on both sides
+      const a = d < 2 ? 2 : 0;
+      const side = (s) => {
+        const k = nb(i, s);
+        return k >= 0 && g.type[k] === OPEN && sameFloor(k, i) && !(g.flags[k] & (F.DOOR | F.STAIR | F.VOID | F.PIT | F.OBSTACLE)) && !g.edge[k] && !blocked[k] && clearAround(k, 1) && wallFace(k, d);
+      };
+      const maxW = side(a) && side(OPP[a]) ? TERM_WALL.wideW : TERM_WALL.cellW;
+      const along = d < 2 ? z + 0.5 : x + 0.5, line = d === 0 ? x + 1 : d === 1 ? x : d === 2 ? z + 1 : z;
+      const a0 = along - maxW / 2 - 0.03, a1 = along + maxW / 2 + 0.03;
+      // detail geometry on this stretch of wall: thin slabs on it (trims,
+      // interior skins) move the panel off or above them; anything else -
+      // windows, lamps, pipes, consoles, shelves, pillars - rules the spot out
+      const near = [];
+      for (const c of [i, nb(i, a), nb(i, OPP[a])]) for (const k of (c >= 0 && boxIdx.get(c)) || []) if (!near.includes(k)) near.push(k);
+      near.sort((p, q) => deco.boxes[p].y0 - deco.boxes[q].y0);
+      let off = 0;
+      for (const k of near) {
+        const b = deco.boxes[k];
+        let d0, d1, b0, b1;
+        if (d === 0) { d0 = line - b.x1; d1 = line - b.x0; b0 = b.z0; b1 = b.z1; }
+        else if (d === 1) { d0 = b.x0 - line; d1 = b.x1 - line; b0 = b.z0; b1 = b.z1; }
+        else if (d === 2) { d0 = line - b.z1; d1 = line - b.z0; b0 = b.x0; b1 = b.x1; }
+        else { d0 = b.z0 - line; d1 = b.z1 - line; b0 = b.x0; b1 = b.x1; }
+        if (d1 <= 0.001 || d0 > 0.5 || b1 <= a0 || b0 >= a1 || b.y1 <= lo || b.y0 >= hi) continue;
+        const thin = d1 <= 0.1 && d0 <= 0.002 && typeof b.tex === 'number' && !GLOWY.has(b.tex) && !b.emissive;
+        if (!thin) return null;
+        if (b.y0 <= lo + 0.01 && b.y1 >= hi - 0.01 && b0 <= a0 && b1 >= a1) off = Math.max(off, d1);   // skin over the whole band
+        else if (b.y0 <= lo + 0.35) lo = b.y1 + 0.03;    // wainscot / chair rail: sit above it
+        else if (b.y1 >= hi - 0.3) hi = b.y0 - 0.03;     // crown band: stay under it
+        else return null;
+      }
+      if (hi - lo < 0.45 || lo > f + 1.35) return null;
+      return { lo, hi, off, maxW, along, line };
+    };
+    const tech = (style.term ?? 0) >= 0.6;
+    const cand = [];
+    for (let i = 0; i < n; i++) {
+      if (g.type[i] !== OPEN || !reach0[i] || blocked[i] || g.edge[i] || !clearAround(i, 1)) continue;
+      if (g.flags[i] & (F.VOID | F.PIT | F.HAZARD | F.DOOR | F.STAIR | F.BRIDGE | F.WATER | F.OBSTACLE)) continue;
+      const ws = wallSides(i), corridor = ws === 3 || ws === 12;
+      for (let d = 0; d < 4; d++) {
+        if (!(ws & (1 << d))) continue;
+        const spot = panelSpot(i, d);
+        if (!spot) continue;
+        const s = 1 + (consoleNear[i] ? 1.3 : 0) + (corridor ? (tech ? 0.9 : -0.4) : 0) + (roominess(i) >= 14 ? 0.3 : 0) + rng.float(0, 1.5);
+        cand.push({ i, d, s, spot, corridor });
+      }
+    }
+    cand.sort((a, b) => b.s - a.s);
+    for (const c of cand) {
+      if (out.wallTerminals.length >= counts.wallTerminals) break;
+      if (!farFrom(c.i, out.wallTerminals, c.corridor ? 4 : 3)) continue;
+      const { lo, hi, off, maxW, along, line } = c.spot;
+      const t = off + 0.035, nCol = deco.colliders.length;
+      if (c.d < 2) deco.collider(c.d === 0 ? line - t : line, lo, along - maxW / 2, c.d === 0 ? line : line + t, hi, along + maxW / 2, { obstacle: false });
+      else deco.collider(along - maxW / 2, lo, c.d === 2 ? line - t : line, along + maxW / 2, hi, c.d === 2 ? line : line + t, { obstacle: false });
+      out.wallTerminals.push({ cell: c.i, wall: c.d, along, line, off, lo, hi, maxW, y: g.floor[c.i], dy: rng.float(-0.06, 0.06), styles: style.terminalWall, seed: rng.int(0, 1e9), ci: nCol });
     }
   }
 
