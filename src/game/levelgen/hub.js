@@ -7,6 +7,7 @@ import { HUB_THEME } from '../../data/themes.js';
 import { NPCS } from '../../data/npcs.js';
 import { TS, F, newGrid, carveRect, encloseBorder, PAD_CELLS, PAD_SLOT0, PAD_EDGE } from './common.js';
 import { Deco, FACE } from './deco.js';
+import { terminalPiece, placeWallTerminals } from './scatter.js';
 import { Rng } from '../../core/rng.js';
 
 export function buildHub() {
@@ -131,8 +132,20 @@ export function buildHub() {
   deco.lightPanel(3.8, 12.3, 5.4, 13.0, 3.4, [1, 0.92, 0.8], 5);
   deco.lightPanel(3.8, 16.0, 5.4, 16.7, 3.4, [1, 0.92, 0.8], 5);
 
+  // computers: info kiosks flanking the way to the teleporter, a console and a
+  // server rack in the quarters (scatter terminal art, game/scatter.js), and
+  // panels on free stretches of wall above the wainscot
+  const tags = { info: ['kiosk', 'monitor', 'lectern', 'handprint'], rack: ['server', 'stack', 'cabinet'] };
+  const terminals = [
+    [25, 11, 0, 'info', 11], [25, 17, 0, 'info', 12], [2, 15, 1, 'info', 13], [7, 11, 0, 'rack', 14],
+  ].map(([x, z, d, kind, seed]) => terminalPiece(g, deco, [g.idx(x, z)], d, 'narrow', { styles: ['tech'], tags: tags[kind], seed: seed * 7919, gap: 0.4 }));
+  const taken = new Uint8Array(W * H);
+  for (const t of terminals) taken[t.cell] = 1;
+  const onPad = (i) => { const x = i % W, z = (i / W) | 0; return x >= PX0 && x < PX0 + PAD_CELLS && z >= PZ0 && z < PZ0 + PAD_CELLS; };
+  const wallTerminals = placeWallTerminals(g, deco, rng, { count: 9, styles: ['tech'], tech: true, blocked: taken, near: terminals, allow: (i) => !onPad(i) });
+
   const props = [
-    { x: 6.4, z: 17.4, prop: 'barrel' }, { x: 2.6, z: 15.6, prop: 'terminal' },
+    { x: 6.4, z: 17.4, prop: 'barrel' },
     { x: 18, z: 14.5, prop: 'statue' },
   ];
   const lights = [
@@ -142,7 +155,7 @@ export function buildHub() {
   return {
     theme: HUB_THEME, depth: 0, grid: g, hub: true,
     start: { x: pad.x - 0.5, z: pad.z, yaw: Math.PI },
-    npcs, teleporter: pad, props, lights, deco: deco.result(),
+    npcs, teleporter: pad, props, lights, deco: deco.result(), scatter: { terminals, wallTerminals },
     padFloor: { x0: PX0, z0: PZ0, edgeTile: 'tx26_station_edges:tx26_station_edges_r0c0', riser: 0.5 },
     spawns: [], doors: [], keys: [], chests: [], voidY: -10, arena: [],
   };

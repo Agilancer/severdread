@@ -7,6 +7,8 @@ import { Player } from '../src/game/player.js';
 import { Monster } from '../src/game/monster.js';
 import { input, press, endFrame } from '../src/engine/input.js';
 import { PLACEHOLDER_BASES } from '../src/data/weapons.js';
+import { buildHub } from '../src/game/levelgen/hub.js';
+import { SpriteBatcher } from '../src/game/spritebatch.js';
 
 let failures = 0;
 const check = (ok, msg) => { if (!ok) { failures++; console.log('FAIL ' + msg); } };
@@ -286,6 +288,66 @@ function spawnMonster(id, x, z) {
   const ms = performance.now() - t0;
   console.log(`  perf: 20k los + 20k canOccupy in ${ms.toFixed(1)} ms`);
   check(ms < 1500, 'physics queries are fast');
+}
+
+// ------------------------------------------------------------------ terminals (hub)
+// consoles block movement and shots, wall panels sit flush on their wall with
+// a shootable collider fitted to the art, shots spark them, panels are drawn
+// on the wall plane with u running to the viewer's right
+{
+  const H = buildHub(), hg = makeGame(H), hw = hg.world, S = hw.scatter, G = H.grid;
+  check(S.terms.length === H.scatter.terminals.length + H.scatter.wallTerminals.length && S.terms.some((t) => t.panel) && S.terms.some((t) => !t.panel), 'hub terminals reach the runtime');
+  const frame = (x, y, w, h) => ({ uv: [x / 512, y / 512, (x + w) / 512, (y + h) / 512], pw: w, ph: h, aspect: w / h });
+  const handle = { ready: true }, glow = { ready: true };
+  const fake = (id, kind, style, px, pxW, tags) => ({ id, kind, style, px, pxW, tags, light: [40, 200, 120], frames: [frame(0, 0, pxW, px)], handle, glow });
+  const content = {
+    scatter: {
+      terminal: [fake('kiosk', 'terminal', 'tech', 141, 76, ['kiosk']), fake('rack', 'terminal', 'tech', 143, 88, ['server']), fake('desk', 'terminal', 'tech', 114, 172, ['desk'])],
+      terminal_wall: [fake('panel', 'terminal_wall', 'tech', 106, 132, ['keyboard'])],
+      range: { terminal: [87, 155], terminal_wall: [63, 138] },
+    },
+  };
+  S.bind(content);
+  const B = hw.box;
+  for (const t of S.terms) {
+    check(t.obj && t.w > 0.3 && t.h > 0.3, `terminal ${t.k} got art and a size`);
+    if (t.panel) {
+      const bot = t.cy - t.h / 2 - t.y;
+      check(bot >= 0.6 - 1e-6 && t.cy - t.y < 1.9 && t.w <= t.maxW + 1e-6, `wall panel ${t.k} at console height (bottom ${bot.toFixed(2)})`);
+      const o = t.ci * 6, j = G.idx((t.cell % G.w) + [1, -1, 0, 0][t.wall], ((t.cell / G.w) | 0) + [0, 0, 1, -1][t.wall]);
+      check(!G.type[j], `wall panel ${t.k} hangs on a solid wall`);
+      check(near(B[o + 4] - B[o + 1], t.h, 1e-3), `wall panel ${t.k} collider fitted to the art`);
+      // a shot straight at the panel hits its collider, a hair off the wall
+      const nx = -[1, -1, 0, 0][t.wall], nz = -[0, 0, 1, -1][t.wall];
+      const h = hw.raycast(t.px + nx * 1.5, t.cy, t.pz + nz * 1.5, -nx, 0, -nz, 3);
+      check(h && h.box === t.ci && h.dist > 1.4 && h.dist < 1.5, `shot at wall panel ${t.k} hits it (${h && h.dist.toFixed(3)})`);
+    } else {
+      const h = hw.raycast(t.x - [1, -1, 0, 0][t.wall] * 2, t.y + 0.6, t.z - [0, 0, 1, -1][t.wall] * 2, [1, -1, 0, 0][t.wall], 0, [0, 0, 1, -1][t.wall], 3);
+      check(h && h.box === t.ci, `shot at console ${t.k} hits its collider`);
+      check(G.flags[t.cell] & F.OBSTACLE, `console ${t.k} cell is an obstacle`);
+    }
+  }
+  // hit: sparks + flicker
+  const pt = S.terms.find((t) => t.panel), np = hw.particles.length;
+  hw.time = 5;
+  check(S.hitBox(pt.ci, 10, 'physical') && pt.hitT === 5 && hw.particles.length > np, 'shot terminal sparks and flickers');
+  // drawing: panels on the wall plane (billboard 3 / 4), never mirrored
+  const sb = new SpriteBatcher();
+  sb.begin();
+  S.submit(sb, { x: pt.px, z: pt.pz });
+  const bt = sb.byHandle.get(handle)[0], d = bt.data, F_ = 25;
+  let panels = 0, mirrorOK = true;
+  for (let k = 0; k < bt.count; k++) {
+    const mode = d[k * F_ + 24];
+    if (mode < 3) continue;
+    panels++;
+    const t = S.terms.find((q) => q.panel && near(q.px, d[k * F_], 1e-4) && near(q.pz, d[k * F_ + 2], 1e-4));
+    const flipped = d[k * F_ + 5] > d[k * F_ + 7];
+    if (!t || mode !== (t.wall < 2 ? 3 : 4) || flipped !== (t.wall === 1 || t.wall === 2)) mirrorOK = false;
+  }
+  console.log(`  hub terminals: ${S.terms.length} (${panels} wall panels drawn, ${sb.byHandle.get(glow)?.[1]?.count} glow quads)`);
+  check(panels > 0 && mirrorOK, `wall panels drawn on their wall plane, u to the viewer's right (${panels})`);
+  check(sb.byHandle.get(glow)?.[1]?.count > 0, 'screens glow (additive emissive pass)');
 }
 
 input.move.y = 0;

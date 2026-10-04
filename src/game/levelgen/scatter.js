@@ -122,15 +122,7 @@ export function placeScatter(ctx) {
     if (!g.sky[i] && g.ceil[i] - g.floor[i] < needH) return false;
     return true;
   };
-  // no door / stair / bridge within r cells (Chebyshev)
-  const clearAround = (i, r) => {
-    const x = i % W, z = (i / W) | 0;
-    for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
-      if (!g.in(x + dx, z + dz)) continue;
-      if (g.flags[(z + dz) * W + x + dx] & NEAR_BAD) return false;
-    }
-    return true;
-  };
+  const clearAround = (i, r) => clearAroundG(g, i, r);
   // the 8 neighbours are open floor at the same height (free-standing spot)
   const flatAround = (i) => {
     const x = i % W, z = (i / W) | 0, f = g.floor[i];
@@ -142,25 +134,9 @@ export function placeScatter(ctx) {
     }
     return true;
   };
-  const wallSides = (i) => {
-    const x = i % W, z = (i / W) | 0;
-    let m = 0;
-    for (let d = 0; d < 4; d++) { const nx = x + DIR_X[d], nz = z + DIR_Z[d]; if (!g.isOpen(nx, nz) || g.floor[nz * W + nx] > g.floor[i] + 1.2) m |= 1 << d; }
-    return m;
-  };
-  const bits = (m) => (m & 1) + ((m >> 1) & 1) + ((m >> 2) & 1) + ((m >> 3) & 1);
-  // open same-height cells in the 5x5 window (how roomy the spot is)
-  const roominess = (i) => {
-    const x = i % W, z = (i / W) | 0, f = g.floor[i];
-    let c = 0;
-    for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) {
-      if (!g.isOpen(x + dx, z + dz)) continue;
-      const j = (z + dz) * W + x + dx;
-      if (Math.abs(g.floor[j] - f) < 0.3 && !(g.flags[j] & (F.VOID | F.PIT))) c++;
-    }
-    return c;
-  };
-  const cheb = (a, b) => Math.max(Math.abs((a % W) - (b % W)), Math.abs(((a / W) | 0) - ((b / W) | 0)));
+  const wallSides = (i) => wallSidesG(g, i);
+  const roominess = (i) => roominessG(g, i);
+  const cheb = (a, b) => chebG(W, a, b);
   const farFrom = (i, list, r) => list.every((o) => cheb(o.cell, i) >= r);
   const cx = (i) => (i % W) + 0.5, cz = (i) => ((i / W) | 0) + 0.5;
 
@@ -303,9 +279,7 @@ export function placeScatter(ctx) {
     }
   }
 
-  // neighbour of cell i in direction d (-1 off the map)
-  const nb = (i, d) => { const x = (i % W) + DIR_X[d], z = ((i / W) | 0) + DIR_Z[d]; return g.in(x, z) ? z * W + x : -1; };
-  const sameFloor = (a, b) => Math.abs(g.floor[a] - g.floor[b]) < 0.05;
+  const nb = (i, d) => nbG(g, i, d), sameFloor = (a, b) => Math.abs(g.floor[a] - g.floor[b]) < 0.05;
 
   // ------------------------------------------------------------ terminals
   // Free-standing consoles stand with their backs to room walls, in small
@@ -326,44 +300,34 @@ export function placeScatter(ctx) {
       }
       return true;
     };
+    // computers belong indoors: city offices only under a roof; elsewhere a
+    // kiosk, cabinet or radar may stand outside (base yards, rig decks), a
+    // desk never does
+    const city = style.family === 'city';
     const spots = new Set(), list = [];   // wall-backed spots: i * 4 + wall dir
     for (let i = 0; i < n; i++) {
-      if (!free(i, 2.2) || arena.has(i) || !clearAround(i, 1)) continue;
+      if (!free(i, 2.2) || arena.has(i) || !clearAround(i, 1) || (city && g.sky[i])) continue;
       const room = roominess(i);
       if (room < 11) continue;
       for (let d = 0; d < 4; d++) {
         const j = nb(i, d);
         if (j < 0 || g.type[j] === OPEN || !roomInFront(i, d)) continue;
         spots.add(i * 4 + d);
-        list.push({ i, d, s: 1 + room * 0.03 + (farFrom(i, hints, 3) ? 0 : 1.5) + rng.float(0, 1.5) });
+        list.push({ i, d, s: 1 + room * 0.03 + (farFrom(i, hints, 3) ? 0 : 1.5) - (g.sky[i] ? 0.8 : 0) + rng.float(0, 1.5) });
       }
     }
     list.sort((a, b) => b.s - a.s);
     const placeTerm = (cells, d, slot, seed) => {
-      for (const c of cells) if (!free(c, 2.2)) return false;
-      const i0 = cells[0], i1 = cells[cells.length - 1], f = g.floor[i0];
-      let room = 9;
-      for (const c of cells) if (!g.sky[c]) room = Math.min(room, g.ceil[c] - g.floor[c]);
-      const mx = (cx(i0) + cx(i1)) / 2, mz = (cz(i0) + cz(i1)) / 2;
-      let x = mx, z = mz, gap = 0, x0 = mx - TERM.half, x1 = mx + TERM.half, z0 = mz - TERM.half, z1 = mz + TERM.half;
-      if (d >= 0) {
-        // sprite plane `gap` off the wall; collider from the wall line into the room
-        gap = rng.float(TERM.gap[0], TERM.gap[1]);
-        x = mx + DIR_X[d] * (0.5 - gap); z = mz + DIR_Z[d] * (0.5 - gap);
-        const wx = mx + DIR_X[d] * 0.5, wz = mz + DIR_Z[d] * 0.5, ha = cells.length * 0.5 - 0.08;
-        if (d < 2) { x0 = Math.min(wx, wx - DIR_X[d] * TERM.depth); x1 = Math.max(wx, wx - DIR_X[d] * TERM.depth); z0 = mz - ha; z1 = mz + ha; }
-        else { z0 = Math.min(wz, wz - DIR_Z[d] * TERM.depth); z1 = Math.max(wz, wz - DIR_Z[d] * TERM.depth); x0 = mx - ha; x1 = mx + ha; }
-      }
+      for (const c of cells) if (!free(c, 2.2) || (g.sky[c] && slot === 'wide')) return false;
       const flags0 = cells.map((c) => g.flags[c]), nCol = deco.colliders.length;
-      deco.collider(x0, f, z0, x1, f + Math.min(TERM.colH, room - 0.1), z1);
-      for (const c of cells) g.flags[c] |= F.OBSTACLE | F.NOSPAWN;
-      if (!keepsReach(cells, null, cells.length === 1 ? i0 : undefined)) {
+      const t = terminalPiece(g, deco, cells, d, slot, { styles: style.terminal, tags: style.terminalTags, seed, gap: rng.float(TERM.gap[0], TERM.gap[1]) });
+      if (!keepsReach(cells, null, cells.length === 1 ? cells[0] : undefined)) {
         deco.colliders.length = nCol;
         cells.forEach((c, k) => { g.flags[c] = flags0[k]; });
         return false;
       }
       commitBlocked(cells);
-      out.terminals.push({ cell: i0, cells, x, z, y: f, wall: d, gap, slot, maxH: room - 0.1, styles: style.terminal, tags: style.terminalTags || null, seed, ci: nCol });
+      out.terminals.push(t);
       return true;
     };
     const islands = Math.min(2, Math.floor(counts.terminals / 4));
@@ -399,9 +363,9 @@ export function placeScatter(ctx) {
     if (islands) {
       const isl = [];
       for (let i = 0; i < n; i++) {
-        if (!free(i, 2.4) || arena.has(i) || bits(wallSides(i)) || !clearAround(i, 2) || !flatAround(i)) continue;
+        if (!free(i, 2.4) || (city && g.sky[i]) || arena.has(i) || bits(wallSides(i)) || !clearAround(i, 2) || !flatAround(i)) continue;
         const room = roominess(i);
-        if (room >= 23) isl.push({ i, s: room * 0.1 + rng.float(0, 1) });
+        if (room >= 23) isl.push({ i, s: room * 0.1 - (g.sky[i] ? 1 : 0) + rng.float(0, 1) });
       }
       isl.sort((a, b) => b.s - a.s);
       let got = 0;
@@ -414,96 +378,11 @@ export function placeScatter(ctx) {
   }
 
   // ------------------------------------------------------------ wall terminals
-  // Flat panels on wall faces of open floor cells at console height (never on
-  // doors, jambs, stairs, rails, pits, windows, behind detail geometry or on
-  // a ledge's drop), spaced apart, preferring walls near consoles and the
-  // corridors of tech levels. Decoration: their thin collider on the wall
-  // face only lets shots spark them (obstacle: false, no pathing effect).
   if (counts.wallTerminals > 0) {
-    const BAD_WALL = new Set([TS.GLASS, TS.FACADE, TS.FACADE2, TS.FACADE3, TS.DOOR, TS.DOOR_RED, TS.DOOR_BLUE, TS.DOOR_YELLOW, TS.DOOR_GREEN, TS.DOOR_PURPLE,
-      TS.SCREEN, TS.NEON, TS.LIGHT, TS.FOLIAGE, TS.HAZARD, TS.LAVA, TS.POISON, TS.WATER, TS.VOID, TS.SPIKES]);
-    const GLOWY = new Set([TS.GLASS, TS.LIGHT, TS.SCREEN, TS.NEON]);
-    // deco boxes by the cells their footprint touches
-    const boxIdx = new Map();
-    const consoleNear = new Uint8Array(n);
-    const mark = (i, r) => { const x = i % W, z = (i / W) | 0; for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (g.in(x + dx, z + dz)) consoleNear[(z + dz) * W + x + dx] = 1; };
-    deco.boxes.forEach((b, k) => {
-      const machine = b.tex === TS.MACHINE || (typeof b.tex === 'object' && Object.values(b.tex).includes(TS.MACHINE));
-      for (let z = Math.max(0, Math.floor(b.z0 - 0.05)); z <= Math.min(g.h - 1, Math.floor(b.z1 + 0.05)); z++) {
-        for (let x = Math.max(0, Math.floor(b.x0 - 0.05)); x <= Math.min(W - 1, Math.floor(b.x1 + 0.05)); x++) {
-          const c = z * W + x;
-          let a = boxIdx.get(c);
-          if (!a) boxIdx.set(c, (a = []));
-          a.push(k);
-          if (machine) mark(c, 1);
-        }
-      }
+    out.wallTerminals = placeWallTerminals(g, deco, rng, {
+      count: counts.wallTerminals, styles: style.terminalWall, tech: (style.term ?? 0) >= 0.6, indoor: style.family === 'city',
+      reach: reach0, blocked, near: out.terminals,
     });
-    for (const t of out.terminals) for (const c of t.cells) mark(c, 2);
-    const wallFace = (k, d) => { const j = nb(k, d); return j >= 0 && g.type[j] !== OPEN && !BAD_WALL.has(g.wallTex[j]); };
-    const panelSpot = (i, d) => {
-      if (!wallFace(i, d)) return null;
-      const x = i % W, z = (i / W) | 0, f = g.floor[i], j = nb(i, d);
-      let lo = f + TERM_WALL.minBottom, hi = Math.min((g.sky[i] ? g.floor[j] : g.ceil[i]) - 0.1, f + TERM_WALL.top);
-      if (hi - lo < 0.6) return null;
-      // a wide panel may overhang the cell where the same clean wall runs on both sides
-      const a = d < 2 ? 2 : 0;
-      const side = (s) => {
-        const k = nb(i, s);
-        return k >= 0 && g.type[k] === OPEN && sameFloor(k, i) && !(g.flags[k] & (F.DOOR | F.STAIR | F.VOID | F.PIT | F.OBSTACLE)) && !g.edge[k] && !blocked[k] && clearAround(k, 1) && wallFace(k, d);
-      };
-      const maxW = side(a) && side(OPP[a]) ? TERM_WALL.wideW : TERM_WALL.cellW;
-      const along = d < 2 ? z + 0.5 : x + 0.5, line = d === 0 ? x + 1 : d === 1 ? x : d === 2 ? z + 1 : z;
-      const a0 = along - maxW / 2 - 0.03, a1 = along + maxW / 2 + 0.03;
-      // detail geometry on this stretch of wall: thin slabs on it (trims,
-      // interior skins) move the panel off or above them; anything else -
-      // windows, lamps, pipes, consoles, shelves, pillars - rules the spot out
-      const near = [];
-      for (const c of [i, nb(i, a), nb(i, OPP[a])]) for (const k of (c >= 0 && boxIdx.get(c)) || []) if (!near.includes(k)) near.push(k);
-      near.sort((p, q) => deco.boxes[p].y0 - deco.boxes[q].y0);
-      let off = 0;
-      for (const k of near) {
-        const b = deco.boxes[k];
-        let d0, d1, b0, b1;
-        if (d === 0) { d0 = line - b.x1; d1 = line - b.x0; b0 = b.z0; b1 = b.z1; }
-        else if (d === 1) { d0 = b.x0 - line; d1 = b.x1 - line; b0 = b.z0; b1 = b.z1; }
-        else if (d === 2) { d0 = line - b.z1; d1 = line - b.z0; b0 = b.x0; b1 = b.x1; }
-        else { d0 = b.z0 - line; d1 = b.z1 - line; b0 = b.x0; b1 = b.x1; }
-        if (d1 <= 0.001 || d0 > 0.5 || b1 <= a0 || b0 >= a1 || b.y1 <= lo || b.y0 >= hi) continue;
-        const thin = d1 <= 0.1 && d0 <= 0.002 && typeof b.tex === 'number' && !GLOWY.has(b.tex) && !b.emissive;
-        if (!thin) return null;
-        if (b.y0 <= lo + 0.01 && b.y1 >= hi - 0.01 && b0 <= a0 && b1 >= a1) off = Math.max(off, d1);   // skin over the whole band
-        else if (b.y0 <= lo + 0.35) lo = b.y1 + 0.03;    // wainscot / chair rail: sit above it
-        else if (b.y1 >= hi - 0.3) hi = b.y0 - 0.03;     // crown band: stay under it
-        else return null;
-      }
-      if (hi - lo < 0.45 || lo > f + 1.35) return null;
-      return { lo, hi, off, maxW, along, line };
-    };
-    const tech = (style.term ?? 0) >= 0.6;
-    const cand = [];
-    for (let i = 0; i < n; i++) {
-      if (g.type[i] !== OPEN || !reach0[i] || blocked[i] || g.edge[i] || !clearAround(i, 1)) continue;
-      if (g.flags[i] & (F.VOID | F.PIT | F.HAZARD | F.DOOR | F.STAIR | F.BRIDGE | F.WATER | F.OBSTACLE)) continue;
-      const ws = wallSides(i), corridor = ws === 3 || ws === 12;
-      for (let d = 0; d < 4; d++) {
-        if (!(ws & (1 << d))) continue;
-        const spot = panelSpot(i, d);
-        if (!spot) continue;
-        const s = 1 + (consoleNear[i] ? 1.3 : 0) + (corridor ? (tech ? 0.9 : -0.4) : 0) + (roominess(i) >= 14 ? 0.3 : 0) + rng.float(0, 1.5);
-        cand.push({ i, d, s, spot, corridor });
-      }
-    }
-    cand.sort((a, b) => b.s - a.s);
-    for (const c of cand) {
-      if (out.wallTerminals.length >= counts.wallTerminals) break;
-      if (!farFrom(c.i, out.wallTerminals, c.corridor ? 4 : 3)) continue;
-      const { lo, hi, off, maxW, along, line } = c.spot;
-      const t = off + 0.035, nCol = deco.colliders.length;
-      if (c.d < 2) deco.collider(c.d === 0 ? line - t : line, lo, along - maxW / 2, c.d === 0 ? line : line + t, hi, along + maxW / 2, { obstacle: false });
-      else deco.collider(along - maxW / 2, lo, c.d === 2 ? line - t : line, along + maxW / 2, hi, c.d === 2 ? line : line + t, { obstacle: false });
-      out.wallTerminals.push({ cell: c.i, wall: c.d, along, line, off, lo, hi, maxW, y: g.floor[c.i], dy: rng.float(-0.06, 0.06), styles: style.terminalWall, seed: rng.int(0, 1e9), ci: nCol });
-    }
   }
 
   // ------------------------------------------------------------ spike traps
@@ -550,6 +429,164 @@ export function placeScatter(ctx) {
       const phase = prev ? (prev.phase + 0.22) % 1 : rng.next();
       out.traps.push({ cell: i, x: cx(i), z: cz(i), y: g.floor[i], styles: style.spike, seed: rng.int(0, 1e9), phase, choke });
     }
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------- cell helpers
+// no door / stair / bridge within r cells (Chebyshev)
+function clearAroundG(g, i, r) {
+  const W = g.w, x = i % W, z = (i / W) | 0;
+  for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
+    if (!g.in(x + dx, z + dz)) continue;
+    if (g.flags[(z + dz) * W + x + dx] & NEAR_BAD) return false;
+  }
+  return true;
+}
+// bit d set: a wall (or a much higher floor) on side d
+function wallSidesG(g, i) {
+  const W = g.w, x = i % W, z = (i / W) | 0;
+  let m = 0;
+  for (let d = 0; d < 4; d++) { const nx = x + DIR_X[d], nz = z + DIR_Z[d]; if (!g.isOpen(nx, nz) || g.floor[nz * W + nx] > g.floor[i] + 1.2) m |= 1 << d; }
+  return m;
+}
+const bits = (m) => (m & 1) + ((m >> 1) & 1) + ((m >> 2) & 1) + ((m >> 3) & 1);
+// open same-height cells in the 5x5 window (how roomy the spot is)
+function roominessG(g, i) {
+  const W = g.w, x = i % W, z = (i / W) | 0, f = g.floor[i];
+  let c = 0;
+  for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) {
+    if (!g.isOpen(x + dx, z + dz)) continue;
+    const j = (z + dz) * W + x + dx;
+    if (Math.abs(g.floor[j] - f) < 0.3 && !(g.flags[j] & (F.VOID | F.PIT))) c++;
+  }
+  return c;
+}
+const chebG = (W, a, b) => Math.max(Math.abs((a % W) - (b % W)), Math.abs(((a / W) | 0) - ((b / W) | 0)));
+// neighbour of cell i in direction d (-1 off the map)
+const nbG = (g, i, d) => { const x = (i % g.w) + DIR_X[d], z = ((i / g.w) | 0) + DIR_Z[d]; return g.in(x, z) ? z * g.w + x : -1; };
+
+// ---------------------------------------------------------------- terminals
+// A free-standing console on `cells` (one cell, or two along the wall in
+// direction d; d < 0: an island in the middle of the cell): its collider
+// (deco, the cells become OBSTACLE | NOSPAWN) and placement record. The sprite
+// plane stands o.gap off the wall, the collider runs from the wall line into
+// the room. The caller checks reachability and rolls back if needed.
+export function terminalPiece(g, deco, cells, d, slot, o) {
+  const W = g.w, i0 = cells[0], i1 = cells[cells.length - 1], f = g.floor[i0];
+  let room = 9;
+  for (const c of cells) if (!g.sky[c]) room = Math.min(room, g.ceil[c] - g.floor[c]);
+  const mx = ((i0 % W) + (i1 % W)) / 2 + 0.5, mz = (((i0 / W) | 0) + ((i1 / W) | 0)) / 2 + 0.5;
+  const gap = d >= 0 ? o.gap ?? TERM.gap[0] : 0;
+  let x = mx, z = mz, x0 = mx - TERM.half, x1 = mx + TERM.half, z0 = mz - TERM.half, z1 = mz + TERM.half;
+  if (d >= 0) {
+    x = mx + DIR_X[d] * (0.5 - gap); z = mz + DIR_Z[d] * (0.5 - gap);
+    const wx = mx + DIR_X[d] * 0.5, wz = mz + DIR_Z[d] * 0.5, ha = cells.length * 0.5 - 0.08;
+    if (d < 2) { x0 = Math.min(wx, wx - DIR_X[d] * TERM.depth); x1 = Math.max(wx, wx - DIR_X[d] * TERM.depth); z0 = mz - ha; z1 = mz + ha; }
+    else { z0 = Math.min(wz, wz - DIR_Z[d] * TERM.depth); z1 = Math.max(wz, wz - DIR_Z[d] * TERM.depth); x0 = mx - ha; x1 = mx + ha; }
+  }
+  const ci = deco.colliders.length;
+  deco.collider(x0, f, z0, x1, f + Math.min(TERM.colH, room - 0.1), z1);
+  for (const c of cells) g.flags[c] |= F.OBSTACLE | F.NOSPAWN;
+  return { cell: i0, cells, x, z, y: f, wall: d, gap, slot, maxH: room - 0.1, styles: o.styles, tags: o.tags || null, seed: o.seed, ci };
+}
+
+// ---------------------------------------------------------------- wall terminals
+// Flat panels on wall faces of open floor cells at console height (never on
+// doors, jambs, stairs, rails, pits, windows, behind detail geometry or on a
+// ledge's drop), spaced apart, preferring walls near consoles and the
+// corridors of tech levels. Decoration: their thin collider on the wall face
+// only lets shots spark them (obstacle: false, no pathing effect). Also used
+// by the hub. o: {count, styles, tech (corridor panels welcome), indoor (none
+// under the sky), reach / blocked (cell masks, optional), near (free-standing
+// terminals: panels like their company), allow(i) (optional cell filter)}
+const BAD_WALL = new Set([TS.GLASS, TS.FACADE, TS.FACADE2, TS.FACADE3, TS.DOOR, TS.DOOR_RED, TS.DOOR_BLUE, TS.DOOR_YELLOW, TS.DOOR_GREEN, TS.DOOR_PURPLE,
+  TS.SCREEN, TS.NEON, TS.LIGHT, TS.FOLIAGE, TS.HAZARD, TS.LAVA, TS.POISON, TS.WATER, TS.VOID, TS.SPIKES]);
+const GLOWY = new Set([TS.GLASS, TS.LIGHT, TS.SCREEN, TS.NEON]);
+export function placeWallTerminals(g, deco, rng, o) {
+  const W = g.w, n = g.w * g.h, out = [];
+  const blocked = o.blocked || new Uint8Array(n);
+  const nb = (i, d) => nbG(g, i, d), sameFloor = (a, b) => Math.abs(g.floor[a] - g.floor[b]) < 0.05;
+  // deco boxes by the cells their footprint touches; cells near consoles
+  const boxIdx = new Map();
+  const consoleNear = new Uint8Array(n);
+  const mark = (i, r) => { const x = i % W, z = (i / W) | 0; for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (g.in(x + dx, z + dz)) consoleNear[(z + dz) * W + x + dx] = 1; };
+  deco.boxes.forEach((b, k) => {
+    const machine = b.tex === TS.MACHINE || (typeof b.tex === 'object' && Object.values(b.tex).includes(TS.MACHINE));
+    for (let z = Math.max(0, Math.floor(b.z0 - 0.05)); z <= Math.min(g.h - 1, Math.floor(b.z1 + 0.05)); z++) {
+      for (let x = Math.max(0, Math.floor(b.x0 - 0.05)); x <= Math.min(W - 1, Math.floor(b.x1 + 0.05)); x++) {
+        const c = z * W + x;
+        let a = boxIdx.get(c);
+        if (!a) boxIdx.set(c, (a = []));
+        a.push(k);
+        if (machine) mark(c, 1);
+      }
+    }
+  });
+  for (const t of o.near || []) for (const c of t.cells || [t.cell]) mark(c, 2);
+  const wallFace = (k, d) => { const j = nb(k, d); return j >= 0 && g.type[j] !== OPEN && !BAD_WALL.has(g.wallTex[j]); };
+  const panelSpot = (i, d) => {
+    if (!wallFace(i, d)) return null;
+    const x = i % W, z = (i / W) | 0, f = g.floor[i], j = nb(i, d);
+    let lo = f + TERM_WALL.minBottom, hi = Math.min((g.sky[i] ? g.floor[j] : g.ceil[i]) - 0.1, f + TERM_WALL.top);
+    if (hi - lo < 0.6) return null;
+    // a wide panel may overhang the cell where the same clean wall runs on both sides
+    const a = d < 2 ? 2 : 0;
+    const side = (s) => {
+      const k = nb(i, s);
+      return k >= 0 && g.type[k] === OPEN && sameFloor(k, i) && !(g.flags[k] & (F.DOOR | F.STAIR | F.VOID | F.PIT | F.OBSTACLE)) && !g.edge[k] && !blocked[k] && clearAroundG(g, k, 1) && wallFace(k, d);
+    };
+    const maxW = side(a) && side(OPP[a]) ? TERM_WALL.wideW : TERM_WALL.cellW;
+    const along = d < 2 ? z + 0.5 : x + 0.5, line = d === 0 ? x + 1 : d === 1 ? x : d === 2 ? z + 1 : z;
+    const a0 = along - maxW / 2 - 0.03, a1 = along + maxW / 2 + 0.03;
+    // detail geometry on this stretch of wall: thin slabs on it (trims,
+    // interior skins) move the panel off or above them; anything else -
+    // windows, lamps, pipes, consoles, shelves, pillars - rules the spot out
+    const near = [];
+    for (const c of [i, nb(i, a), nb(i, OPP[a])]) for (const k of (c >= 0 && boxIdx.get(c)) || []) if (!near.includes(k)) near.push(k);
+    near.sort((p, q) => deco.boxes[p].y0 - deco.boxes[q].y0);
+    let off = 0;
+    for (const k of near) {
+      const b = deco.boxes[k];
+      let d0, d1, b0, b1;
+      if (d === 0) { d0 = line - b.x1; d1 = line - b.x0; b0 = b.z0; b1 = b.z1; }
+      else if (d === 1) { d0 = b.x0 - line; d1 = b.x1 - line; b0 = b.z0; b1 = b.z1; }
+      else if (d === 2) { d0 = line - b.z1; d1 = line - b.z0; b0 = b.x0; b1 = b.x1; }
+      else { d0 = b.z0 - line; d1 = b.z1 - line; b0 = b.x0; b1 = b.x1; }
+      if (d1 <= 0.001 || d0 > 0.5 || b1 <= a0 || b0 >= a1 || b.y1 <= lo || b.y0 >= hi) continue;
+      const thin = d1 <= 0.1 && d0 <= 0.002 && typeof b.tex === 'number' && !GLOWY.has(b.tex) && !b.emissive;
+      if (!thin) return null;
+      if (b.y0 <= lo + 0.01 && b.y1 >= hi - 0.01 && b0 <= a0 && b1 >= a1) off = Math.max(off, d1);   // skin over the whole band
+      else if (b.y0 <= lo + 0.35) lo = b.y1 + 0.03;    // wainscot / chair rail: sit above it
+      else if (b.y1 >= hi - 0.3) hi = b.y0 - 0.03;     // crown band: stay under it
+      else return null;
+    }
+    if (hi - lo < 0.45 || lo > f + 1.35) return null;
+    return { lo, hi, off, maxW, along, line };
+  };
+  const cand = [];
+  for (let i = 0; i < n; i++) {
+    if (g.type[i] !== OPEN || (o.reach && !o.reach[i]) || blocked[i] || g.edge[i] || !clearAroundG(g, i, 1) || (o.allow && !o.allow(i))) continue;
+    if (g.flags[i] & (F.VOID | F.PIT | F.HAZARD | F.DOOR | F.STAIR | F.BRIDGE | F.WATER | F.OBSTACLE)) continue;
+    if (o.indoor && g.sky[i]) continue;      // city: offices, not street facades
+    const ws = wallSidesG(g, i), corridor = ws === 3 || ws === 12;
+    for (let d = 0; d < 4; d++) {
+      if (!(ws & (1 << d))) continue;
+      const spot = panelSpot(i, d);
+      if (!spot) continue;
+      const s = 1 + (consoleNear[i] ? 1.3 : 0) + (corridor ? (o.tech ? 0.9 : -0.4) : 0) + (roominessG(g, i) >= 14 ? 0.3 : 0) - (g.sky[i] ? 0.8 : 0) + rng.float(0, 1.5);
+      cand.push({ i, d, s, spot, corridor });
+    }
+  }
+  cand.sort((a, b) => b.s - a.s);
+  for (const c of cand) {
+    if (out.length >= o.count) break;
+    if (!out.every((p) => chebG(W, p.cell, c.i) >= (c.corridor ? 4 : 3))) continue;
+    const { lo, hi, off, maxW, along, line } = c.spot;
+    const t = off + 0.035, nCol = deco.colliders.length;
+    if (c.d < 2) deco.collider(c.d === 0 ? line - t : line, lo, along - maxW / 2, c.d === 0 ? line : line + t, hi, along + maxW / 2, { obstacle: false });
+    else deco.collider(along - maxW / 2, lo, c.d === 2 ? line - t : line, along + maxW / 2, hi, c.d === 2 ? line : line + t, { obstacle: false });
+    out.push({ cell: c.i, wall: c.d, along, line, off, lo, hi, maxW, y: g.floor[c.i], dy: rng.float(-0.06, 0.06), styles: o.styles, seed: rng.int(0, 1e9), ci: nCol });
   }
   return out;
 }
