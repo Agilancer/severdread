@@ -166,14 +166,15 @@ export class Scatter {
     this.content = content;
   }
 
-  // the special item on each pedestal (rare+, better deeper); needs the
-  // player's level and the weapon bases, so it is rolled when the level starts
-  stockPedestals(playerLevel, bases, itemFind = 0) {
+  // the special item on each pedestal (uncommon+, better deeper, one item
+  // level above the floor's drops); needs the weapon bases, so it is rolled
+  // when the level starts
+  stockPedestals(bases, itemFind = 0) {
     for (const p of this.pedestals) {
       const rng = new Rng(p.itemSeed || 1);
       const minRarity = pedestalMinRarity(this.depth, p.r01 ?? 0.5);
       const kind = rng.weighted(PEDESTAL_KINDS, (x) => x.w).k;
-      p.item = generateItem(rng, { kind, level: rollItemLevel(rng, playerLevel) + 1, bases, depth: this.depth, itemFind: itemFind + 0.5, minRarity });
+      p.item = generateItem(rng, { kind, level: rollItemLevel(rng, this.depth) + 1, bases, depth: this.depth, itemFind: itemFind + 0.5, minRarity });
       p.icon = null;
     }
   }

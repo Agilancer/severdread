@@ -20,8 +20,8 @@ export function rollRarity(rng, depth = 1, itemFind = 0, min = 0, max = 4) {
   return rng.weighted(pool, (p) => p.w).r.id;
 }
 
-export function rollItemLevel(rng, playerLevel) {
-  const [a, b] = B.itemLevelRange(playerLevel);
+export function rollItemLevel(rng, depth) {
+  const [a, b] = B.itemLevelRange(depth);
   return Math.min(B.MAX_LEVEL + 5, rng.int(a, b));
 }
 
@@ -200,8 +200,10 @@ export function buyValue(item) { return sellValue(item) * 4; }
 export function maxUpgrade(item) { return RARITY[item.rarity].maxUpgrade; }
 export function dps(item) {
   const a = ARCHETYPES[item.archetype];
-  const pellets = Math.max(1, a.pellets || 1) * (patternN(item, 'fan') || 1);
-  return upgradedDamage(item) * item.rate * pellets;
+  // a fan of n shares the shot's damage (1/sqrt(n) each, see firePlayerWeapon)
+  const fan = patternN(item, 'fan'), pellets = Math.max(1, a.pellets || 1) * (fan > 1 ? Math.sqrt(fan) : 1);
+  const helix = item.patterns?.some((x) => x.id === 'helix') ? 1.3 : 1;
+  return upgradedDamage(item) * item.rate * pellets * helix;
 }
 export function patternN(item, id) { const p = item.patterns?.find((x) => x.id === id); return p ? (p.n || 1) : 0; }
 export function itemScore(item) {

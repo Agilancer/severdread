@@ -106,7 +106,7 @@ export class Player {
   // base per-hit damage for a weapon (before crits)
   computeHitDamage(weapon) {
     const st = this.stats, ab = st.abilities;
-    const base = weapon.damage * B.upgradeMult(weapon.upgrade) + st.attack;
+    const base = weapon.damage * B.upgradeMult(weapon.upgrade) + B.attackPerHit(st.attack, ARCHETYPES[weapon.archetype]?.damage);
     let mult = 1 + st.dmgPct + (st.elemDmg[weapon.element] || 0);
     if (ab.berserker) mult += ab.berserker * (1 - this.hp / this.maxHp);
     if (ab.vengeance && this.vengeanceT > 0) mult += ab.vengeance;

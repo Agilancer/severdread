@@ -299,9 +299,10 @@ export function spikeDamage(depth, toMonster) {
 // ---------------------------------------------------------------- pedestals
 // Special item on a pedestal: rare at least, epic / legendary more likely deeper.
 export function pedestalMinRarity(depth, r01) {
-  if (depth >= 14) return r01 < 0.3 ? 4 : 3;
-  if (depth >= 6) return r01 < 0.45 ? 3 : 2;
-  return r01 < 0.15 ? 3 : 2;
+  if (depth >= 20) return r01 < 0.25 ? 4 : 3;
+  if (depth >= 10) return r01 < 0.35 ? 3 : 2;
+  if (depth >= 4) return r01 < 0.12 ? 3 : 2;
+  return r01 < 0.3 ? 2 : 1;
 }
 export const PEDESTAL_KINDS = [{ k: 'weapon', w: 50 }, { k: 'body', w: 12 }, { k: 'head', w: 10 }, { k: 'legs', w: 10 }, { k: 'ring', w: 18 }];
 

@@ -17,14 +17,33 @@
 - XP to next level: `40 · L^1.6 · 1.045^L`. Run XP grows `1.09^depth`, so
   ~8 runs to depth 30 ≈ level 30, deep runs ≈ level 50, and depth 150+
   pushes toward the level-200 cap.
-- Monster HP `1.085^d · (1 + 0.04d)`, damage `1.065^d · (1 + 0.02d)`,
-  count `12 + 1.6d` (capped 70), elite chance up to 30%.
-- Drops: item level = player level −2 … +5. Rarity weights shift with depth
-  and Item Rarity stats. Bosses always drop 2-4 items (first one rare+),
-  boss reagents and a gold credit orb.
-- Upgrades: +8% power per level (+ quadratic), max +5 … +15 by rarity, cost
-  credits + reagents that change as levels rise (boss-only reagents at higher
-  levels). Bag: +5 slots per upgrade, 40 → 200, escalating cost.
+- Area level `L` = depth up to 50, then +1.5 per depth (depth 150 = 200).
+  Monsters and loot both scale with it.
+- Monster HP `1.085^L · (1 + 0.04L) · (1 + ramp)`, damage
+  `1.065^L · (1 + 0.02L) · (1 + 0.6 ramp)`, where `ramp = 1 − e^(−(L−1)/6)`
+  is how much of a full kit of on-level gear a player has picked up (0 on
+  depth 1, ~0.85 by depth 12). Count `12 + 1.6d` (capped 70), elite chance up
+  to 30%.
+- Drops: item level = area level −2 … +1 (pedestals +1, shop one below the
+  deepest floor reached), never the character level, so gear can't outrun the
+  floor and replaying shallow floors doesn't hand out deep gear. Rarity
+  weights shift with depth and Item Rarity stats. Bosses always drop 2-4
+  items (first one rare+), boss reagents and a gold credit orb.
+- Rarity power ×1.0 / 1.1 / 1.2 / 1.32 / 1.48. Extra projectiles split a
+  shot's damage instead of copying it (fan `1/√n` each, ring `3/√n`, helix
+  0.65 each, multishot +40% of the shot per extra projectile). Flat attack is
+  scaled per hit by the weapon's hit size (pistol = 1), so it adds about the
+  same DPS to a minigun as to a railgun.
+- Armour: reduction `armor / (armor + 40 + 6 · armorValue(L))`, cap 75%: a
+  full on-level set blocks about a third at any depth.
+- Upgrades: +6% power per level (+ quadratic): +5 = 1.35×, +10 = 1.8×,
+  +15 = 2.35×; max +5 … +15 by rarity, cost credits + reagents that change as
+  levels rise (boss-only reagents at higher levels). Bag: +5 slots per
+  upgrade, 40 → 200, escalating cost.
+- `tests/balance.test.js` plays a first run down to depth 60 with the real
+  item / stat code and checks that a standard monster still takes about as
+  long to kill as on depth 1 with the starting pistol (~0.6 s), and that it
+  takes 6–18 monster hits to die, through depth 30.
 
 ## Level generation (src/game/levelgen)
 

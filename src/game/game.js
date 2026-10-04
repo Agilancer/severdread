@@ -176,7 +176,7 @@ export class Game {
     // keys, chests
     for (const k of level.keys) w.pickups.push({ kind: 'key', color: k.color, x: k.x, y: (w.floorAt(k.x, k.z) ?? 0) + 0.6, z: k.z, vx: 0, vy: 0, vz: 0, settled: true, age: 0, phase: fx.float(0, 6) });
     for (const c of level.chests) w.chests.push({ ...c, y: w.floorAt(c.x, c.z) ?? 0, open: false });
-    w.scatter.stockPedestals(this.save.level, this.content.weaponBases, this.player.stats?.itemFind || 0);   // special items on pedestals
+    w.scatter.stockPedestals(this.content.weaponBases, this.player.stats?.itemFind || 0);   // special items on pedestals
     this.player.spawnAt(level.start.x, level.start.z, level.start.yaw);
     audio.setMusic(level.theme.music || 'industrial', seed);
     this.ui.hideLoading();
@@ -463,7 +463,7 @@ export class Game {
 
   openChest(c) {
     c.open = true;
-    const w = this.world, s = this.save, p = this.player;
+    const w = this.world, p = this.player;
     const depth = Math.max(1, w.depth);
     this.sfx('chest_open');
     w.burst(c.x, c.y + 0.6, c.z, [0.3, 0.9, 1], 30, { speed: 4, up: 2 });
@@ -472,7 +472,7 @@ export class Game {
     const rng = new Rng(fx.int(0, 2 ** 31));
     const nItems = rng.int(1, 2) + (rng.chance(0.25) ? 1 : 0);
     for (let k = 0; k < nItems; k++) {
-      const item = generateItem(rng, { level: rollItemLevel(rng, s.level), bases: this.content.weaponBases, depth, itemFind: p.stats.itemFind + 0.5, minRarity: k === 0 ? 1 : 0 });
+      const item = generateItem(rng, { level: rollItemLevel(rng, depth), bases: this.content.weaponBases, depth, itemFind: p.stats.itemFind + 0.5, minRarity: k === 0 ? 1 : 0 });
       this.dropAt(fake, { kind: 'item', item });
     }
     const pool = CHEST_POOL.filter((r) => !r.minDepth || depth >= r.minDepth);
