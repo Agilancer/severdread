@@ -1817,7 +1817,10 @@ def _scatter_grid_cells(arr, sheet):
         y0, y1 = int(rb[r]), int(np.ceil(rb[r + 1]))
         prof = strict[y0:y1].sum(0) if sheet.get("colsPerRow") else glob
         x0, x1 = _extent(prof)
-        g = scatter_cuts(prof, groups, x0, x1) if groups > 1 else []
+        # "colCuts": {"row": [x, ...]} pins the cuts of rows whose objects are too
+        # uneven in width for the even-spacing guess
+        pinned = sheet.get("colCuts", {}).get(str(r))
+        g = [float(v) for v in pinned] if pinned else scatter_cuts(prof, groups, x0, x1) if groups > 1 else []
         gb = [x0] + g + [x1]
         allruns, pick, cnt = [], [], []
         for k in range(groups):

@@ -70835,6 +70835,2560 @@
     ],
     "stripsWithOtherSpriteCount": []
    }
+  },
+  {
+   "id": "scatter_terminals_floor",
+   "kind": "terminal",
+   "file": "assets/sprites/scatter/terminals_floor.png",
+   "w": 1024,
+   "h": 900,
+   "frames": 1,
+   "frameNames": [],
+   "objects": [
+    {
+     "id": "tterm_floor_00",
+     "kind": "terminal",
+     "px": 141,
+     "pxW": 76,
+     "style": "tech",
+     "tags": [
+      "kiosk",
+      "green"
+     ],
+     "light": [
+      104,
+      166,
+      15
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       744,
+       0,
+       76,
+       141
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_01",
+     "kind": "terminal",
+     "px": 146,
+     "pxW": 102,
+     "style": "tech",
+     "tags": [
+      "monitor",
+      "cyan"
+     ],
+     "light": [
+      78,
+      149,
+      122
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       378,
+       0,
+       102,
+       146
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_02",
+     "kind": "terminal",
+     "px": 137,
+     "pxW": 120,
+     "style": "tech",
+     "tags": [
+      "dual",
+      "pole"
+     ],
+     "light": [
+      161,
+      130,
+      11
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       456,
+       157,
+       120,
+       137
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_03",
+     "kind": "terminal",
+     "px": 137,
+     "pxW": 104,
+     "style": "tech",
+     "tags": [
+      "lectern",
+      "green"
+     ],
+     "light": [
+      40,
+      178,
+      49
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       578,
+       157,
+       104,
+       137
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_04",
+     "kind": "terminal",
+     "px": 149,
+     "pxW": 84,
+     "style": "tech",
+     "tags": [
+      "radar",
+      "pillar"
+     ],
+     "light": [
+      37,
+      179,
+      18
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       198,
+       0,
+       84,
+       149
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_05",
+     "kind": "terminal",
+     "px": 155,
+     "pxW": 96,
+     "style": "dark",
+     "tags": [
+      "red",
+      "cabinet"
+     ],
+     "light": [
+      188,
+      40,
+      27
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       0,
+       96,
+       155
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_06",
+     "kind": "terminal",
+     "px": 129,
+     "pxW": 138,
+     "style": "tech",
+     "tags": [
+      "console",
+      "blue"
+     ],
+     "light": [
+      102,
+      127,
+      107
+     ],
+     "hue": "white",
+     "frames": [
+      [
+       394,
+       300,
+       138,
+       129
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_07",
+     "kind": "terminal",
+     "px": 145,
+     "pxW": 84,
+     "style": "lab",
+     "tags": [
+      "medical",
+      "kiosk",
+      "white"
+     ],
+     "light": [
+      64,
+      125,
+      127
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       482,
+       0,
+       84,
+       145
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_08",
+     "kind": "terminal",
+     "px": 151,
+     "pxW": 98,
+     "style": "tech",
+     "tags": [
+      "radar",
+      "cabinet",
+      "navy"
+     ],
+     "light": [
+      17,
+      138,
+      182
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       98,
+       0,
+       98,
+       151
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_09",
+     "kind": "terminal",
+     "px": 149,
+     "pxW": 92,
+     "style": "brass",
+     "tags": [
+      "cabinet",
+      "orange"
+     ],
+     "light": [
+      188,
+      125,
+      20
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       284,
+       0,
+       92,
+       149
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_10",
+     "kind": "terminal",
+     "px": 114,
+     "pxW": 172,
+     "style": "tech",
+     "tags": [
+      "desk",
+      "triple"
+     ],
+     "light": [
+      60,
+      169,
+      111
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       808,
+       562,
+       172,
+       114
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_11",
+     "kind": "terminal",
+     "px": 101,
+     "pxW": 160,
+     "style": "tech",
+     "tags": [
+      "desk",
+      "curved"
+     ],
+     "light": [
+      95,
+      116,
+      94
+     ],
+     "hue": "white",
+     "frames": [
+      [
+       0,
+       798,
+       160,
+       101
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_12",
+     "kind": "terminal",
+     "px": 118,
+     "pxW": 164,
+     "style": "tech",
+     "tags": [
+      "desk",
+      "command",
+      "red"
+     ],
+     "light": [
+      131,
+      88,
+      69
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       0,
+       562,
+       164,
+       118
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_13",
+     "kind": "terminal",
+     "px": 102,
+     "pxW": 142,
+     "style": "military",
+     "tags": [
+      "plot",
+      "table",
+      "green"
+     ],
+     "light": [
+      141,
+      119,
+      25
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       650,
+       682,
+       142,
+       102
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_14",
+     "kind": "terminal",
+     "px": 87,
+     "pxW": 142,
+     "style": "tech",
+     "tags": [
+      "desk",
+      "chairs"
+     ],
+     "light": [
+      76,
+      128,
+      114
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       162,
+       798,
+       142,
+       87
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_15",
+     "kind": "terminal",
+     "px": 117,
+     "pxW": 124,
+     "style": "tech",
+     "tags": [
+      "desk",
+      "map",
+      "green"
+     ],
+     "light": [
+      56,
+      152,
+      104
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       166,
+       562,
+       124,
+       117
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_16",
+     "kind": "terminal",
+     "px": 133,
+     "pxW": 136,
+     "style": "military",
+     "tags": [
+      "desk",
+      "antenna"
+     ],
+     "light": [
+      132,
+      139,
+      43
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       786,
+       157,
+       136,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_17",
+     "kind": "terminal",
+     "px": 123,
+     "pxW": 94,
+     "style": "lab",
+     "tags": [
+      "medical",
+      "cart",
+      "wheels"
+     ],
+     "light": [
+      6,
+      146,
+      202
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       190,
+       435,
+       94,
+       123
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_18",
+     "kind": "terminal",
+     "px": 119,
+     "pxW": 92,
+     "style": "tech",
+     "tags": [
+      "tripod"
+     ],
+     "frames": [
+      [
+       772,
+       435,
+       92,
+       119
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_19",
+     "kind": "terminal",
+     "px": 121,
+     "pxW": 90,
+     "style": "tech",
+     "tags": [
+      "cabinet",
+      "purple"
+     ],
+     "light": [
+      90,
+      73,
+      199
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       576,
+       435,
+       90,
+       121
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_20",
+     "kind": "terminal",
+     "px": 143,
+     "pxW": 88,
+     "style": "tech",
+     "tags": [
+      "server",
+      "blue"
+     ],
+     "light": [
+      99,
+      126,
+      97
+     ],
+     "hue": "white",
+     "frames": [
+      [
+       568,
+       0,
+       88,
+       143
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_21",
+     "kind": "terminal",
+     "px": 139,
+     "pxW": 88,
+     "style": "tech",
+     "tags": [
+      "server",
+      "green"
+     ],
+     "light": [
+      32,
+      189,
+      59
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       366,
+       157,
+       88,
+       139
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_22",
+     "kind": "terminal",
+     "px": 132,
+     "pxW": 124,
+     "style": "tech",
+     "tags": [
+      "server",
+      "double"
+     ],
+     "light": [
+      156,
+      116,
+      42
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       146,
+       300,
+       124,
+       132
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_23",
+     "kind": "terminal",
+     "px": 143,
+     "pxW": 84,
+     "style": "tech",
+     "tags": [
+      "cylinder",
+      "blue"
+     ],
+     "light": [
+      16,
+      144,
+      182
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       658,
+       0,
+       84,
+       143
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_24",
+     "kind": "terminal",
+     "px": 140,
+     "pxW": 120,
+     "style": "tech",
+     "tags": [
+      "stack",
+      "cyan"
+     ],
+     "light": [
+      21,
+      177,
+      161
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       244,
+       157,
+       120,
+       140
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_25",
+     "kind": "terminal",
+     "px": 141,
+     "pxW": 106,
+     "style": "tech",
+     "tags": [
+      "energy",
+      "tube",
+      "blue"
+     ],
+     "light": [
+      21,
+      135,
+      202
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       822,
+       0,
+       106,
+       141
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_26",
+     "kind": "terminal",
+     "px": 133,
+     "pxW": 144,
+     "style": "tech",
+     "tags": [
+      "tape",
+      "reels",
+      "retro"
+     ],
+     "light": [
+      193,
+      116,
+      14
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       0,
+       300,
+       144,
+       133
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_27",
+     "kind": "terminal",
+     "px": 134,
+     "pxW": 100,
+     "style": "tech",
+     "tags": [
+      "cabinet",
+      "orange"
+     ],
+     "light": [
+      198,
+      137,
+      18
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       684,
+       157,
+       100,
+       134
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_28",
+     "kind": "terminal",
+     "px": 141,
+     "pxW": 100,
+     "style": "lab",
+     "tags": [
+      "tank",
+      "green"
+     ],
+     "light": [
+      62,
+      196,
+      117
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       0,
+       157,
+       100,
+       141
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_29",
+     "kind": "terminal",
+     "px": 127,
+     "pxW": 156,
+     "style": "tech",
+     "tags": [
+      "mainframe",
+      "blue"
+     ],
+     "light": [
+      34,
+      137,
+      169
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       644,
+       300,
+       156,
+       127
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_30",
+     "kind": "terminal",
+     "px": 131,
+     "pxW": 120,
+     "style": "cyber",
+     "tags": [
+      "hologram",
+      "globe"
+     ],
+     "light": [
+      54,
+      199,
+      196
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       272,
+       300,
+       120,
+       131
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_31",
+     "kind": "terminal",
+     "px": 115,
+     "pxW": 188,
+     "style": "tech",
+     "tags": [
+      "table",
+      "starmap"
+     ],
+     "light": [
+      15,
+      121,
+      182
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       618,
+       562,
+       188,
+       115
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_32",
+     "kind": "terminal",
+     "px": 125,
+     "pxW": 110,
+     "style": "tech",
+     "tags": [
+      "reactor",
+      "red"
+     ],
+     "light": [
+      210,
+      48,
+      16
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       435,
+       110,
+       125
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_33",
+     "kind": "terminal",
+     "px": 126,
+     "pxW": 114,
+     "style": "military",
+     "tags": [
+      "levers"
+     ],
+     "light": [
+      185,
+      111,
+      13
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       802,
+       300,
+       114,
+       126
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_34",
+     "kind": "terminal",
+     "px": 122,
+     "pxW": 136,
+     "style": "lab",
+     "tags": [
+      "desk",
+      "dna"
+     ],
+     "light": [
+      49,
+      169,
+      82
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       286,
+       435,
+       136,
+       122
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_35",
+     "kind": "terminal",
+     "px": 122,
+     "pxW": 150,
+     "style": "tech",
+     "tags": [
+      "radio",
+      "dish"
+     ],
+     "light": [
+      47,
+      173,
+      63
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       424,
+       435,
+       150,
+       122
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_36",
+     "kind": "terminal",
+     "px": 125,
+     "pxW": 76,
+     "style": "lab",
+     "tags": [
+      "kiosk",
+      "handprint"
+     ],
+     "light": [
+      22,
+      205,
+      89
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       112,
+       435,
+       76,
+       125
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_37",
+     "kind": "terminal",
+     "px": 128,
+     "pxW": 108,
+     "style": "tech",
+     "tags": [
+      "globe",
+      "blue"
+     ],
+     "light": [
+      28,
+      135,
+      177
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       534,
+       300,
+       108,
+       128
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_38",
+     "kind": "terminal",
+     "px": 114,
+     "pxW": 118,
+     "style": "tech",
+     "tags": [
+      "radiation",
+      "red"
+     ],
+     "light": [
+      207,
+      43,
+      12
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       682,
+       118,
+       114
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_39",
+     "kind": "terminal",
+     "px": 141,
+     "pxW": 140,
+     "style": "industrial",
+     "tags": [
+      "robot",
+      "arm",
+      "yellow"
+     ],
+     "light": [
+      179,
+      143,
+      54
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       102,
+       157,
+       140,
+       141
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_40",
+     "kind": "terminal",
+     "px": 110,
+     "pxW": 100,
+     "style": "rust",
+     "tags": [
+      "cabinet",
+      "small"
+     ],
+     "frames": [
+      [
+       208,
+       682,
+       100,
+       110
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_41",
+     "kind": "terminal",
+     "px": 117,
+     "pxW": 96,
+     "style": "rust",
+     "tags": [
+      "cabinet",
+      "green"
+     ],
+     "light": [
+      167,
+      120,
+      74
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       292,
+       562,
+       96,
+       117
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_42",
+     "kind": "terminal",
+     "px": 117,
+     "pxW": 104,
+     "style": "lab",
+     "tags": [
+      "lectern",
+      "white"
+     ],
+     "light": [
+      1,
+      152,
+      204
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       390,
+       562,
+       104,
+       117
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_43",
+     "kind": "terminal",
+     "px": 126,
+     "pxW": 76,
+     "style": "dark",
+     "tags": [
+      "red",
+      "tall"
+     ],
+     "light": [
+      196,
+      19,
+      10
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       918,
+       300,
+       76,
+       126
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_44",
+     "kind": "terminal",
+     "px": 110,
+     "pxW": 122,
+     "style": "military",
+     "tags": [
+      "console",
+      "crate"
+     ],
+     "light": [
+      165,
+      127,
+      44
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       310,
+       682,
+       122,
+       110
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_45",
+     "kind": "terminal",
+     "px": 102,
+     "pxW": 144,
+     "style": "lab",
+     "tags": [
+      "desk",
+      "radar"
+     ],
+     "light": [
+      4,
+      181,
+      79
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       794,
+       682,
+       144,
+       102
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_46",
+     "kind": "terminal",
+     "px": 120,
+     "pxW": 102,
+     "style": "alien",
+     "tags": [
+      "purple",
+      "organic"
+     ],
+     "light": [
+      115,
+      72,
+      182
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       668,
+       435,
+       102,
+       120
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_47",
+     "kind": "terminal",
+     "px": 116,
+     "pxW": 120,
+     "style": "dark",
+     "tags": [
+      "cables",
+      "blue"
+     ],
+     "light": [
+      14,
+      130,
+      174
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       496,
+       562,
+       120,
+       116
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_48",
+     "kind": "terminal",
+     "px": 112,
+     "pxW": 86,
+     "style": "industrial",
+     "tags": [
+      "yellow",
+      "cart"
+     ],
+     "light": [
+      186,
+      130,
+      28
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       120,
+       682,
+       86,
+       112
+      ]
+     ]
+    },
+    {
+     "id": "tterm_floor_49",
+     "kind": "terminal",
+     "px": 110,
+     "pxW": 214,
+     "style": "tech",
+     "tags": [
+      "desk",
+      "command",
+      "wide"
+     ],
+     "light": [
+      125,
+      69,
+      75
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       434,
+       682,
+       214,
+       110
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/terminals_floor.webp",
+   "slice": {
+    "rowCuts": [
+     203.5,
+     369.5,
+     557.5,
+     731.5
+    ],
+    "stripsWithOtherSpriteCount": []
+   }
+  },
+  {
+   "id": "scatter_terminals_wall",
+   "kind": "terminal_wall",
+   "file": "assets/sprites/scatter/terminals_wall.png",
+   "w": 1024,
+   "h": 772,
+   "frames": 1,
+   "frameNames": [],
+   "objects": [
+    {
+     "id": "tterm_wall_00",
+     "kind": "terminal_wall",
+     "px": 108,
+     "pxW": 110,
+     "style": "tech",
+     "tags": [
+      "radar",
+      "green"
+     ],
+     "light": [
+      66,
+      161,
+      31
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       736,
+       140,
+       110,
+       108
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_01",
+     "kind": "terminal_wall",
+     "px": 87,
+     "pxW": 142,
+     "style": "tech",
+     "tags": [
+      "map",
+      "cyan"
+     ],
+     "light": [
+      9,
+      169,
+      177
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       552,
+       674,
+       142,
+       87
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_02",
+     "kind": "terminal_wall",
+     "px": 111,
+     "pxW": 68,
+     "style": "brass",
+     "tags": [
+      "handprint",
+      "keypad"
+     ],
+     "light": [
+      197,
+      151,
+      17
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       104,
+       140,
+       68,
+       111
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_03",
+     "kind": "terminal_wall",
+     "px": 98,
+     "pxW": 138,
+     "style": "tech",
+     "tags": [
+      "radar",
+      "green",
+      "round"
+     ],
+     "light": [
+      70,
+      172,
+      46
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       0,
+       574,
+       138,
+       98
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_04",
+     "kind": "terminal_wall",
+     "px": 95,
+     "pxW": 178,
+     "style": "tech",
+     "tags": [
+      "blueprint",
+      "blue",
+      "dual"
+     ],
+     "light": [
+      5,
+      73,
+      184
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       722,
+       574,
+       178,
+       95
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_05",
+     "kind": "terminal_wall",
+     "px": 138,
+     "pxW": 94,
+     "style": "tech",
+     "tags": [
+      "alarm",
+      "red",
+      "keypad"
+     ],
+     "light": [
+      185,
+      24,
+      16
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       0,
+       0,
+       94,
+       138
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_06",
+     "kind": "terminal_wall",
+     "px": 110,
+     "pxW": 148,
+     "style": "lab",
+     "tags": [
+      "medical",
+      "body",
+      "cyan"
+     ],
+     "light": [
+      14,
+      200,
+      181
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       174,
+       140,
+       148,
+       110
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_07",
+     "kind": "terminal_wall",
+     "px": 106,
+     "pxW": 152,
+     "style": "military",
+     "tags": [
+      "map",
+      "green"
+     ],
+     "light": [
+      103,
+      146,
+      47
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       406,
+       254,
+       152,
+       106
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_08",
+     "kind": "terminal_wall",
+     "px": 117,
+     "pxW": 76,
+     "style": "tech",
+     "tags": [
+      "intercom",
+      "camera"
+     ],
+     "light": [
+      4,
+      138,
+      193
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       720,
+       0,
+       76,
+       117
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_09",
+     "kind": "terminal_wall",
+     "px": 96,
+     "pxW": 140,
+     "style": "brass",
+     "tags": [
+      "orbit",
+      "orange"
+     ],
+     "light": [
+      194,
+      99,
+      10
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       580,
+       574,
+       140,
+       96
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_10",
+     "kind": "terminal_wall",
+     "px": 113,
+     "pxW": 150,
+     "style": "tech",
+     "tags": [
+      "schematic",
+      "orange",
+      "switches"
+     ],
+     "light": [
+      202,
+      102,
+      5
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       798,
+       0,
+       150,
+       113
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_11",
+     "kind": "terminal_wall",
+     "px": 100,
+     "pxW": 100,
+     "style": "industrial",
+     "tags": [
+      "valve",
+      "red"
+     ],
+     "light": [
+      148,
+      61,
+      65
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       264,
+       471,
+       100,
+       100
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_12",
+     "kind": "terminal_wall",
+     "px": 108,
+     "pxW": 114,
+     "style": "industrial",
+     "tags": [
+      "radiation",
+      "hazard",
+      "yellow"
+     ],
+     "light": [
+      205,
+      145,
+      10
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       848,
+       140,
+       114,
+       108
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_13",
+     "kind": "terminal_wall",
+     "px": 104,
+     "pxW": 126,
+     "style": "lab",
+     "tags": [
+      "tubes",
+      "chemical"
+     ],
+     "light": [
+      119,
+      85,
+      128
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       284,
+       364,
+       126,
+       104
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_14",
+     "kind": "terminal_wall",
+     "px": 102,
+     "pxW": 140,
+     "style": "tech",
+     "tags": [
+      "circuit",
+      "green"
+     ],
+     "light": [
+      41,
+      152,
+      52
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       592,
+       364,
+       140,
+       102
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_15",
+     "kind": "terminal_wall",
+     "px": 135,
+     "pxW": 148,
+     "style": "rust",
+     "tags": [
+      "oscilloscope",
+      "green"
+     ],
+     "light": [
+      97,
+      143,
+      74
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       96,
+       0,
+       148,
+       135
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_16",
+     "kind": "terminal_wall",
+     "px": 99,
+     "pxW": 136,
+     "style": "lab",
+     "tags": [
+      "tubes",
+      "cyan"
+     ],
+     "light": [
+      40,
+      148,
+      170
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       510,
+       471,
+       136,
+       99
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_17",
+     "kind": "terminal_wall",
+     "px": 119,
+     "pxW": 126,
+     "style": "tech",
+     "tags": [
+      "lock",
+      "red",
+      "keypad"
+     ],
+     "light": [
+      188,
+      41,
+      21
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       466,
+       0,
+       126,
+       119
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_18",
+     "kind": "terminal_wall",
+     "px": 108,
+     "pxW": 134,
+     "style": "rust",
+     "tags": [
+      "gauges",
+      "dials"
+     ],
+     "light": [
+      165,
+      122,
+      77
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       0,
+       254,
+       134,
+       108
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_19",
+     "kind": "terminal_wall",
+     "px": 103,
+     "pxW": 178,
+     "style": "tech",
+     "tags": [
+      "fans",
+      "cyan"
+     ],
+     "light": [
+      5,
+      139,
+      170
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       412,
+       364,
+       178,
+       103
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_20",
+     "kind": "terminal_wall",
+     "px": 119,
+     "pxW": 124,
+     "style": "tech",
+     "tags": [
+      "cctv",
+      "cyan",
+      "quad"
+     ],
+     "light": [
+      66,
+      170,
+      158
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       594,
+       0,
+       124,
+       119
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_21",
+     "kind": "terminal_wall",
+     "px": 105,
+     "pxW": 134,
+     "style": "tech",
+     "tags": [
+      "multi",
+      "screens"
+     ],
+     "light": [
+      34,
+      167,
+      131
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       812,
+       254,
+       134,
+       105
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_22",
+     "kind": "terminal_wall",
+     "px": 97,
+     "pxW": 168,
+     "style": "tech",
+     "tags": [
+      "starmap",
+      "cyan",
+      "wide"
+     ],
+     "light": [
+      29,
+      160,
+      167
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       296,
+       574,
+       168,
+       97
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_23",
+     "kind": "terminal_wall",
+     "px": 125,
+     "pxW": 104,
+     "style": "tech",
+     "tags": [
+      "stack",
+      "monitors"
+     ],
+     "light": [
+      34,
+      108,
+      150
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       246,
+       0,
+       104,
+       125
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_24",
+     "kind": "terminal_wall",
+     "px": 107,
+     "pxW": 150,
+     "style": "tech",
+     "tags": [
+      "map",
+      "gauge",
+      "green"
+     ],
+     "light": [
+      78,
+      149,
+      52
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       254,
+       254,
+       150,
+       107
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_25",
+     "kind": "terminal_wall",
+     "px": 89,
+     "pxW": 134,
+     "style": "tech",
+     "tags": [
+      "radar",
+      "dual"
+     ],
+     "light": [
+      157,
+      130,
+      28
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       416,
+       674,
+       134,
+       89
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_26",
+     "kind": "terminal_wall",
+     "px": 101,
+     "pxW": 144,
+     "style": "tech",
+     "tags": [
+      "globe",
+      "blue"
+     ],
+     "light": [
+      3,
+      117,
+      200
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       734,
+       364,
+       144,
+       101
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_27",
+     "kind": "terminal_wall",
+     "px": 112,
+     "pxW": 102,
+     "style": "tech",
+     "tags": [
+      "schematic",
+      "orange"
+     ],
+     "light": [
+      181,
+      105,
+      3
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       0,
+       140,
+       102,
+       112
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_28",
+     "kind": "terminal_wall",
+     "px": 90,
+     "pxW": 144,
+     "style": "tech",
+     "tags": [
+      "wave",
+      "green",
+      "wide"
+     ],
+     "light": [
+      60,
+      162,
+      120
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       130,
+       674,
+       144,
+       90
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_29",
+     "kind": "terminal_wall",
+     "px": 109,
+     "pxW": 120,
+     "style": "tech",
+     "tags": [
+      "radar",
+      "quad"
+     ],
+     "light": [
+      33,
+      122,
+      153
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       500,
+       140,
+       120,
+       109
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_30",
+     "kind": "terminal_wall",
+     "px": 106,
+     "pxW": 132,
+     "style": "tech",
+     "tags": [
+      "keyboard",
+      "green"
+     ],
+     "light": [
+      115,
+      146,
+      43
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       560,
+       254,
+       132,
+       106
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_31",
+     "kind": "terminal_wall",
+     "px": 106,
+     "pxW": 116,
+     "style": "tech",
+     "tags": [
+      "laptop",
+      "blue"
+     ],
+     "light": [
+      18,
+      124,
+      188
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       694,
+       254,
+       116,
+       106
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_32",
+     "kind": "terminal_wall",
+     "px": 121,
+     "pxW": 112,
+     "style": "tech",
+     "tags": [
+      "hatch",
+      "orange"
+     ],
+     "light": [
+      177,
+      117,
+      17
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       352,
+       0,
+       112,
+       121
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_33",
+     "kind": "terminal_wall",
+     "px": 100,
+     "pxW": 142,
+     "style": "lab",
+     "tags": [
+      "flask",
+      "chemistry"
+     ],
+     "light": [
+      47,
+      132,
+      164
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       366,
+       471,
+       142,
+       100
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_34",
+     "kind": "terminal_wall",
+     "px": 99,
+     "pxW": 102,
+     "style": "cyber",
+     "tags": [
+      "hologram",
+      "blue"
+     ],
+     "light": [
+      51,
+      154,
+      216
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       648,
+       471,
+       102,
+       99
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_35",
+     "kind": "terminal_wall",
+     "px": 101,
+     "pxW": 122,
+     "style": "military",
+     "tags": [
+      "handprint",
+      "green"
+     ],
+     "light": [
+      39,
+      193,
+      110
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       880,
+       364,
+       122,
+       101
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_36",
+     "kind": "terminal_wall",
+     "px": 101,
+     "pxW": 134,
+     "style": "tech",
+     "tags": [
+      "eye",
+      "scanner",
+      "blue"
+     ],
+     "light": [
+      33,
+      118,
+      178
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       0,
+       471,
+       134,
+       101
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_37",
+     "kind": "terminal_wall",
+     "px": 110,
+     "pxW": 174,
+     "style": "tech",
+     "tags": [
+      "phone",
+      "intercom"
+     ],
+     "light": [
+      93,
+      112,
+      100
+     ],
+     "hue": "white",
+     "frames": [
+      [
+       324,
+       140,
+       174,
+       110
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_38",
+     "kind": "terminal_wall",
+     "px": 98,
+     "pxW": 154,
+     "style": "tech",
+     "tags": [
+      "blueprint",
+      "card"
+     ],
+     "light": [
+      12,
+      119,
+      179
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       140,
+       574,
+       154,
+       98
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_39",
+     "kind": "terminal_wall",
+     "px": 99,
+     "pxW": 136,
+     "style": "lab",
+     "tags": [
+      "dna",
+      "orange"
+     ],
+     "light": [
+      201,
+      135,
+      23
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       752,
+       471,
+       136,
+       99
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_40",
+     "kind": "terminal_wall",
+     "px": 95,
+     "pxW": 108,
+     "style": "tech",
+     "tags": [
+      "alarm",
+      "red",
+      "radar"
+     ],
+     "light": [
+      182,
+      63,
+      49
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       902,
+       574,
+       108,
+       95
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_41",
+     "kind": "terminal_wall",
+     "px": 97,
+     "pxW": 112,
+     "style": "industrial",
+     "tags": [
+      "cables",
+      "green"
+     ],
+     "light": [
+      133,
+      129,
+      72
+     ],
+     "hue": "yellow",
+     "frames": [
+      [
+       466,
+       574,
+       112,
+       97
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_42",
+     "kind": "terminal_wall",
+     "px": 90,
+     "pxW": 138,
+     "style": "lab",
+     "tags": [
+      "planet",
+      "blue"
+     ],
+     "light": [
+      16,
+      158,
+      201
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       276,
+       674,
+       138,
+       90
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_43",
+     "kind": "terminal_wall",
+     "px": 105,
+     "pxW": 118,
+     "style": "alien",
+     "tags": [
+      "purple",
+      "organic"
+     ],
+     "light": [
+      169,
+      61,
+      200
+     ],
+     "hue": "purple",
+     "frames": [
+      [
+       0,
+       364,
+       118,
+       105
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_44",
+     "kind": "terminal_wall",
+     "px": 95,
+     "pxW": 128,
+     "style": "lab",
+     "tags": [
+      "planet",
+      "green"
+     ],
+     "light": [
+      72,
+      175,
+      118
+     ],
+     "hue": "green",
+     "frames": [
+      [
+       0,
+       674,
+       128,
+       95
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_45",
+     "kind": "terminal_wall",
+     "px": 108,
+     "pxW": 116,
+     "style": "military",
+     "tags": [
+      "triangle"
+     ],
+     "light": [
+      43,
+      160,
+      147
+     ],
+     "hue": "cyan",
+     "frames": [
+      [
+       136,
+       254,
+       116,
+       108
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_46",
+     "kind": "terminal_wall",
+     "px": 109,
+     "pxW": 112,
+     "style": "tech",
+     "tags": [
+      "hex",
+      "globe",
+      "orange"
+     ],
+     "light": [
+      182,
+      104,
+      5
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       622,
+       140,
+       112,
+       109
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_47",
+     "kind": "terminal_wall",
+     "px": 101,
+     "pxW": 126,
+     "style": "tech",
+     "tags": [
+      "round",
+      "target",
+      "blue"
+     ],
+     "light": [
+      1,
+      129,
+      204
+     ],
+     "hue": "blue",
+     "frames": [
+      [
+       136,
+       471,
+       126,
+       101
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_48",
+     "kind": "terminal_wall",
+     "px": 63,
+     "pxW": 138,
+     "style": "tech",
+     "tags": [
+      "red",
+      "globe",
+      "wide"
+     ],
+     "light": [
+      187,
+      14,
+      8
+     ],
+     "hue": "red",
+     "frames": [
+      [
+       696,
+       674,
+       138,
+       63
+      ]
+     ]
+    },
+    {
+     "id": "tterm_wall_49",
+     "kind": "terminal_wall",
+     "px": 105,
+     "pxW": 162,
+     "style": "tech",
+     "tags": [
+      "console",
+      "dual",
+      "keyboard"
+     ],
+     "light": [
+      134,
+      94,
+      69
+     ],
+     "hue": "orange",
+     "frames": [
+      [
+       120,
+       364,
+       162,
+       105
+      ]
+     ]
+    }
+   ],
+   "source": "art/raw/scatter/terminals_wall.webp",
+   "slice": {
+    "rowCuts": [
+     206.5,
+     380.0,
+     556.0,
+     722.5
+    ],
+    "stripsWithOtherSpriteCount": []
+   }
   }
  ]
 }
