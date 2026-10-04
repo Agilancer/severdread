@@ -307,7 +307,8 @@ export class Content {
   // the per-weapon placement data written by tools/process_art.py (frame
   // pixels): art box {top, bottom, artL, artR}, gripX (where the arm leaves
   // the bottom edge), hands, muzzle [x, y], flashFrame, frames and seq (the
-  // fire frames to play).
+  // fire frames to play); guns also carry barrel [dx, dy], tip [x, y] and
+  // barrelQ (tools/weapon_barrels.py) to aim the sprite at the crosshair.
   weaponFP(baseId, archetype) {
     let b = this.baseById.get(baseId);
     if (!b) {

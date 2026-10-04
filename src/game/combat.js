@@ -224,9 +224,9 @@ function shotCamera(game) {
 function norm3(v) { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
 function cross3(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
 
-// What the crosshair is on: the eye ray against walls / props and monsters,
-// up to `range` (a far point on the ray when nothing is hit).
-function crosshairTarget(game, C, range) {
+// What the crosshair is on: distance along the eye ray to the first wall /
+// prop / monster, up to `range` (nothing hit: a far point on the ray).
+function crosshairDist(game, C, range) {
   const w = game.world, e = C.eye, f = C.fwd;
   let dist = w.castRay(e[0], e[1], e[2], f[0], f[1], f[2], range);
   if (dist < 0) dist = range;
@@ -235,7 +235,7 @@ function crosshairTarget(game, C, range) {
     const t = rayCylinder(e, f, m);
     if (t !== null && t < dist) dist = t;
   }
-  return [e[0] + f[0] * dist, e[1] + f[1] * dist, e[2] + f[2] * dist];
+  return dist;
 }
 
 // The shot origin: the point `depth` in front of the eye on the camera ray
@@ -297,7 +297,8 @@ export function firePlayerWeapon(game, weapon) {
   if (arch.hitscan) {
     const range = arch.range || 60;
     const spreadPel = Math.max(1, 1 + pat('fan') + (ab.multishot || 0));
-    const bo = shotOrigin(game, C, BEAM_DEPTH);   // damage runs along the eye ray, the beam starts at the muzzle
+    // damage runs along the eye ray; the beam starts at the muzzle, short of what it hits
+    const bo = shotOrigin(game, C, clamp(crosshairDist(game, C, range) * 0.6, 0.12, BEAM_DEPTH));
     for (let k = 0; k < spreadPel; k++) {
       const off = spreadPel > 1 ? (k / (spreadPel - 1) - 0.5) * 0.25 : 0;
       const d = rotateDir(fwd, right, up, off, 0);
@@ -313,8 +314,11 @@ export function firePlayerWeapon(game, weapon) {
   const vis = projVisual(game, el, arch.proj, weapon.seed || 0);
   let pellets = Math.max(1, arch.pellets || 1) + (ab.multishot || 0);
   const fanN = pat('fan'), ringN = pat('burst_ring');
-  const aim = crosshairTarget(game, C, AIM_RANGE);
-  const aimDir = norm3([aim[0] - mz[0], aim[1] - mz[1], aim[2] - mz[2]]);
+  // aim point: what the crosshair is on, never closer than just past the
+  // muzzle (an obstacle closer than that is inside the gun's reach anyway:
+  // the first sweep from the muzzle meets it)
+  const ad = Math.max(crosshairDist(game, C, AIM_RANGE), org.depth + 0.6);
+  const aimDir = norm3([eye[0] + fwd[0] * ad - mz[0], eye[1] + fwd[1] * ad - mz[1], eye[2] + fwd[2] * ad - mz[2]]);
   const aR = norm3(cross3(aimDir, up)), aU = cross3(aR, aimDir);
   const dirs = [];
   if (ringN) {

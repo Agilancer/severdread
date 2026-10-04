@@ -659,10 +659,19 @@ export class Game {
       // tip + t*barrel meets the crosshair row at t = (H/2 - tipY) / by
       const ty = y0 + m.tip[1] * s;
       x0 = W * 0.5 - ((H * 0.5 - ty) * b[0]) / b[1] - m.tip[0] * s;
-      // at least ~70% of the art, the arm cut and the barrel tip stay on screen
-      const aw = artW * s;
-      const hi = Math.min(W + 0.3 * aw - m.artR * s, W * 0.97 - m.gripX * s, W * 0.92 - m.tip[0] * s);
-      const lo = Math.max(-0.3 * aw - m.artL * s, W * 0.03 - m.gripX * s, W * 0.08 - m.tip[0] * s);
+      // at least ~70% of the art, the arm cut and the barrel tip stay on
+      // screen; the tip stays within 0.42 H of the centre (a barrel leaning
+      // almost sideways would otherwise push the gun off the edge - it then
+      // points a little beside the crosshair). With touch controls the tip
+      // stays left of the FIRE / JUMP / DASH cluster and the art does not run
+      // past the FIRE button (CSS-sized, so measured in CSS px).
+      const aw = artW * s, tipX = m.tip[0] * s;
+      let hi = Math.min(W + 0.3 * aw - m.artR * s, W * 0.97 - m.gripX * s, W * 0.92 - tipX, W * 0.5 + 0.42 * H - tipX);
+      const lo = Math.max(-0.3 * aw - m.artL * s, W * 0.03 - m.gripX * s, W * 0.08 - tipX, W * 0.5 - 0.42 * H - tipX);
+      if (input.mode === 'touch') {
+        const css = W / Math.max(1, window.innerWidth);
+        hi = Math.min(hi, W - 230 * css - tipX, W - 60 * css - m.artR * s);
+      }
       x0 = lo > hi ? (lo + hi) / 2 : clamp(x0, lo, hi);
     }
     // fire frames: a gun's sequence starts on its flash frame - the shot leaves
@@ -681,7 +690,7 @@ export class Game {
     const mx = tip ? x + tip[0] * s : null, my = tip ? y + tip[1] * s : null;
     p.muzzleNDC = tip ? [(mx / W) * 2 - 1, 1 - (my / H) * 2] : null;
     p.muzzleDir = aimed ? b : null;                  // barrel direction on screen (low-res px, y down)
-    return { fp, m, s, x, y, frame, view, melee, thrown, aimed, mx, my, W, H };
+    return { fp, m, s, x, y, x0, y0, frame, view, melee, thrown, aimed, mx, my, W, H };
   }
 
   // Shots fired since the last frame were spawned on the camera ray through
@@ -702,7 +711,7 @@ export class Game {
     for (const sh of shots) {
       const o = [P[0] + u[0] * sh.depth, P[1] + u[1] * sh.depth, P[2] + u[2] * sh.depth];
       if (sh.beam) {
-        if (sh.beam.age >= sh.beam.life) continue;
+        if (sh.beam.age >= sh.beam.life || !this.world.beams.includes(sh.beam)) continue;
         sh.beam.x0 = o[0]; sh.beam.y0 = o[1]; sh.beam.z0 = o[2];
         keep.push(sh);
       } else if (!sh.pr.dead && this.world.projectiles.includes(sh.pr)) {

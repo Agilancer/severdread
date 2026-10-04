@@ -58,6 +58,35 @@ blade, mace, club. Add a new archetype there if a weapon needs new behaviour.
 Weapons from a rarity sheet only drop at that rarity (common sheets supply
 common drops, legendary sheets legendary drops...).
 
+### Barrel axis (guns aim at the crosshair)
+
+The first-person sprite of a gun is placed so that its barrel, extended out
+of the muzzle, runs through the crosshair, and shots leave the drawn barrel
+tip along that line. The barrel is measured from the idle frame of the
+processed atlas and stored in the weapon's `fp` metadata (frame pixels):
+
+| field | meaning |
+|---|---|
+| `barrel` | `[dx, dy]` unit vector along the barrel, pointing out of the muzzle |
+| `tip` | `[x, y]` the barrel tip on that axis (where shots leave) |
+| `barrelQ` | confidence 0..1; below 0.5 the game keeps the old fixed placement |
+
+```bash
+python3 tools/weapon_barrels.py           # (re)measure every gun, update fp in the manifest
+python3 tools/weapon_barrels.py --check   # print the measurements, write nothing
+```
+
+`process_art.py` runs the same measurement on every weapon sheet it slices,
+so re-processing a sheet keeps (and refreshes) its barrels; running
+`weapon_barrels.py` twice changes nothing. The tip sits next to the baked
+muzzle flash (`fp.muzzle`); the axis runs from the centroid of the gun above
+the hands to that front end and snaps onto a long straight barrel edge when
+there is one. Blobby emitters, barrels seen end-on, axes pointing sideways or
+a flash beside the axis get a low confidence. Melee and thrown weapons are
+not measured. To check new art visually, set `SEVERDREAD.debugBarrel = true`
+in the browser console: the drawn barrel line (cyan when measured and
+trusted, orange otherwise) should run along the barrel into the crosshair.
+
 ## Monsters & bosses
 
 Sheet layout: 8 rows (front, front-left, left, rear-left, back, rear-right,
