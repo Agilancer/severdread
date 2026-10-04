@@ -17,11 +17,12 @@ import { genMaze } from './gen_maze.js';
 import { genMountain } from './gen_mountain.js';
 import { genCastle } from './gen_castle.js';
 import { genLab } from './gen_lab.js';
+import { genFoundry } from './gen_foundry.js';
 import { placeScatter } from './scatter.js';
 
 const GENERATORS = {
   rooms: genArch, station: genArch, castle: genArch, caves: genCaves, city: genCity, rooftops: genPlatforms, islands: genPlatforms,
-  convoy: genConvoy, canyon: genCanyon, hall: genHall, maze: genMaze, mountain: genMountain, lab: genLab,
+  convoy: genConvoy, canyon: genCanyon, hall: genHall, maze: genMaze, mountain: genMountain, lab: genLab, foundry: genFoundry,
 };
 
 // Every new level rolls a random archetype first (each archetype equally

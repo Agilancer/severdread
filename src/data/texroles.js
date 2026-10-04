@@ -824,13 +824,15 @@ export const THEME_TEX = {
   // ---- industrial
   space_freighter: { wall: '2:0,0 14:0,5 2:0,9 20:0,4', wall2: '20:0,8 13:0,2 20:0,3', side: '12:2,0 8:0,0', floor: '12:2,0 8:2,2', floor2: '8:2,4 14:1,3', accent: '1:3,1' },
   large_freighter: { wall: '2:0,0 14:0,5 2:0,9', wall2: '20:0,8 20:0,3 13:0,2', floor: '8:2,4 8:2,2', floor2: '12:2,0 14:0,8' },
-  volcano_base: { wall2: 'rock@hell', ground: 'ground@hell', rock: 'rock@hell' },
-  clockwork_foundry: { wall: '13:0,1 13:0,5 12:3,8 12:3,2', wall2: '17:1,5 17:0,1 14:1,8', floor: '8:2,2 8:2,3', ceil: '8:1,5 14:1,3', accent: 'G:rusty_chains 17:1,1', machine: '17:1,5 14:1,8 2:2,6', pipe: '17:1,7 17:0,1 17:1,4', metal: '13:0,0 12:3,0' },
+  volcano_base: { wall2: 'rock@hell', ground: 'ground@hell', rock: 'rock@hell', glass: '#glass_pane' },
+  // foundry archetype: brass PANEL (gear wheels, locker doors), dark framed control-room glass
+  clockwork_foundry: { wall: '13:0,1 13:0,5 12:3,8 12:3,2', wall2: '17:1,5 17:0,1 14:1,8', floor: '8:2,2 8:2,3', ceil: '8:1,5 14:1,3', accent: 'G:rusty_chains 17:1,1', machine: '17:1,5 14:1,8 2:2,6', pipe: '17:1,7 17:0,1 17:1,4', metal: '13:0,0 12:3,0', panel: '2:0,8 17:0,4', glass: '#glass_pane_dark' },
   oil_rig: { wall: '8:1,0 14:1,0 12:2,2', wall2: '12:2,2 13:0,0', floor: '8:2,4 14:1,3 8:2,2', floor2: '12:2,0 8:2,3', side: '12:2,0 13:0,0', accent: '1:3,1 14:2,8' },
   semi_trucks: { wall: '#truck_trailer', side: '#truck_trailer', wall2: '2:0,9 20:0,3 20:0,8', floor: '22:1,6 12:1,0', floor2: '21:3,9 G:wood_grey_planks', accent: '1:3,1' },
   subway_trains: { wall: '#train_subway', side: '#train_subway', wall2: '12:0,8 3:0,4', floor: '22:1,6 12:0,0', floor2: '8:2,2 8:2,4', accent: '21:3,4 18:2,5 21:3,6', ceil: '21:3,6 22:2,4' },
   sewer_labyrinth: { wall: '18:2,3 21:4,5 18:4,8', wall2: 'G:dripping_stone G:decay_green', floor: '20:1,3 21:0,8', floor2: '8:2,4 14:1,3', ceil: 'G:dripping_stone 15:2,3', side: '18:2,3 G:stone_dark_bricks', accent: '8:1,0 14:1,1', pitwall: 'G:decay_green 8:3,9' },
-  meat_plant: { wall: '18:1,3 8:2,5', wall2: '16:0,8 10:0,0 10:1,0', floor: '8:2,5 8:2,9', ceil: '8:1,0 8:1,1', accent: '16:0,8 16:2,0', floor3: 'G:blood_stone' },
+  // meat plant vats and gutters hold blood (POISON role), stainless benches (METAL), framed glass
+  meat_plant: { wall: '18:1,3 8:2,5', wall2: '16:0,8 10:0,0 10:1,0', floor: '8:2,5 8:2,9', ceil: '8:1,0 8:1,1', accent: '16:0,8 16:2,0', floor3: 'G:blood_stone', poison: '11:blood', metal: '22:1,0 22:1,6', glass: '#glass_pane' },
   prison_complex: { wall: '21:3,4 13:0,0 1:3,0', wall2: 'G:iron_spikes_grey 8:1,4 14:1,9', floor: '22:2,1 20:1,3', floor2: '8:2,4 14:1,3' },
   military_base: { wall: '21:3,4 1:0,0 20:1,7', wall2: '1:0,0 3:0,3 14:0,3', floor: '22:2,1 20:1,3 8:2,2', floor2: '21:0,0 21:0,2', ceil: '21:3,4 20:1,7 22:2,1 12:2,0', crate: '14:0,3 3:0,3 #crate_metal', accent: '1:3,1' },
   possessed_military: { wall: '21:3,4 1:0,0', wall2: '10:0,0 16:0,8 15:2,6', floor: '22:2,1 20:1,3', floor2: 'G:blood_stone 8:2,5', ceil: '20:1,7 21:3,4 22:2,1 12:2,0', accent: '10:0,0 15:2,6' },
@@ -843,7 +845,8 @@ export const THEME_TEX = {
   volcano: { floor: '7:1,6 11:1,0 6:1,8', floor2: 'G:lava_rock_floor 17:3,0', ceil: 'rock@hell' },
   flesh_cathedral: { wall: '15:1,0 G:gothic_arches 15:1,3', wall2: '16:0,8 10:0,0 10:1,0', floor: 'G:blood_stone 15:2,6', floor2: '11:3,7 G:red_tile_floor', ceil: 'G:thorn_carving 10:0,9', accent: 'G:skull_panels 15:1,6 17:2,1', pillar: '16:0,7 17:0,0' },
   throne_of_bones: { wall: 'G:skull_niches G:skull_panels 15:1,6', wall2: '17:2,1 15:1,1', floor: '11:3,7 G:blood_stone', floor2: 'G:red_tile_floor 17:3,6', ceil: 'rock@hell', side: 'G:stone_black_bricks 15:4,9', pillar: '16:0,7 15:4,4', accent: '17:2,1 G:skull_panels' },
-  infernal_foundry: { wall: 'G:lava_bricks 17:0,2 17:0,9', wall2: 'G:iron_spikes_black 17:2,0 17:0,3', floor: '17:1,6 8:2,2', floor2: 'G:lava_rock_floor 17:3,0', ceil: '17:0,3 12:4,0', accent: 'G:rusty_chains 17:1,1', machine: '17:4,6 17:1,5' },
+  // infernal foundry: steel deck plate on the floors (a glowing lava grate floor read as lava)
+  infernal_foundry: { wall: 'G:lava_bricks 17:0,2 17:0,9', wall2: 'G:iron_spikes_black 17:2,0 17:0,3', floor: '8:2,2 17:0,3', floor2: 'G:lava_rock_floor 17:3,0', ceil: '17:0,3 17:4,2', ceil2: '13:0,8 12:2,8', accent: 'G:rusty_chains 17:1,1', machine: '17:4,6 17:1,5', metal: '17:0,3 17:4,2 13:0,3', glass: '#glass_pane_dark' },
   // ---- castle
   castle: { door: 'G:wood_iron_door 15:3,4 2:4,0', floor2: 'G:checker_floor G:marble_black_floor', ceil: 'G:wood_dark_planks 15:3,7' },
   clocktower: { wall2: '13:0,1 12:3,8 17:1,1', floor: 'G:wood_dark_planks G:wood_grey_planks', floor2: '8:2,4 14:1,3', ceil: 'G:wood_dark_planks 15:3,7 21:3,9', accent: 'G:gold_filigree 22:4,7', machine: '17:1,5 14:1,8', pipe: 'G:rusty_chains 17:1,1', beam: 'G:wood_dark_planks 21:3,9', metal: '12:3,0 13:0,0 17:0,3' },
