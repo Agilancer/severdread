@@ -104,6 +104,7 @@ export class HUD {
     } else {
       this.text('ORBITAL STATION AEGIS-9', this.w / 2, pad, '#9fd8ff', 9 * s, FONT_BIG, 'center');
       if (game.save.run.active) this.text(`RUN IN PROGRESS · NEXT DEPTH ${game.save.run.depth + 1}`, this.w / 2, pad + 14 * s, '#ffcc66', 7 * s, FONT, 'center');
+      else if (!game.save.stats.runs) this.warpHint(game, s, pad, touch);
     }
 
     // ---------------- weapon slots (bottom-left, small rectangles 1-4)
@@ -181,6 +182,25 @@ export class HUD {
     if (p.dead) {
       g.fillStyle = 'rgba(80,0,0,.35)'; g.fillRect(0, 0, this.w, this.h);
     }
+  }
+
+  // Until the first dive: a pulsing goal line and a marker over the warp pad.
+  warpHint(game, s, pad, touch) {
+    const t = performance.now() / 1000, a = 0.65 + 0.35 * Math.sin(t * 4);
+    const g = this.g;
+    g.globalAlpha = a;
+    this.text(touch ? 'GOAL: STAND ON THE GLOWING WARP PAD AND TAP WARP TO START YOUR DIVE' : 'GOAL: STAND ON THE GLOWING WARP PAD AND PRESS [E] TO START YOUR DIVE',
+      this.w / 2, pad + 14 * s, '#7fe6ff', 8 * s, FONT, 'center');
+    g.globalAlpha = 1;
+    const tp = game.world.level.teleporter, p = game.player;
+    if (!tp || Math.hypot(p.x - tp.x, p.z - tp.z) < tp.r + 0.4) return;   // already on it: the [E] prompt shows
+    const fy = game.world.floorAt(tp.x, tp.z) ?? 0;
+    const pr = game.renderer.project(tp.x, fy + 2.4 + 0.15 * Math.sin(t * 3), tp.z);
+    if (!pr || pr.w <= 0) return;
+    const x = pr.x * this.w, y = pr.y * this.h;
+    this.text('WARP', x, y - 12 * s, '#9fe8ff', 9 * s, FONT_BIG, 'center');
+    g.fillStyle = '#9fe8ff';
+    g.beginPath(); g.moveTo(x - 6 * s, y); g.lineTo(x + 6 * s, y); g.lineTo(x, y + 8 * s); g.closePath(); g.fill();
   }
 
   drawLevelUp(game, dt) {

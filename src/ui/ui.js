@@ -12,6 +12,7 @@ import { input, requestLock, releaseLock } from '../engine/input.js';
 import { TitleBlood, loadTitleBlood } from './title.js';
 import { LevelMap } from './map.js';
 
+const WELCOME_KEY = 'severdread_welcome_v1';   // how-to-play guide shown once per device
 const SLOT_LABELS = { weapon0: '1', weapon1: '2', weapon2: '3', weapon3: '4', head: 'HEAD', body: 'BODY', legs: 'LEGS', ring0: 'RING', ring1: 'RING', ring2: 'RING', ring3: 'RING' };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -130,7 +131,58 @@ export class UI {
     if (fresh || !g.hasSave()) g.newGame();
     if (input.mode === 'keyboard') requestLock();
     g.touch?.setVisible(input.mode === 'touch');
-    await g.enterHub(fresh ? 'Welcome to AEGIS-9. Talk to the crew, then step onto the teleporter.' : 'Welcome back.');
+    // first time the game is played on this device: the how-to-play guide (it replaces the welcome toast)
+    let seen = false;
+    try { seen = !!localStorage.getItem(WELCOME_KEY); } catch (e) { /* private mode */ }
+    await g.enterHub(!seen ? null : fresh ? 'Welcome to AEGIS-9. Talk to the crew, then step onto the teleporter.' : 'Welcome back.');
+    if (!seen) this.showWelcome();
+  }
+
+  // How-to-play guide: shown once on the first launch (over the station, game
+  // paused) and from the pause menu. The warp pad comes first - it is the one
+  // thing a new player cannot guess.
+  showWelcome(back = null) {
+    const g = this.game, touch = input.mode === 'touch';
+    if (!back) this.setMenuState();
+    const k = (key, tap) => (touch ? `<b>${tap}</b>` : `<b>${key}</b>`);
+    const controls = touch
+      ? `<div><b>Left side</b> drag to move · <b>right side</b> drag to look</div>
+         <div><b>FIRE</b> shoots and aims while held · <b>JUMP</b> · <b>DASH</b></div>
+         <div><b>1-4</b> switch weapon · <b>USE / WARP</b> talk, open, use</div>
+         <div><b>BAG</b> equipment · <b>MAP</b> level radar · <b>II</b> pause</div>`
+      : `<div><b>WASD</b> move · <b>Mouse</b> look · <b>Left click</b> fire</div>
+         <div><b>Space</b> jump · <b>Shift / right click</b> dash</div>
+         <div><b>1-4 / wheel</b> weapons · <b>Q</b> last weapon · <b>E</b> talk, open, use</div>
+         <div><b>Tab / I</b> equipment · <b>M</b> map · <b>Esc / P</b> pause</div>`;
+    const el = this.open(`
+      <div class="panel welcome">
+        <h2>WELCOME TO AEGIS-9</h2>
+        <div class="welcome-body scroll">
+          <div class="welcome-warp">
+            <div class="welcome-step">1</div>
+            <div><b>Start your dive at the WARP.</b> The glowing teleporter pad you are standing on is the way down.
+              Stand on it and ${touch ? 'tap <b>WARP</b>' : 'press <b>E</b>'} to open the warp and start your dungeon dive.</div>
+          </div>
+          <div class="welcome-grid">
+            <div><h3>THE DIVE</h3>Every level is a new place. Kill <b>every enemy and the boss</b> to open the exit <b>portal</b>,
+              then step in to go deeper or warp home to the station with your loot.</div>
+            <div><h3>KEYS &amp; DOORS</h3>Coloured doors need the matching <b>key</b>. Keys lie around the level or drop from enemies.</div>
+            <div><h3>LOOT</h3>Enemies, bosses and chests drop weapons, armour and rings. Equip them in the ${k('Tab / I', 'BAG')} screen;
+              its <b>MAP</b> tab (${k('M', 'MAP')}) shows every enemy, the boss and the portal.</div>
+            <div><h3>THE CREW</h3>Talk to the robots in the station (${k('E', 'USE')}) to buy, sell, upgrade and craft gear.</div>
+            <div><h3>DYING</h3>Death ends the run: you keep your level, gear and bag, but the dive starts again at depth 1.</div>
+          </div>
+          <h3>CONTROLS</h3>
+          <div class="help-keys">${controls}</div>
+        </div>
+        <div style="text-align:right;margin-top:8px"><button class="btn red" data-a="go">${back ? 'Back' : 'Got it - let\'s dive'}</button></div>
+      </div>`);
+    el.querySelector('[data-a=go]').onclick = () => {
+      try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) { /* ignore */ }
+      if (back) { back(); return; }
+      this.closeAll();
+      if (input.mode === 'keyboard') requestLock();
+    };
   }
 
   showLoading(text) {
@@ -153,6 +205,7 @@ export class UI {
           <button class="btn red" data-a="resume">Resume</button>
           <button class="btn" data-a="inv">Equipment</button>
           <button class="btn" data-a="settings">Settings</button>
+          <button class="btn" data-a="guide">How to Play</button>
           <button class="btn" data-a="help">Controls</button>
           ${!g.inHub ? '<button class="btn" data-a="abandon">Abandon Run</button>' : ''}
           <button class="btn" data-a="title">Save &amp; Quit to Title</button>
@@ -162,6 +215,7 @@ export class UI {
     el.querySelector('[data-a=inv]').onclick = () => { g.state = 'playing'; this.openInventory(); };
     el.querySelector('[data-a=settings]').onclick = () => this.showSettings(() => this.showPause());
     el.querySelector('[data-a=help]').onclick = () => this.showHelp(() => this.showPause());
+    el.querySelector('[data-a=guide]').onclick = () => this.showWelcome(() => this.showPause());
     el.querySelector('[data-a=abandon]')?.addEventListener('click', () => {
       if (!confirm('Abandon this run? You keep your gear and levels but restart at depth 1.')) return;
       g.save.run = { active: false, depth: 0, themes: [] };

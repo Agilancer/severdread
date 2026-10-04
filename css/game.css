@@ -345,3 +345,19 @@ canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edge
   .title .menu { margin-top: 10px; gap: 6px; }
   .title .menu .btn { padding-top: 7px; padding-bottom: 7px; }
 }
+
+/* -------------------------------------------------------------- how-to-play guide */
+.panel.welcome { width: min(720px, 100%); max-height: calc(100% - 8px); display: flex; flex-direction: column; }
+.welcome-body { overflow-y: auto; -webkit-overflow-scrolling: touch; font-size: 17px; line-height: 1.25; }
+.welcome-body b { color: var(--gold); font-weight: normal; }
+.welcome-body h3 { margin: 8px 0 3px; }
+.welcome-warp { display: flex; gap: 10px; align-items: center; padding: 8px; margin-bottom: 4px; border: 2px solid #3fb8e0;
+  background: rgba(30, 110, 150, .25); box-shadow: 0 0 14px rgba(70, 200, 255, .35); animation: warpGlow 1.6s ease-in-out infinite; }
+.welcome-step { font-family: 'PressStart', monospace; font-size: 18px; color: #9fe8ff; flex: 0 0 auto; text-shadow: 0 0 8px #3fb8e0; }
+@keyframes warpGlow { 50% { box-shadow: 0 0 22px rgba(90, 220, 255, .6); } }
+.welcome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 18px; }
+.welcome-grid h3 { margin-top: 6px; }
+@media (max-height: 460px) {
+  .welcome-body { font-size: 15px; }
+  .panel.welcome h2 { font-size: 11px; margin-bottom: 4px; }
+}
