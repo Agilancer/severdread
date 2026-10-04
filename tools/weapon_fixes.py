@@ -12,6 +12,7 @@ fixes are recorded in fp.fixed and skipped on a re-run.
   share  : screen-height share of the art (Game.weaponLayout fp.share)
   aim    : False - not aimed at the crosshair (a bow's stave is no barrel)
   recolor: 'rust' - near-white / near-black faces become rusty iron + brass
+  seq    : fire-animation frames to use (frames that lose the weapon are skipped)
   name   : display name (names that contradict the art)
 Usage: python3 tools/weapon_fixes.py
 """
@@ -26,8 +27,9 @@ CONFIG = os.path.join(ROOT, "tools/art_config.json")
 
 FIXES = {
     # longbows filed as crossbows: rename, cant, draw bigger, no barrel aim
-    "w_common_16_4": {"name": "Grim Longbow", "rotate": -18, "share": 0.6, "aim": False},
-    "w_common_16_6": {"name": "Trench Recurve", "rotate": -18, "share": 0.6, "aim": False},
+    # (their sheet animates like a thrown weapon: frames 3-4 lose the bow - seq skips them)
+    "w_common_16_4": {"name": "Grim Longbow", "rotate": -18, "share": 0.6, "aim": False, "seq": [1, 2, 5, 6]},
+    "w_common_16_6": {"name": "Trench Recurve", "rotate": -18, "share": 0.6, "aim": False, "seq": [1, 2, 5, 6]},
     "w_uncommon_12_4": {"name": "Old Longbow", "rotate": -18, "share": 0.6, "aim": False},
     # its art is a crossbow (the bow above had its name)
     "w_uncommon_12_0": {"name": "Old Arbalest"},
@@ -60,7 +62,7 @@ def main():
     cfg = json.load(open(CONFIG))
     names = {}
     for s in man["weaponSets"]:
-        todo = [w for w in s["weapons"] if w["id"] in FIXES and not (w.get("fp") or {}).get("fixed")]
+        todo = [w for w in s["weapons"] if w["id"] in FIXES and w.get("fp")]
         if not todo:
             continue
         fpath, ipath = os.path.join(ROOT, s["fpFile"]), os.path.join(ROOT, s["iconFile"])
@@ -69,7 +71,8 @@ def main():
         for w in todo:
             fx, fp = FIXES[w["id"]], w["fp"]
             r = w["row"]
-            for f in range(nf):
+            art = not fp.get("fixed")          # pixel edits only once; metadata always
+            for f in range(nf if art else 0):
                 box = (f * fw, r * fh, (f + 1) * fw, (r + 1) * fh)
                 fr = atlas.crop(box)
                 if "rotate" in fx:
@@ -78,15 +81,15 @@ def main():
                     fr = recolor_rust(fr)
                 atlas.paste(Image.new("RGBA", fr.size, (0, 0, 0, 0)), box)
                 atlas.paste(fr, box[:2])
-            if fx.get("recolor") == "rust":
+            if art and fx.get("recolor") == "rust":
                 ib = (0, r * s["iconH"], s["iconW"], (r + 1) * s["iconH"])
                 icons.paste(recolor_rust(icons.crop(ib)), ib[:2])
-            if "rotate" in fx:
+            if art and "rotate" in fx:
                 # the art box moved: recompute top / sides from the idle frame
                 idle = np.asarray(atlas.crop((0, r * fh, fw, (r + 1) * fh)))[..., 3] > 40
                 ys, xs = np.where(idle)
                 fp["top"], fp["artL"], fp["artR"] = int(ys.min()), int(xs.min()), int(xs.max()) + 1
-            for k in ("share", "aim"):
+            for k in ("share", "aim", "seq"):
                 if k in fx:
                     fp[k] = fx[k]
             if "name" in fx:
