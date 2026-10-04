@@ -144,6 +144,7 @@ export class UI {
   showWelcome(back = null) {
     const g = this.game, touch = input.mode === 'touch';
     if (!back) this.setMenuState();
+    try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) { /* ignore */ }   // seen once, however it is closed
     const k = (key, tap) => (touch ? `<b>${tap}</b>` : `<b>${key}</b>`);
     const controls = touch
       ? `<div><b>Left side</b> drag to move · <b>right side</b> drag to look</div>

@@ -140,14 +140,24 @@ export class Game {
     this.events.emit('enter', { hub: true });
   }
 
+  // Never leave the player on the loading screen: a level that fails to build
+  // is retried once as a plain station level, then the teleporter "misfires"
+  // back to the hub.
   async startLevel(depth) {
+    try { await this.buildLevel(depth); return; } catch (e) { console.error('level build failed', e); }
+    try { await this.buildLevel(depth, 'possessed_station'); return; } catch (e) { console.error('fallback level failed', e); }
+    this.ui.hideLoading();
+    await this.enterHub('The teleporter misfired. Try the descent again.');
+  }
+
+  async buildLevel(depth, forceTheme) {
     this.state = 'loading';
     this.inHub = false;
     this.ui.showLoading(`DEPTH ${depth}`);
     await new Promise((r) => setTimeout(r, 30));
-    const seed = (Date.now() ^ (depth * 2654435761)) >>> 0;
+    const seed = ((Date.now() ^ (depth * 2654435761)) + (forceTheme ? 7919 : 0)) >>> 0;
     const q = new URLSearchParams(location.search);
-    const level = generateLevel({ depth, seed: this.debugSeed ?? seed, playerLevel: this.save.level, previousThemes: this.save.run.themes, themeId: this.debugTheme || q.get('theme') || undefined });
+    const level = generateLevel({ depth, seed: this.debugSeed ?? seed, playerLevel: this.save.level, previousThemes: this.save.run.themes, themeId: forceTheme || this.debugTheme || q.get('theme') || undefined });
     this.save.run.active = true;
     this.save.run.depth = depth;
     this.save.run.themes = [...(this.save.run.themes || []), level.theme.id].slice(-12);
@@ -182,8 +192,10 @@ export class Game {
     this.player.save = this.save;
     this.player.recalc();
     this.world = new World(this, level);
-    await this.content.preloadDoors();
-    if (level.padFloor) await this.content.preloadPadFloor();
+    // art the world needs; a stalled download must never hold the loading screen
+    const cap = (pr) => Promise.race([pr, new Promise((r) => setTimeout(r, 5000))]);
+    await cap(this.content.preloadDoors());
+    if (level.padFloor) await cap(this.content.preloadPadFloor());
     this.world.buildGraphics(this.renderer, this.content);
     this.damageNumbers = []; this.shockwaves = []; this.singularities = [];
     this.lens.clear();
