@@ -90,3 +90,26 @@ WOOD, SCREEN, PAINT, NEON, CARPET.
 `buildWorldMesh(grid, slots, {deco, voidY, voidPlane, spikeSlot})`. Back-face
 culling is on: quads are CCW seen from the front (`tests/mesh.test.js` checks
 every triangle). Slots carry `{layer, emissive, scroll, uvScale}`.
+
+## Scatter terrain (`level.scatter`, `src/game/levelgen/scatter.js`)
+
+Pillars, explosives, pedestals, spike traps and computer terminals. Placement
+records cells, positions, styles and a seed; `game/scatter.js` picks the art
+at load. Solid objects add a deco collider, mark their cells
+`OBSTACLE | NOSPAWN` and pass a reachability check (`keepsReach`: nothing
+reachable before - doors open, or each set of locked doors shut - may be cut
+off).
+
+- `terminals`: `{cells, x, z, y, wall, gap, slot, maxH, ci}`. `wall` is the
+  direction of the wall behind (-1: island); the sprite stands `gap` off it
+  and narrows at glancing views instead of cutting into the wall. Never on
+  doors, stairs, bridges, pits, hazards, near the start / boss / portal.
+- `wallTerminals`: `{cell, wall, line, along, off, lo, hi, maxW, ci}`. A flat
+  panel on the face of the solid cell in direction `wall` (plane `line`,
+  centred at `along`), drawn with sprite billboard mode 3 (x walls) / 4
+  (z walls) with u flipped on the -x / +z walls so it reads left to right.
+  `lo..hi` is the free band of wall (above wainscots, under crown bands),
+  `off` the depth of any trim skin it sits on. Never on window / facade /
+  door / screen walls, by doors, stairs or rails, or behind detail boxes.
+  Its thin collider (`obstacle: false`) only lets shots spark it.
+  `placeWallTerminals` is shared with the hub.

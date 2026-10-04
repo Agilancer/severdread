@@ -26,7 +26,7 @@ handling.
 | `art/raw/projectiles/` | projectile sprites | configure rows/cols (5x5 so far) |
 | `art/raw/items/` | item/armour/ring/key/reagent icons | labelled grids, lines auto-detected |
 | `art/raw/doors/` | animated key doors | 4 images: closed, open1, open2, open3 |
-| `art/raw/scatter/` | pillars, explosive barrels/props, chests, pedestals, spike traps | frame strips per object (see below) |
+| `art/raw/scatter/` | pillars, explosive barrels/props, chests, pedestals, spike traps, computer terminals | frame strips per object (see below) |
 | `assets/ui/` | logo, credits splash | used directly (no processing) |
 
 ---
@@ -163,6 +163,20 @@ debris), closed/open chest pairs, pedestals and 3-frame spike traps.
 `src/data/scatter.js` maps theme families to object styles; placement is in
 `src/game/levelgen/scatter.js` and behaviour (explosions, chain reactions,
 traps, pedestal items) in `src/game/scatter.js`.
+
+Computer terminals come from two sheets: `terminal_wall` (flat front views of
+wall panels: screens, keypads, radars, intercoms) and `terminal` (free-standing
+kiosks, desks, racks, cabinets, hologram tables). Each object's first tag is
+its style (tech, lab, military, rust, brass, industrial, cyber, alien, dark);
+`FAMILY_SCATTER` / `THEME_TERMINALS` pick the styles per theme and `term` the
+density (0 = no computers: castles, nature, caves, canyons, heaven). Sizes come
+from the art: consoles map their pixel height over `SIZE.terminal` (desk ~1.0,
+kiosk ~1.7, tall cabinet 1.85), wall panels use `TERM_WALL.scale` world units
+per pixel. The slot a console stands in (`narrow` one cell, `wide` two cells
+along a wall, `island` alone in a big room) filters the art by its natural
+width and tags (`ISLAND_TAGS`), so a new sheet only needs sensible tags. At
+load `content.js` derives an emissive twin of each terminal sheet (bright,
+saturated screen pixels) that is drawn additively so screens glow.
 
 ## Title art
 

@@ -35,6 +35,7 @@ const TERM_LIGHT_D2 = 11 * 11;
 const FLICKER_T = 0.6;                 // screen flicker after a hit (s)
 const BB_WALLX = 3, BB_WALLZ = 4;      // sprite billboard modes: wall plane x = const / z = const
 const SPARK = [1, 0.82, 0.42];
+const TERM_SLIDE = 0.24;               // how far a wall-backed console sprite may slide out at glancing views
 
 export class Scatter {
   constructor(game, world) {
@@ -457,17 +458,19 @@ export class Scatter {
         if (o.glow) b.addRaw(o.glow, MODE.ADD, tm.px, tm.cy, tm.pz, tm.w, tm.h, u0, f.uv[1], u1, f.uv[3], gk, gk, gk, 1, 0, 0.5, true, 1, mode);
         continue;
       }
-      let w = tm.w;
+      let w = tm.w, x = tm.x, z = tm.z;
       if (tm.wall >= 0) {
         // turned toward a glancing view, the camera-facing sprite would cut
-        // into the wall behind it: it narrows instead (reads like the
-        // console's foreshortened side)
-        const vx = cam.x - tm.x, vz = cam.z - tm.z, len = Math.sqrt(vx * vx + vz * vz) || 1;
-        const sn = Math.abs(DIR_X[tm.wall] * vz - DIR_Z[tm.wall] * vx) / len;
-        w = Math.min(w, 2 * (tm.gap - 0.03) / Math.max(0.05, sn));
+        // into the wall behind it: it slides a little out over its collider,
+        // then narrows (reads like the console's foreshortened side)
+        const vx = cam.x - x, vz = cam.z - z, len = Math.sqrt(vx * vx + vz * vz) || 1;
+        const sn = Math.max(0.05, Math.abs(DIR_X[tm.wall] * vz - DIR_Z[tm.wall] * vx) / len);
+        const room = tm.gap - 0.03, slide = Math.min(TERM_SLIDE, Math.max(0, w * 0.5 * sn - room));
+        w = Math.min(w, 2 * (room + slide) / sn);
+        x -= DIR_X[tm.wall] * slide; z -= DIR_Z[tm.wall] * slide;
       }
-      b.addRaw(o.handle, MODE.CUTOUT, tm.x, tm.y, tm.z, w, tm.h, f.uv[0], f.uv[1], f.uv[2], f.uv[3], tint, tint, tint, 1, 0, 0, false, tm.light, 0);
-      if (o.glow) b.addRaw(o.glow, MODE.ADD, tm.x, tm.y, tm.z, w, tm.h, f.uv[0], f.uv[1], f.uv[2], f.uv[3], gk, gk, gk, 1, 0, 0, true, 1, 0);
+      b.addRaw(o.handle, MODE.CUTOUT, x, tm.y, z, w, tm.h, f.uv[0], f.uv[1], f.uv[2], f.uv[3], tint, tint, tint, 1, 0, 0, false, tm.light, 0);
+      if (o.glow) b.addRaw(o.glow, MODE.ADD, x, tm.y, z, w, tm.h, f.uv[0], f.uv[1], f.uv[2], f.uv[3], gk, gk, gk, 1, 0, 0, true, 1, 0);
     }
   }
 

@@ -1,7 +1,7 @@
-// Scatter terrain: pillars, explosive barrels / props, chests, pedestals and
-// spike traps cut from the uploaded scatter sheets (tools/art_config.json
-// scatter_* entries -> manifest `scatterSets`, one atlas per sheet with
-// per-object frame rects and a style tag).
+// Scatter terrain: pillars, explosive barrels / props, chests, pedestals,
+// spike traps and computer terminals cut from the uploaded scatter sheets
+// (tools/art_config.json scatter_* entries -> manifest `scatterSets`, one
+// atlas per sheet with per-object frame rects and a style tag).
 //
 // This file decides which styles fit which level theme, how big each object
 // is in the world and the gameplay numbers (explosions, trap timing, pedestal

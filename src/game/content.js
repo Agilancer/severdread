@@ -92,7 +92,11 @@ export class Content {
       // additively over the lit sprite, so screens glow in dark rooms
       let glow = null;
       if (ss.kind.startsWith('terminal') && handle.image) {
-        try { glow = this.store.fromCanvas('glow_' + ss.id, terminalGlowCanvas(handle.image, ss.objects)); } catch (e) { glow = null; }
+        try {
+          const c = terminalGlowCanvas(handle.image, ss.objects);
+          glow = this.store.fromCanvas('glow_' + ss.id, c);
+          glow.image = null; c.width = c.height = 0;   // uploaded: free the canvas (iOS memory)
+        } catch (e) { glow = null; }
       }
       for (const o of ss.objects) {
         const frames = o.frames.map(([x, y, w, h]) => ({ uv: [(x + 0.5) / W, (y + 0.5) / H, (x + w - 0.5) / W, (y + h - 0.5) / H], pw: w, ph: h, aspect: w / h, rect: [x, y, w, h] }));
@@ -479,12 +483,17 @@ function terminalGlowCanvas(img, objects) {
   ctx.drawImage(img, 0, 0);
   const im = ctx.getImageData(0, 0, W, H), d = im.data;
   const ss = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+  // lookup tables over value / saturation (0..255): a million pixels at load
+  const vHi = new Float32Array(256), vWhite = new Float32Array(256), sHi = new Float32Array(256), sLow = new Float32Array(256);
+  for (let k = 0; k < 256; k++) { const x = k / 255; vHi[k] = ss(0.5, 0.78, x); vWhite[k] = ss(0.86, 0.97, x) * 0.8; sHi[k] = ss(0.38, 0.62, x); sLow[k] = ss(0.1, 0.3, x); }
   const wgt = new Float32Array(W * H);
   for (let i = 0, p = 0; i < W * H; i++, p += 4) {
     if (d[p + 3] < 128) continue;
     const r = d[p], g = d[p + 1], b = d[p + 2];
-    const mx = Math.max(r, g, b), sat = (mx - Math.min(r, g, b)) / Math.max(mx, 1), v = mx / 255;
-    wgt[i] = Math.max(ss(0.38, 0.62, sat) * ss(0.5, 0.78, v), ss(0.86, 0.97, v) * ss(0.1, 0.3, sat) * 0.8);
+    const mx = r > g ? (r > b ? r : b) : (g > b ? g : b), mn = r < g ? (r < b ? r : b) : (g < b ? g : b);
+    if (mx < 128) continue;                     // dim pixels never glow
+    const s = ((mx - mn) * 255 / mx) | 0, a = sHi[s] * vHi[mx], c = vWhite[mx] * sLow[s];
+    wgt[i] = a > c ? a : c;
   }
   for (const o of objects) {
     if (o.style !== 'industrial' || !o.tags?.includes('yellow') || o.tags.includes('hazard')) continue;

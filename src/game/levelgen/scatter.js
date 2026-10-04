@@ -1,6 +1,7 @@
 // Scatter terrain placement (called from populate in levelgen/index.js):
-// pillars, explosive barrels / props, pedestals with a special item and
-// animated spike traps, matched to the theme (data/scatter.js).
+// pillars, explosive barrels / props, pedestals with a special item, animated
+// spike traps and computer terminals (consoles + wall panels), matched to the
+// theme (data/scatter.js).
 //
 // Placement records styles + a seed; the game picks the actual sprite from the
 // manifest at load (game/scatter.js), so level generation stays art-free.
@@ -379,9 +380,12 @@ export function placeScatter(ctx) {
 
   // ------------------------------------------------------------ wall terminals
   if (counts.wallTerminals > 0) {
+    // pillars, barrels and pedestals are wide billboards: no panel right beside one
+    const props = new Uint8Array(n);
+    for (const o of [...out.pillars, ...out.explosives, ...out.pedestals]) props[o.cell] = 1;
     out.wallTerminals = placeWallTerminals(g, deco, rng, {
       count: counts.wallTerminals, styles: style.terminalWall, tech: (style.term ?? 0) >= 0.6, indoor: style.family === 'city',
-      reach: reach0, blocked, near: out.terminals,
+      reach: reach0, blocked, props, near: out.terminals,
     });
   }
 
@@ -498,8 +502,9 @@ export function terminalPiece(g, deco, cells, d, slot, o) {
 // corridors of tech levels. Decoration: their thin collider on the wall face
 // only lets shots spark them (obstacle: false, no pathing effect). Also used
 // by the hub. o: {count, styles, tech (corridor panels welcome), indoor (none
-// under the sky), reach / blocked (cell masks, optional), near (free-standing
-// terminals: panels like their company), allow(i) (optional cell filter)}
+// under the sky), reach / blocked / props (cell masks, optional; no panel in
+// front of a blocked cell or beside a prop), near (free-standing terminals:
+// panels like their company), allow(i) (optional cell filter)}
 const BAD_WALL = new Set([TS.GLASS, TS.FACADE, TS.FACADE2, TS.FACADE3, TS.DOOR, TS.DOOR_RED, TS.DOOR_BLUE, TS.DOOR_YELLOW, TS.DOOR_GREEN, TS.DOOR_PURPLE,
   TS.SCREEN, TS.NEON, TS.LIGHT, TS.FOLIAGE, TS.HAZARD, TS.LAVA, TS.POISON, TS.WATER, TS.VOID, TS.SPIKES]);
 const GLOWY = new Set([TS.GLASS, TS.LIGHT, TS.SCREEN, TS.NEON]);
@@ -531,7 +536,8 @@ export function placeWallTerminals(g, deco, rng, o) {
     let lo = f + TERM_WALL.minBottom, hi = Math.min((g.sky[i] ? g.floor[j] : g.ceil[i]) - 0.1, f + TERM_WALL.top);
     if (hi - lo < 0.6) return null;
     // a wide panel may overhang the cell where the same clean wall runs on both sides
-    const a = d < 2 ? 2 : 0;
+    const a = d < 2 ? 2 : 0, ka = nb(i, a), kb = nb(i, OPP[a]);
+    if (o.props && ((ka >= 0 && o.props[ka]) || (kb >= 0 && o.props[kb]))) return null;
     const side = (s) => {
       const k = nb(i, s);
       return k >= 0 && g.type[k] === OPEN && sameFloor(k, i) && !(g.flags[k] & (F.DOOR | F.STAIR | F.VOID | F.PIT | F.OBSTACLE)) && !g.edge[k] && !blocked[k] && clearAroundG(g, k, 1) && wallFace(k, d);
@@ -543,7 +549,7 @@ export function placeWallTerminals(g, deco, rng, o) {
     // interior skins) move the panel off or above them; anything else -
     // windows, lamps, pipes, consoles, shelves, pillars - rules the spot out
     const near = [];
-    for (const c of [i, nb(i, a), nb(i, OPP[a])]) for (const k of (c >= 0 && boxIdx.get(c)) || []) if (!near.includes(k)) near.push(k);
+    for (const c of [i, ka, kb]) for (const k of (c >= 0 && boxIdx.get(c)) || []) if (!near.includes(k)) near.push(k);
     near.sort((p, q) => deco.boxes[p].y0 - deco.boxes[q].y0);
     let off = 0;
     for (const k of near) {
