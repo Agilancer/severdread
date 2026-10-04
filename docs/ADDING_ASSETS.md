@@ -182,3 +182,10 @@ node tests/play.mjs /tmp/shots hell,castle # screenshot specific themes
 ```
 
 You can also force a theme in the browser: `index.html?theme=castle`.
+
+### Weapon arm widths and art fixes
+
+After slicing weapons (and `tools/weapon_barrels.py`), run:
+
+- `python3 tools/weapon_arms.py` - measures each weapon's arm at the bottom edge of its idle frame (`fp.arm`); melee and thrown weapons are drawn so that wrist is ~0.36 of the screen height wide, so long blades no longer shrink the hand.
+- `python3 tools/weapon_fixes.py` - hand-picked fixes for weapons whose art looked off in game (longbows filed as crossbows are renamed, canted and drawn bigger without barrel aiming; a chequered cube is recoloured to rusty iron; names that contradicted the art are swapped). Fixes are recorded in `fp.fixed`, so re-running is safe; add new entries to its `FIXES` table.

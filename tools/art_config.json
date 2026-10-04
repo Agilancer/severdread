@@ -5501,7 +5501,7 @@
     },
     {
      "id": "w_common_16_4",
-     "name": "Grim Arbalest",
+     "name": "Grim Longbow",
      "element": "physical",
      "archetype": "crossbow"
     },
@@ -5513,7 +5513,7 @@
     },
     {
      "id": "w_common_16_6",
-     "name": "Trench Crossbow",
+     "name": "Trench Recurve",
      "element": "physical",
      "archetype": "crossbow"
     },
@@ -8750,7 +8750,7 @@
    "weapons": [
     {
      "id": "w_uncommon_12_0",
-     "name": "Old Longbow",
+     "name": "Old Arbalest",
      "element": "physical",
      "archetype": "crossbow"
     },
@@ -8774,7 +8774,7 @@
     },
     {
      "id": "w_uncommon_12_4",
-     "name": "Old Arbalest",
+     "name": "Old Longbow",
      "element": "physical",
      "archetype": "crossbow"
     },

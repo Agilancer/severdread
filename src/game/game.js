@@ -655,14 +655,14 @@ export class Game {
     const nF = fp.frames;
     const melee = /blade|mace|club/.test(wpn.archetype), thrown = /shuriken|javelin/.test(wpn.archetype);
     const artH = Math.max(8, m.bottom - m.top), artW = Math.max(8, m.artR - m.artL);
-    const K = WEAPON_SCREEN_SHARE[wpn.archetype] ?? 0.44;
+    const K = m.share ?? WEAPON_SCREEN_SHARE[wpn.archetype] ?? 0.44;   // fp.share: per-weapon override (tools/weapon_fixes.py)
     let s = Math.min((K * H) / artH, (0.58 * W) / artW);
     if ((melee || thrown) && m.arm && m.arm[1] - m.arm[0] > 4) s = clamp((MELEE_ARM * H) / (m.arm[1] - m.arm[0]), s * MELEE_GROW[0], s * MELEE_GROW[1]);
     const over = Math.ceil(H * 0.06);                // overscan so the cut-off arm never shows
     const y0 = H + over - m.bottom * s;              // idle frame, no bob / recoil
     const bias = m.hands === 'right' ? 0.11 : m.hands === 'left' ? -0.06 : 0.035;
     let x0 = W * 0.5 + bias * H - m.gripX * s;
-    const gun = !melee && !thrown;
+    const gun = !melee && !thrown && m.aim !== false;
     let b = m.barrel, tip = m.tip;
     let aimed = gun && !!b && !!tip && (m.barrelQ ?? 0) >= BARREL_MIN_Q && b[1] < -0.1 && Math.abs(b[0] / b[1]) <= BARREL_MAX_SLANT;
     if (!aimed && gun && m.muzzle) {

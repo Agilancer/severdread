@@ -9605,15 +9605,15 @@
      "archetype": "crossbow",
      "rarity": "common",
      "id": "w_common_16_4",
-     "name": "Grim Arbalest",
+     "name": "Grim Longbow",
      "element": "physical",
      "row": 4,
      "fp": {
-      "top": 12,
+      "top": 29,
       "bottom": 147,
       "gripX": 94,
       "artL": 67,
-      "artR": 135,
+      "artR": 174,
       "hands": "left",
       "muzzle": [
        130,
@@ -9641,6 +9641,13 @@
       "arm": [
        66,
        120
+      ],
+      "share": 0.6,
+      "aim": false,
+      "fixed": [
+       "aim",
+       "rotate",
+       "share"
       ]
      }
     },
@@ -9691,15 +9698,15 @@
      "archetype": "crossbow",
      "rarity": "common",
      "id": "w_common_16_6",
-     "name": "Trench Crossbow",
+     "name": "Trench Recurve",
      "element": "physical",
      "row": 6,
      "fp": {
-      "top": 9,
+      "top": 23,
       "bottom": 147,
       "gripX": 74,
-      "artL": 49,
-      "artR": 108,
+      "artL": 48,
+      "artR": 147,
       "hands": "left",
       "muzzle": [
        102,
@@ -9727,6 +9734,13 @@
       "arm": [
        47,
        100
+      ],
+      "share": 0.6,
+      "aim": false,
+      "fixed": [
+       "aim",
+       "rotate",
+       "share"
       ]
      }
     },
@@ -13237,6 +13251,9 @@
       "arm": [
        101,
        143
+      ],
+      "fixed": [
+       "recolor"
       ]
      }
     },
@@ -23292,7 +23309,7 @@
      "archetype": "crossbow",
      "rarity": "uncommon",
      "id": "w_uncommon_12_0",
-     "name": "Old Longbow",
+     "name": "Old Arbalest",
      "element": "physical",
      "row": 0,
      "fp": {
@@ -23321,6 +23338,9 @@
       "arm": [
        68,
        125
+      ],
+      "fixed": [
+       "name"
       ]
      }
     },
@@ -23436,15 +23456,15 @@
      "archetype": "crossbow",
      "rarity": "uncommon",
      "id": "w_uncommon_12_4",
-     "name": "Old Arbalest",
+     "name": "Old Longbow",
      "element": "physical",
      "row": 4,
      "fp": {
-      "top": 7,
+      "top": 10,
       "bottom": 148,
       "gripX": 99,
-      "artL": 51,
-      "artR": 129,
+      "artL": 72,
+      "artR": 138,
       "hands": "right",
       "muzzle": [
        125,
@@ -23465,6 +23485,13 @@
       "arm": [
        70,
        130
+      ],
+      "share": 0.6,
+      "aim": false,
+      "fixed": [
+       "aim",
+       "rotate",
+       "share"
       ]
      }
     },
