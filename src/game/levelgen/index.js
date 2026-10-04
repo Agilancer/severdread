@@ -24,10 +24,15 @@ const GENERATORS = {
   convoy: genConvoy, canyon: genCanyon, hall: genHall, maze: genMaze, mountain: genMountain, lab: genLab,
 };
 
+// Every new level rolls a random archetype first (each archetype equally
+// likely, never the previous level's), then one of its themes not seen lately.
 export function pickTheme(depth, rng, previous = []) {
-  if (depth === 1) return THEME_BY_ID.possessed_station;
-  const pool = THEMES.filter((t) => !previous.slice(-6).includes(t.id));
-  return rng.pick(pool);
+  const last = THEME_BY_ID[previous[previous.length - 1]];
+  const archs = [...new Set(THEMES.map((t) => t.archetype))].filter((a) => a !== last?.archetype);
+  const arch = rng.pick(archs);
+  const pool = THEMES.filter((t) => t.archetype === arch);
+  const fresh = pool.filter((t) => !previous.slice(-12).includes(t.id));
+  return rng.pick(fresh.length ? fresh : pool);
 }
 
 export function generateLevel({ depth, seed, playerLevel, themeId, previousThemes }) {

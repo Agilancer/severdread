@@ -14,6 +14,7 @@ import { damagePlayer, fireEnemyProjectile, damageMonster, killMonster } from '.
 import { ELEMENTS, STATUS } from '../data/elements.js';
 
 const ACT = { idle: 0, walk: 1, windup: 5, attack: 6, recover: 7 };
+const ENEMY_SCALE = 1.5;   // enemies are drawn (and hit) 50% bigger than their definitions
 const TIER_EARLY = 0.05;   // hp / damage cut per tier a monster type is above the current depth
 const BODY_R = 0.3;    // max terrain-collision radius: the player's, so monsters fit wherever the player does
 
@@ -36,12 +37,12 @@ export class Monster {
     this.dmg = def.damage * B.monsterDmgMult(d) * (v.dmgMult || 1) * (this.elite ? 1.35 : 1) * early;
     this.armor = (def.armor || 0) + B.monsterArmor(d) * (this.boss ? 1.4 : 0.6);
     this.speed = def.speed * (v.speedMult || 1) * (this.elite ? 1.1 : 1);
-    this.radius = def.radius * (this.elite ? 1.1 : 1);
+    this.radius = def.radius * (this.elite ? 1.1 : 1) * (1 + (ENEMY_SCALE - 1) * 0.6);   // hit / crowd radius follows the wider sprite
     // terrain body: walls, rails, stairs, ledges and doorways use a slim body so
     // even bosses fit 1-tile doorways, stairs and platforms (the sprite may
     // overlap the walls a little); hits, melee reach and crowding keep `radius`
     this.bodyR = Math.min(this.radius, BODY_R);
-    this.height = def.height * (this.elite ? 1.15 : 1);
+    this.height = def.height * (this.elite ? 1.15 : 1) * ENEMY_SCALE;   // sprite + hit cylinder (movement headroom stays <= 1.6)
     this.shield = def.shield || 0;
     this.resist = { ...(CATEGORIES[def.category]?.resist || {}), ...(def.resist || {}), ...(v.resist || {}) };
     this.x = spawn.x; this.z = spawn.z;
@@ -285,7 +286,7 @@ export class Monster {
       const target = this.floorY + this.def.flying + Math.sin(this.animT * 2) * 0.15;
       this.y = lerp(this.y, target, Math.min(1, dt * 3));
       const c = w.ceilingOver(this.x, this.z, this.bodyR, this.y);
-      if (this.y + this.height > c) this.y = c - this.height;
+      if (this.y + this.height > c) this.y = Math.max(this.floorY, c - this.height);   // tall fliers in low rooms stay above the floor
       return;
     }
     // wall crawl lift
@@ -640,7 +641,11 @@ export class Monster {
     else if (this.moving || this.trans || this.def.flying) act = ACT.walk + (Math.floor(this.animT * this.speed * 2.2) % 4);
     if (this.frozen > 0) act = ACT.idle;
     const uv = g.content.monsterUV(info, dir, Math.min(act, info.cols - 1));
-    const qh = this.height * this.visScale * info.frameH / Math.max(1, info.footY);
+    // a big enemy in a low room shrinks to fit under the ceiling instead of poking through it
+    const gr = g.world.grid, ci = gr.cellAt(this.x, this.z);
+    const room = ci >= 0 && !gr.sky[ci] && this.mode !== 'ceiling' ? gr.ceil[ci] - this.y - 0.05 : Infinity;
+    const bodyH = Math.min(this.height * this.visScale, Math.max(0.6, room));
+    const qh = bodyH * info.frameH / Math.max(1, info.footY);
     const qw = qh * info.frameW / info.frameH;
     const anchor = (info.frameH - info.footY) / info.frameH;
     let tint = this.tint;
