@@ -296,14 +296,16 @@ export function firePlayerWeapon(game, weapon) {
   // hitscan (rail / lightning)
   if (arch.hitscan) {
     const range = arch.range || 60;
-    const spreadPel = Math.max(1, 1 + pat('fan') + (ab.multishot || 0));
+    const ms = ab.multishot || 0, fan = pat('fan');
+    const spreadPel = Math.max(1, 1 + fan + ms);
+    const beamDmg = baseDmg * shotShare(1, ms) / Math.sqrt(1 + fan);
     // damage runs along the eye ray; the beam starts at the muzzle, short of what it hits
     const bo = shotOrigin(game, C, clamp(crosshairDist(game, C, range) * 0.6, 0.12, BEAM_DEPTH));
     for (let k = 0; k < spreadPel; k++) {
       const off = spreadPel > 1 ? (k / (spreadPel - 1) - 0.5) * 0.25 : 0;
       const d = rotateDir(fwd, right, up, off, 0);
       const n = game.world.beams.length;
-      hitscan(game, bo.o, eye, d, range, baseDmg, el, weapon, arch, critForced);
+      hitscan(game, bo.o, eye, d, range, beamDmg, el, weapon, arch, critForced);
       for (let i = n; i < game.world.beams.length; i++) game.muzzleShots.push({ beam: game.world.beams[i], depth: bo.depth });
     }
     if (has('nova') && p.shotCount % 5 === 0) novaRing(game, mz, baseDmg * 0.6, el, 12);
@@ -341,7 +343,12 @@ export function firePlayerWeapon(game, weapon) {
     }
   }
   const speedMul = st.projSpeed * (has('big') ? 0.6 : 1);
-  const dmgEach = baseDmg * (has('big') ? 1.6 : 1) / (dirs.length > 6 && !arch.pellets ? Math.sqrt(dirs.length / 6) : 1);
+  // extra projectiles from patterns and multishot split the shot's damage
+  // instead of copying it: a fan of n deals 1/sqrt(n) each, a ring 3/sqrt(n),
+  // a helix pair 0.65 each - far stronger into a crowd, modestly stronger
+  // into one target
+  const patShare = ringN ? Math.min(1, 3 / Math.sqrt(ringN)) : fanN > 1 ? 1 / Math.sqrt(fanN) : 1;
+  const dmgEach = baseDmg * (has('big') ? 1.6 : 1) * shotShare(Math.max(1, arch.pellets || 1), ab.multishot || 0) * patShare * (has('helix') ? 0.65 : 1);
   dirs.forEach((d, idx) => {
     const speed = (arch.speed || 40) * speedMul;
     const crit = critForced || fx.chance(st.critChance);
@@ -380,6 +387,11 @@ export function firePlayerWeapon(game, weapon) {
   });
   if (has('nova') && p.shotCount % 5 === 0) novaRing(game, mz, baseDmg * 0.6, el, 12);
 }
+
+// Multishot adds k projectiles to a shot of p: the shot gets 40% more damage
+// per extra projectile, shared across all of them (so +1 on a pistol is two
+// bullets at 0.7, not two full bullets)
+function shotShare(p, k) { return k ? (p * (1 + 0.4 * k)) / (p + k) : 1; }
 
 function novaRing(game, at, dmg, el, n) {
   const vis = projVisual(game, el === 'physical' ? 'arcane' : el, 'orb');
@@ -518,7 +530,7 @@ export function updateProjectiles(game, dt) {
       pr.split = 0;
       for (const off of [-0.35, 0.35]) {
         const c = Math.cos(off), s = Math.sin(off);
-        spawnProjectile(game, { ...pr, vx: pr.vx * c - pr.vz * s, vz: pr.vx * s + pr.vz * c, hit: new Set(pr.hit), split: 0, dmg: pr.dmg * 0.6, age: 0 });
+        spawnProjectile(game, { ...pr, vx: pr.vx * c - pr.vz * s, vz: pr.vx * s + pr.vz * c, hit: new Set(pr.hit), split: 0, dmg: pr.dmg * 0.5, age: 0 });
       }
       pr.dmg *= 0.6;
     }
@@ -794,7 +806,7 @@ export function killMonster(game, m, o = {}) {
   const nItems = def.boss ? fx.int(2, 3) + (depth > 10 ? 1 : 0) : fx.chance(itemChance) ? 1 : 0;
   for (let k = 0; k < nItems; k++) {
     const item = generateItem(new Rng(fx.int(0, 2 ** 31)), {
-      level: rollItemLevel(fx, p.level), bases: game.content.weaponBases, depth, itemFind: st.itemFind,
+      level: rollItemLevel(fx, depth), bases: game.content.weaponBases, depth, itemFind: st.itemFind,
       minRarity: def.boss ? (k === 0 ? 2 : 1) : m.elite ? 1 : 0,
     });
     dropPickup(game, m, { kind: 'item', item });

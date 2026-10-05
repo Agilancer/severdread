@@ -144,6 +144,7 @@ export class UI {
   showWelcome(back = null) {
     const g = this.game, touch = input.mode === 'touch';
     if (!back) this.setMenuState();
+    try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) { /* ignore */ }   // seen once, however it is closed
     const k = (key, tap) => (touch ? `<b>${tap}</b>` : `<b>${key}</b>`);
     const controls = touch
       ? `<div><b>Left side</b> drag to move · <b>right side</b> drag to look</div>
@@ -619,7 +620,7 @@ export class UI {
     const max = maxUpgrade(item);
     if (item.upgrade >= max) return `<div class="sub" style="color:#ffcc33">Fully upgraded (+${max}).</div>`;
     const cost = B.upgradeCost(item, item.upgrade + 1, this.npc.recipe, RARITY[item.rarity].index);
-    return `<div class="sub">Upgrade to <span style="color:#ffcc33">+${item.upgrade + 1}</span> / +${max}: +8% power and stronger rolls</div>${this.costHTML(cost)}`;
+    return `<div class="sub">Upgrade to <span style="color:#ffcc33">+${item.upgrade + 1}</span> / +${max}: +${Math.round((B.upgradeMult(item.upgrade + 1) / B.upgradeMult(item.upgrade) - 1) * 100)}% power and stronger rolls</div>${this.costHTML(cost)}`;
   }
   doUpgrade(item) {
     if (!item) return;
@@ -661,9 +662,12 @@ export class UI {
     if (s.shop && s.shop.visit === s.stats.runs + '_' + s.run.depth + '_' + s.level) return;
     const rng = new Rng(Date.now());
     const items = [];
+    // stock sits a little behind the deepest floor reached: guaranteed rarity
+    // costs a couple of item levels, so the shop never out-gears the dungeon
+    const front = Math.max(1, s.best.depth);
     for (let k = 0; k < 14; k++) {
-      const rarity = rng.weighted([{ r: 'uncommon', w: 60 }, { r: 'rare', w: 30 }, { r: 'epic', w: 10 }], (x) => x.w).r;
-      items.push(generateItem(rng, { level: rollItemLevel(rng, s.level), rarity, bases: g.content.weaponBases, depth: s.best.depth + 1 }));
+      const rarity = rng.weighted([{ r: 'uncommon', w: 62 }, { r: 'rare', w: 31 }, { r: 'epic', w: front >= 8 ? 7 : 0 }], (x) => x.w).r;
+      items.push(generateItem(rng, { level: Math.max(1, rollItemLevel(rng, front) - 1), rarity, bases: g.content.weaponBases, depth: front }));
     }
     s.shop = { items, visit: s.stats.runs + '_' + s.run.depth + '_' + s.level };
   }

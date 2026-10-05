@@ -140,14 +140,24 @@ export class Game {
     this.events.emit('enter', { hub: true });
   }
 
+  // Never leave the player on the loading screen: a level that fails to build
+  // is retried once as a plain station level, then the teleporter "misfires"
+  // back to the hub.
   async startLevel(depth) {
+    try { await this.buildLevel(depth); return; } catch (e) { console.error('level build failed', e); }
+    try { await this.buildLevel(depth, 'possessed_station'); return; } catch (e) { console.error('fallback level failed', e); }
+    this.ui.hideLoading();
+    await this.enterHub('The teleporter misfired. Try the descent again.');
+  }
+
+  async buildLevel(depth, forceTheme) {
     this.state = 'loading';
     this.inHub = false;
     this.ui.showLoading(`DEPTH ${depth}`);
     await new Promise((r) => setTimeout(r, 30));
-    const seed = (Date.now() ^ (depth * 2654435761)) >>> 0;
+    const seed = ((Date.now() ^ (depth * 2654435761)) + (forceTheme ? 7919 : 0)) >>> 0;
     const q = new URLSearchParams(location.search);
-    const level = generateLevel({ depth, seed: this.debugSeed ?? seed, playerLevel: this.save.level, previousThemes: this.save.run.themes, themeId: this.debugTheme || q.get('theme') || undefined });
+    const level = generateLevel({ depth, seed: this.debugSeed ?? seed, playerLevel: this.save.level, previousThemes: this.save.run.themes, themeId: forceTheme || this.debugTheme || q.get('theme') || undefined });
     this.save.run.active = true;
     this.save.run.depth = depth;
     this.save.run.themes = [...(this.save.run.themes || []), level.theme.id].slice(-12);
@@ -166,7 +176,7 @@ export class Game {
     // keys, chests
     for (const k of level.keys) w.pickups.push({ kind: 'key', color: k.color, x: k.x, y: (w.floorAt(k.x, k.z) ?? 0) + 0.6, z: k.z, vx: 0, vy: 0, vz: 0, settled: true, age: 0, phase: fx.float(0, 6) });
     for (const c of level.chests) w.chests.push({ ...c, y: w.floorAt(c.x, c.z) ?? 0, open: false });
-    w.scatter.stockPedestals(this.save.level, this.content.weaponBases, this.player.stats?.itemFind || 0);   // special items on pedestals
+    w.scatter.stockPedestals(this.content.weaponBases, this.player.stats?.itemFind || 0);   // special items on pedestals
     this.player.spawnAt(level.start.x, level.start.z, level.start.yaw);
     audio.setMusic(level.theme.music || 'industrial', seed);
     this.ui.hideLoading();
@@ -182,8 +192,10 @@ export class Game {
     this.player.save = this.save;
     this.player.recalc();
     this.world = new World(this, level);
-    await this.content.preloadDoors();
-    if (level.padFloor) await this.content.preloadPadFloor();
+    // art the world needs; a stalled download must never hold the loading screen
+    const cap = (pr) => Promise.race([pr, new Promise((r) => setTimeout(r, 5000))]);
+    await cap(this.content.preloadDoors());
+    if (level.padFloor) await cap(this.content.preloadPadFloor());
     this.world.buildGraphics(this.renderer, this.content);
     this.damageNumbers = []; this.shockwaves = []; this.singularities = [];
     this.lens.clear();
@@ -451,7 +463,7 @@ export class Game {
 
   openChest(c) {
     c.open = true;
-    const w = this.world, s = this.save, p = this.player;
+    const w = this.world, p = this.player;
     const depth = Math.max(1, w.depth);
     this.sfx('chest_open');
     w.burst(c.x, c.y + 0.6, c.z, [0.3, 0.9, 1], 30, { speed: 4, up: 2 });
@@ -460,7 +472,7 @@ export class Game {
     const rng = new Rng(fx.int(0, 2 ** 31));
     const nItems = rng.int(1, 2) + (rng.chance(0.25) ? 1 : 0);
     for (let k = 0; k < nItems; k++) {
-      const item = generateItem(rng, { level: rollItemLevel(rng, s.level), bases: this.content.weaponBases, depth, itemFind: p.stats.itemFind + 0.5, minRarity: k === 0 ? 1 : 0 });
+      const item = generateItem(rng, { level: rollItemLevel(rng, depth), bases: this.content.weaponBases, depth, itemFind: p.stats.itemFind + 0.5, minRarity: k === 0 ? 1 : 0 });
       this.dropAt(fake, { kind: 'item', item });
     }
     const pool = CHEST_POOL.filter((r) => !r.minDepth || depth >= r.minDepth);
