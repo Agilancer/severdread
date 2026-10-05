@@ -45,6 +45,53 @@
   long to kill as on depth 1 with the starting pistol (~0.6 s), and that it
   takes 6–18 monster hits to die, through depth 30.
 
+## Ammo (src/data/ammo.js, src/game/ammo.js)
+
+DOOM-style: six ammo pools shared by every weapon of a type, so the heavy
+hitters can't be fired forever while the basic guns are a reliable baseline.
+
+| type | weapons (cost per shot) | max | pack / box |
+|---|---|---|---|
+| Shells | shotgun 1, super shotgun 2 | 40 | 8 / 24 |
+| Heavy Rounds | minigun 1 per bullet, sniper 10 | 400 | 60 / 200 |
+| Explosives | rocket, grenade, nail grenade launcher 1 | 30 | 4 / 12 |
+| Cells | plasma 1, lightning 1, disc 3, spreader 5, rail 10 | 300 | 40 / 120 |
+| Fuel | flamethrower, sprayer 1 per tick | 600 | 80 / 240 |
+| Bolts | crossbow, harpoon, javelin 1 | 40 | 8 / 24 |
+
+Pistols, revolvers, SMGs, rifles, LMGs, throwing stars and melee never run
+dry (the starter guns are among them). A full load is ~25-40 s of
+continuous fire; `ARCH_AMMO` is the one table (every archetype listed).
+
+- A shot costs once: pellets, fans, rings, helix, multishot and double tap
+  never cost extra; the minigun spends only once it actually fires.
+- Firing an empty gun: dry click, "NO SHELLS" toast, automatic switch to the
+  strongest gun in the 4 slots that still has ammo, else the strongest
+  unlimited one. Cycling (wheel / next) skips empty guns. A gun can still be
+  selected by number and shows empty. If nothing equipped can fire, an
+  emergency SIDEARM (common pistol of the area level, 70% damage, not an
+  item) comes out until ammo arrives - the player is never soft-locked.
+- Stock lives in the save (`save.ammo`, old saves get half of each type),
+  carries over between floors of a run and is clamped to capacity at each
+  level start. Capacity: base max x (1 + Ammo Capacity), an affix on body /
+  legs / rings, at most +100% in total.
+- Sources: monsters (normal 10% a pack, elites 40% a pack + 15% a box,
+  bosses 1-2 boxes; 70% of drops lean toward the ammo the equipped guns
+  use), level caches (2-5 boxes + 4-8 packs per level from
+  `levelgen/ammo.js`: dead ends and side rooms off the start -> boss route,
+  beside chests, one box before the boss arena, at most one pack inside it;
+  positions per seed, types picked at load from the equipped guns), one box
+  in every chest, a pack with every new ammo gun picked up or bought, a top
+  up to 50% of every type when a new run starts at the station ("station
+  issue"), and refills at the station shop (`ammoRefillCost`: ~30 credits
+  for a full load at depth 1, x1.075 per deepest depth reached).
+- Pickups take what fits; the rest stays on the floor. A pickup of a full
+  type is not pulled in and stays where it is ("SHELLS FULL").
+- HUD: type icon + count / max (amber below 25%, red when empty) or an
+  infinity mark next to the weapon slots; each ammo gun's slot has a thin
+  ammo bar and greys out when empty. The equipment screen lists the six
+  stocks; the shop sells refills.
+
 ## Level generation (src/game/levelgen)
 
 The world is a height-field grid (floor/ceiling per cell, sky cells, voids,

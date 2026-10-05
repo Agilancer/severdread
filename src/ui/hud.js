@@ -212,7 +212,7 @@ export class HUD {
   // right edge), clear of the FIRE / JUMP / DASH cluster. Returns its width.
   ammoReadout(game, p, w, x, y, touch) {
     const g = this.g, s = this.s, sv = game.save, wa = weaponAmmo(w);
-    const big = (touch ? 9 : 13) * s, small = (touch ? 7 : 8) * s, ic = (touch ? 15 : 22) * s;
+    const big = (touch ? 11 : 13) * s, small = (touch ? 7.5 : 8) * s, ic = (touch ? 18 : 22) * s;
     const flash = game.time - p.dryT < 0.6 && Math.sin(game.time * 30) > 0;
     let parts;
     if (!wa) parts = { icon: null, n: null, max: null, col: '#d0d0d0' };

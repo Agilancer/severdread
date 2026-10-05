@@ -133,7 +133,17 @@ Animated tiles: one tile per row, N frames left to right:
 
 - **Items** (`item_grid`): labelled 5-column sheets. Map icons to uses in
   `src/data/itemart.js` (armour pools, ring pools, key cards, reagent icons,
-  chest, coin). Ammo icons are intentionally unused (weapons have no ammo).
+  chest, coin, ammo). Ammo packs and boxes use icons 01-35 of the "AMMO &
+  UPGRADES 601-650" sheet (`it_ammo_upgrades`) through `AMMO_SPRITES`
+  (per ammo type: HUD icon, pack and box icons, coloured packs per element);
+  icons 36-50 are weapon upgrade parts and stay unused. Options for sheets
+  that cut badly: `rows` / `cols` also trim a stray frame line that would
+  add a junk row; `"captionCut": "auto"` finds each cell's two caption lines
+  and cuts just above them (no label fragments); `"fillHoles": true` keys
+  the background so dark metal enclosed by the icon is kept instead of
+  turning into holes (with `"tol"`, the background tolerance, ~16). Re-cut
+  one sheet with `python3 tools/process_art.py <id>` - sprite ids stay in
+  reading order.
 - **Projectiles** (`sprite_grid`): 5x5 grids. `src/data/itemart.js` lists
   which sheets are bullets/rockets (player only) and which energy sheets
   enemies may fire. Side-view sprites (comets, arrows) use `"direction": "right"`

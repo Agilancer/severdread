@@ -11,7 +11,7 @@ import { audio } from '../engine/audio.js';
 import { input, requestLock, releaseLock } from '../engine/input.js';
 import { TitleBlood, loadTitleBlood } from './title.js';
 import { LevelMap } from './map.js';
-import { AMMO, AMMO_TYPES, ammoCount, ammoMax, refillCost } from '../game/ammo.js';
+import { AMMO, AMMO_TYPES, ammoCount, ammoMax, refillCost, weaponAmmo, addAmmo } from '../game/ammo.js';
 
 const WELCOME_KEY = 'severdread_welcome_v1';   // how-to-play guide shown once per device
 const SLOT_LABELS = { weapon0: '1', weapon1: '2', weapon2: '3', weapon3: '4', head: 'HEAD', body: 'BODY', legs: 'LEGS', ring0: 'RING', ring1: 'RING', ring2: 'RING', ring3: 'RING' };
@@ -616,6 +616,9 @@ export class UI {
         if (s.bag.length >= s.bagSize) { this.toast('Bag is full', '#ff6060'); audio.play('ui_error'); break; }
         s.credits -= price;
         s.bag.push(sel);
+        // like a pickup, a gun that spends ammo comes with a pack of it
+        const wa = sel.kind === 'weapon' && !sel.ammoGiven && weaponAmmo(sel);
+        if (wa) { sel.ammoGiven = true; addAmmo(s, g.player.stats, wa.type, AMMO[wa.type].small); }
         s.shop.items.splice(this.selected.i, 1);
         audio.play('ui_buy');
         this.selected = { where: 'bag', i: s.bag.length - 1 };
