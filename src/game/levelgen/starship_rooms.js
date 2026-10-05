@@ -99,6 +99,8 @@ function fcol(deco, Fr, t0, t1, s0, s1, y0, y1, o) {
   return deco.collider(Math.min(ax, bx), y0, Math.min(az, bz), Math.max(ax, bx), y1, Math.max(az, bz), o);
 }
 const cellL = (ctx, Fr, t, s) => { const [x, z] = Fr.cell(t, s); return ctx.g.idx(x, z); };
+// world rect [x0, z0, x1, z1] of a frame-space rect
+const wr2 = (Fr, t0, t1, s0, s1) => { const [ax, az] = Fr.pt(t0, s0), [bx, bz] = Fr.pt(t1, s1); return [Math.min(ax, bx), Math.min(az, bz), Math.max(ax, bx), Math.max(az, bz)]; };
 // is the wall behind frame cell (0, s) solid (no doorway / opening)?
 function wallClosed(ctx, Fr, s) {
   const { g } = ctx;
@@ -757,6 +759,35 @@ function buildBridge(ctx, Fr) {
     const wallS = sideS === 0 ? 0 : Fr.Wd;
     const sgn = sideS === 0 ? 1 : -1;
     if (top - y >= 4) fb(deco, Fr, 1.5, Math.min(Fr.L - 2, 7.5), wallS, wallS + sgn * 0.05, y + 1.7, y + 3.4, TS.SCREEN, { uv: 'fit', emissive: 0.85 });
+  }
+  // the aft wall: comms and engineering stations between the doorways -
+  // equipment racks with a console at every third bay, a status board above
+  const Fa = frame(r, OPP[Fr.side]);
+  const bank = [];
+  for (let s = 1; s < Fa.Wd - 1; s++) {
+    if (!okL(ctx, Fa, 0, s, 2, 1, 0) || !wallClosed(ctx, Fa, s)) continue;
+    if (bank.length % 3 === 1) { const [x, z] = Fa.cell(0, s); deco.console(x, z, y, Fa.toward, { width: 0.85 }); }
+    else wallMachine(ctx, Fa, s, y, 2.2, rng.chance(0.5) ? TS.MACHINE : TS.PANEL);
+    useL(ctx, Fa, 0, s, 1, 1);
+    bank.push(s);
+  }
+  if (bank.length >= 3 && top - y >= 4.5) {
+    const a = bank[0], b = bank[bank.length - 1] + 1;
+    if (b - a === bank.length) wallScreen(ctx, Fa, a + 0.3, b - 0.3, y + 2.6, y + 3.6);
+  }
+  // behind the command deck: the navigation chart table under its own lamp
+  // (an aisle behind the deck and one in front of the aft stations)
+  if (deck && Fr.L - (t0 + dd) >= 4) {
+    const m = freeMask(ctx, Fr, 0);
+    const ct = bestRect(m, { minT: 1, maxT: 2, minS: 3, maxS: 3, t0: t0 + dd + 1, t1: Fr.L - 2, score: (t, s, dt) => dt * 2 - Math.abs(s + 1.5 - Fr.Wd / 2) });
+    if (ct) {
+      const [x0, z0, x1, z1] = wr2(Fr, ct.t + 0.2, ct.t + ct.dt - 0.2, ct.s + 0.25, ct.s + 2.75);
+      deco.box(x0, y, z0, x1, y + 0.85, z1, { side: TS.METAL, top: TS.METAL, bottom: TS.METAL }, { solid: true });
+      deco.box(x0 + 0.08, y + 0.85, z0 + 0.08, x1 - 0.08, y + 0.9, z1 - 0.08, TS.SCREEN, { uv: 'fit', emissive: 0.9 });
+      const [lx, lz] = Fr.pt(ct.t + ct.dt / 2, ct.s + 1.5);
+      deco.light(lx, y + 1.6, lz, CYAN, 4);
+      useL(ctx, Fr, ct.t, ct.s, ct.dt, 3);
+    }
   }
   // ceiling: beams running toward the window, light strips between
   for (let s = 1.5; s < Fr.Wd - 1; s += 3) fb(deco, Fr, 0, Fr.L, s - 0.2, s + 0.2, top - 0.45, top, TS.BEAM);

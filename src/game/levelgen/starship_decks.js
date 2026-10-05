@@ -235,8 +235,9 @@ function buildQuarters(ctx, Fr, last) {
   // deep quarters: a row of bunks back to back down the middle, a partition
   // between the berths and a bank of lockers at each end, aisles of two or
   // more cells on both sides
+  // (only where the walls hold few berths: long quarters have enough)
   let isl = null;
-  if (Fr.L >= 8 && Fr.Wd >= 8) {
+  if (Fr.L >= 8 && Fr.Wd >= 8 && n < 12) {
     const t0 = Math.floor((Fr.L - 2) / 2);
     isl = bestRect(freeMask(ctx, Fr, 1), { minT: 2, maxT: 2, minS: 4, maxS: 10, t0, t1: t0 + 2, s0: 2, s1: Fr.Wd - 2 });
     if (isl) {

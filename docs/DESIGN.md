@@ -104,10 +104,14 @@ hand rails, AABB colliders, light fixtures). See `docs/ARCHITECTURE.md`.
   down the middle (hull frames, pipe bundles, cable trays, steel-framed
   bulkheads that carry the keyed gates) to the bridge at the bow: helm
   stations under a panoramic window, a holo table and the raised command
-  deck. Side decks (`starship_decks.js`, `starship_holds.js`) hold cargo
+  deck, comms and engineering racks on the aft wall and a chart table behind
+  the deck. Side decks (`starship_decks.js`, `starship_holds.js`) hold cargo
   holds (container rows, gantry crane, deck-level gallery, freight lift), a
-  shuttle hangar, crew quarters with bunk bays and an officer's cabin, the
-  mess hall and galley, the med bay, the armory and its ammunition cage,
+  shuttle hangar, crew quarters with bunk bays along the walls, a row of
+  bunks back to back down the middle of deep quarters, locker banks and an
+  officer's cabin, the mess hall and galley, the med bay (curtained ward
+  beds, cabinets, cryo pods, the surgery table inside a glazed operating
+  theatre in deep bays), the armory and its ammunition cage,
   airlocks and the docking port, two-level maintenance decks, life support /
   hydroponics, an observation lounge and stores. The freighter floats in open
   space (void under the star field) seen through framed viewports and the

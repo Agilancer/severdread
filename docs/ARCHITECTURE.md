@@ -102,7 +102,9 @@ records cells, positions, styles and a seed; `game/scatter.js` picks the art
 at load. Solid objects add a deco collider, mark their cells
 `OBSTACLE | NOSPAWN` and pass a reachability check (`keepsReach`: nothing
 reachable before - doors open, or each set of locked doors shut - may be cut
-off).
+off). A generator that sets `L.scatterIndoor` (the starship) keeps pillars and
+computers under a roof: the open ground outside its hull gets only barrels and
+traps.
 
 - `terminals`: `{cells, x, z, y, wall, gap, slot, maxH, ci}`. `wall` is the
   direction of the wall behind (-1: island); the sprite stands `gap` off it

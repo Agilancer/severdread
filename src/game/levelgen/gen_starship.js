@@ -18,14 +18,17 @@
 //     the spine, outer rows on the hull): cargo holds (tall, sunk, container
 //     rows, a gantry crane on rails, a gallery at deck level with stairs, a
 //     freight lift), a shuttle hangar with its launch bay, crew quarters
-//     (bunk bays, an officer's cabin), the mess hall with its galley, the med
-//     bay, the armory with its ammunition cage, airlocks and the docking
-//     port (suit rooms, inner and outer hatches), maintenance decks on two
-//     levels joined by stairs, life support / hydroponics, an observation
-//     lounge and stores (starship_decks.js, starship_holds.js);
+//     (bunk bays, a back-to-back bunk row in deep quarters, locker banks, an
+//     officer's cabin), the mess hall with its galley, the med bay (ward
+//     beds, a glazed operating theatre), the armory with its ammunition
+//     cage, airlocks and the docking port (suit rooms, inner and outer
+//     hatches), maintenance decks on two levels joined by stairs, life
+//     support / hydroponics, an observation lounge and stores
+//     (starship_decks.js, starship_holds.js);
 //   - the bridge at the bow, level with the spine: helm stations under a
-//     panoramic window, side stations with wall displays, a holo table and the
-//     raised command deck with the captain's chair behind the tactical desk.
+//     panoramic window, side stations with wall displays, a holo table, the
+//     raised command deck with the captain's chair behind the tactical desk,
+//     the chart table behind it and comms / engineering racks on the aft wall.
 // The freighter floats in space: every cell outside the hull is open void
 // under the star field, so its viewports (bridge, mess, lounge, docking port,
 // the hangar's open bay) look out at the real sky (starship_finish.js).

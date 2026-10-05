@@ -46,26 +46,28 @@ export function bunk(ctx, x0, z0, x1, z1, y, wallDir, o = {}) {
   const B = (a0, a1, b0, b1, y0, y1, tex, opt) => lb(deco, cx, cz, alongX, a0, a1, b0 * openSign, b1 * openSign, y0, y1, tex, opt);
   const h = D / 2;   // b from -h (wall side) to +h (open side) after the sign flip
   const head = rng.chance(0.5);   // pillow end
-  for (const a of [0.02, L - 0.08]) for (const b of [-h + 0.02, h - 0.08]) B(a, a + 0.06, b, b + 0.06, y, y + 2.02, TS.METAL, { faces: FACE.SIDES | FACE.TOP });
+  for (const a of [0.02, L - 0.08]) for (const b of [-h + 0.02, h - 0.08]) B(a, a + 0.06, b, b + 0.06, y, y + 2.0, TS.METAL, { faces: FACE.SIDES });   // capped by the top frame
   for (const by of [0.32, 1.32]) {
     B(0.03, L - 0.03, -h + 0.03, h - 0.03, y + by, y + by + 0.08, TS.METAL);
-    B(0.07, L - 0.07, -h + 0.06, h - 0.06, y + by + 0.08, y + by + 0.24, TS.CARPET);
+    // (mattress, pillow and blanket rest on the berth: no bottom faces)
+    const ST = { faces: FACE.SIDES | FACE.TOP };
+    B(0.07, L - 0.07, -h + 0.06, h - 0.06, y + by + 0.08, y + by + 0.24, TS.CARPET, ST);
     const pa = head ? 0.1 : L - 0.55;
-    B(pa, pa + 0.45, -h + 0.12, h - 0.12, y + by + 0.24, y + by + 0.33, TS.CARPET);
+    B(pa, pa + 0.45, -h + 0.12, h - 0.12, y + by + 0.24, y + by + 0.33, TS.CARPET, ST);
     // blanket over the foot half
-    if (rng.chance(0.75)) { const fa = head ? L * 0.5 : 0.08; B(fa, fa + L * 0.42, -h + 0.05, h - 0.04, y + by + 0.24, y + by + 0.29, TS.CARPET); }
+    if (rng.chance(0.75)) { const fa = head ? L * 0.5 : 0.08; B(fa, fa + L * 0.42, -h + 0.05, h - 0.04, y + by + 0.24, y + by + 0.29, TS.CARPET, ST); }
     // reading lamp at the head, on the wall side
     const la = head ? 0.12 : L - 0.32;
-    B(la, la + 0.2, -h + 0.02, -h + 0.08, y + by + 0.55, y + by + 0.65, TS.LIGHT, { uv: 'fit', emissive: 1 });
+    B(la, la + 0.2, -h + 0.02, -h + 0.08, y + by + 0.55, y + by + 0.65, TS.LIGHT, { uv: 'fit', emissive: 1, faces: FACE.SIDES });
   }
   // top frame, upper safety rail, ladder at the foot end
   B(0.02, L - 0.02, -h + 0.02, h - 0.02, y + 1.98, y + 2.04, TS.METAL, { faces: FACE.TOP | FACE.SIDES });
-  B(0.5, L - 0.6, h - 0.06, h - 0.02, y + 1.62, y + 1.7, TS.METAL);
+  B(0.5, L - 0.6, h - 0.06, h - 0.02, y + 1.62, y + 1.7, TS.METAL, { faces: FACE.SIDES | FACE.TOP });
   const fa = head ? L - 0.45 : 0.15;
   for (const a of [fa, fa + 0.3]) B(a, a + 0.04, h - 0.05, h + 0.02, y + 0.3, y + 1.75, TS.METAL, { faces: FACE.SIDES });
-  for (let k = 0; k < 4; k++) B(fa, fa + 0.34, h - 0.04, h + 0.01, y + 0.62 + k * 0.3, y + 0.66 + k * 0.3, TS.METAL);
+  for (let k = 0; k < 3; k++) B(fa, fa + 0.34, h - 0.04, h + 0.01, y + 0.68 + k * 0.36, y + 0.72 + k * 0.36, TS.METAL, { faces: FACE.SIDES | FACE.TOP });
   // drawers under the lower berth
-  B(0.12, L - 0.12, h - 0.12, h - 0.04, y + 0.03, y + 0.3, TS.CRATE2, { uv: 'fit' });
+  B(0.12, L - 0.12, h - 0.12, h - 0.04, y + 0.03, y + 0.3, TS.CRATE2, { uv: 'fit', faces: FACE.SIDES | FACE.TOP });
   if (o.light) deco.light(alongX ? cx + L / 2 : cx, y + 1.6, alongX ? cz : cz + L / 2, [1, 0.85, 0.65], 3.5);
   lc(deco, cx, cz, alongX, 0, L, -h, h, y, y + 2.04);
 }
