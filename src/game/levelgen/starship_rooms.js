@@ -113,11 +113,14 @@ function railAll(ctx, skip) {
   deco.railEdges(set, { style: ctx.style.railStyle });
 }
 // ceiling light panels in a grid (skipping pits / stairs)
+// (on the crashed ship a share of the fittings is dead: dark panels, no light)
+const deadLight = (ctx) => isCrashed(ctx) && ctx.rng.chance(0.4);
 function panelLights(ctx, step = 4, color = COOL) {
   const { g, deco, room: r } = ctx;
   for (let z = r.z + 1 + (r.h % step >> 1); z < r.z + r.h - 1; z += step) for (let x = r.x + 1 + (r.w % step >> 1); x < r.x + r.w - 1; x += step) {
     const i = g.idx(x, z);
     if (!g.type[i] || g.sky[i] || (g.flags[i] & (F.PIT | F.STAIR))) continue;
+    if (deadLight(ctx)) { deco.box(x + 0.1, g.ceil[i] - 0.06, z + 0.25, x + 0.9, g.ceil[i], z + 0.75, TS.METAL, { faces: FACE.BOTTOM | FACE.SIDES }); continue; }
     deco.lightPanel(x + 0.1, z + 0.25, x + 0.9, z + 0.75, g.ceil[i], color, 6);
   }
   r.lit = true;
@@ -128,6 +131,7 @@ function highBay(ctx, step = 6, color = COOL) {
     const i = g.idx(x, z);
     if (!g.type[i] || g.sky[i] || (g.flags[i] & (F.PIT | F.STAIR))) continue;
     const head = g.ceil[i] - g.floor[i];
+    if (deadLight(ctx)) continue;
     if (head < 4.5) { ctx.deco.lightPanel(x + 0.15, z + 0.3, x + 0.85, z + 0.7, g.ceil[i], color, 6.5); continue; }
     hangLight(ctx, x + 0.5, z + 0.5, g.ceil[i], Math.max(0.5, Math.min(2.5, head - 6)), color, 9);
   }
@@ -461,7 +465,7 @@ SS.ss_engine = (ctx) => {
   const ok1 = () => buildCore(ctx, Fr, up, boss);
   const s0 = snap(ctx), m0 = deco.mark();
   let done = false;
-  try { done = ok1() && (roomOK(ctx) || no(ctx, 'roomOK') || (globalThis.__SHIPDBG && dbgRoom(ctx))); } catch (e) { stat('error', 'ss_engine', String(e && e.stack).slice(0, 300)); }
+  try { done = ok1() && (roomOK(ctx) || no(ctx, 'roomOK')); } catch (e) { stat('error', 'ss_engine', String(e && e.stack).slice(0, 300)); }
   if (!done) {
     deco.rollback(m0); restore(ctx, s0); ctx.used = new Set();
     stat('fallback', 'ss_engine', ctx.why, r.w, r.h);
@@ -475,17 +479,6 @@ SS.ss_engine = (ctx) => {
   engineWalls(ctx, Fr);
   crashed(ctx, 0.6);
 };
-function dbgRoom(ctx) {
-  const { g, room: r } = ctx;
-  const set = new Set(ctx.cells);
-  const ex = [];
-  for (const e of r.exits) { const c = e.conn; for (let k = 0; k < c.width; k++) { const a = e.firstIn, b = c.pos + k; ex.push(c.axis === 'x' ? g.idx(a, b) : g.idx(b, a)); } }
-  const dist = g.bfs([ex[0]], { blocked: (b) => !set.has(b), avoid: F.OBSTACLE });
-  let walk = 0, reach = 0; const un = [];
-  for (const i of ctx.cells) { if (!g.type[i] || (g.flags[i] & (F.PIT | F.VOID | F.OBSTACLE | F.HAZARD))) continue; walk++; if (dist[i] >= 0) reach++; else un.push((i % g.w) + ',' + ((i / g.w) | 0) + ':' + g.floor[i].toFixed(1)); }
-  console.log('ENGDBG exits', ex.map((i) => (i % g.w) + ',' + ((i / g.w) | 0) + '=' + dist[i]).join(' '), 'reach', reach, '/', walk, 'un', un.slice(0, 30).join(' '));
-  return false;
-}
 function buildCore(ctx, Fr, up, boss) {
   const { g, deco, rng, room: r } = ctx;
   const y = r.floor, top = y + r.ceilH;
@@ -512,10 +505,7 @@ function buildCore(ctx, Fr, up, boss) {
   for (let t = tc - ht; t <= tc + ht; t++) for (let s = sc - hs; s <= sc + hs; s++) {
     const dt = Math.abs(t - tc), ds = Math.abs(s - sc);
     if (dt >= ht && ds >= hs) continue;           // round the corners
-    if (!canUseL(ctx, Fr, t, s, 1, 1, 1)) {
-      if (globalThis.__SHIPDBG) { const res = []; for (const i of r.reserved) { for (let tt = 0; tt < Fr.L; tt++) for (let ss = 0; ss < Fr.Wd; ss++) if (cellL(ctx, Fr, tt, ss) === i) res.push(tt + ':' + ss); } console.log('WELL', t, s, tc, sc, ht, hs, Fr.L, Fr.Wd, res.join(' '), 'side', Fr.side, 'room', r.x, r.z, r.w, r.h, 'exits', r.exits.map((e) => e.conn.axis + e.conn.line + ':' + (e.conn.A === r ? e.conn.B.leaf.kind : e.conn.A.leaf.kind)).join(' ')); }
-      return no(ctx, 'well reserved');
-    }
+    if (!canUseL(ctx, Fr, t, s, 1, 1, 1)) return no(ctx, 'well reserved');
     well.push(cellL(ctx, Fr, t, s));
   }
   const sides = [];

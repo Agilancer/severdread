@@ -4,27 +4,39 @@
 //
 // Built on the architect generator (gen_arch.js) with a custom partition along
 // the ship's long axis (stern -> bow):
-//   - the engine room across the whole stern: a tall hall around the reactor
-//     core in its coolant well, a catwalk ring around the core on bridges from
-//     raised platforms, thruster housings on the aft wall;
+//   - the engine room across the whole stern (tall, ceiling 12-14): the
+//     reactor core rising out of its coolant well, a catwalk ring round the
+//     core reached by catwalks from two raised platforms with railed stairs
+//     down to the deck, an inspection gantry above, power conduits aft to the
+//     thruster housings in the aft wall, coolant tank farms and turbine
+//     generators on the floor beside the core (starship_rooms.js);
 //   - the spine corridor down the middle of the hull, cut into sections by
-//     bulkheads (3-wide openings, the keyed gates on the way to the boss), hull
-//     frames every few cells, pipe bundles and cable trays overhead;
+//     bulkheads (3-wide openings framed in steel, the keyed gates on the way
+//     to the boss), hull frames every three cells, pipe bundles and cable
+//     trays overhead, a grating walkway over the cable trench;
 //   - side decks on both sides of the spine, split into bays (inner rows on
 //     the spine, outer rows on the hull): cargo holds (tall, sunk, container
-//     rows, a gantry crane on rails, a gallery with a freight lift), a shuttle
-//     hangar with its launch door, crew quarters (bunks), the mess hall with
-//     its galley, the med bay, the armory, airlocks with suit racks,
-//     maintenance decks on two levels joined by stairs, life support /
-//     hydroponics and stores;
-//   - the bridge at the bow: raised above the spine (stairs up), a command deck
-//     with the captain's chair, helm consoles under a panoramic window.
-// The freighter floats in space: every cell outside the hull is open sky over
-// the void, so its windows (bridge, mess, lounge) look out at the real sky.
-// The crashed ship lies broken on an alien world: the crash site between the
-// two halves is open ground (sky, rocks, wreckage, burning fuel), the torn ends
-// gape open with buckled decks, torn floors over jagged wreckage, fuel pits and
-// sparking conduits, and the bow half rests nose-up on rising ground.
+//     rows, a gantry crane on rails, a gallery at deck level with stairs, a
+//     freight lift), a shuttle hangar with its launch bay, crew quarters
+//     (bunk bays, an officer's cabin), the mess hall with its galley, the med
+//     bay, the armory with its ammunition cage, airlocks and the docking
+//     port (suit rooms, inner and outer hatches), maintenance decks on two
+//     levels joined by stairs, life support / hydroponics, an observation
+//     lounge and stores (starship_decks.js, starship_holds.js);
+//   - the bridge at the bow, level with the spine: helm stations under a
+//     panoramic window, side stations with wall displays, a holo table and the
+//     raised command deck with the captain's chair behind the tactical desk.
+// The freighter floats in space: every cell outside the hull is open void
+// under the star field, so its viewports (bridge, mess, lounge, docking port,
+// the hangar's open bay) look out at the real sky (starship_finish.js).
+// The crashed ship lies broken in two in a ravine on an alien world: the crash
+// site between the halves is open ground (sky, purple crystal soil, rocks,
+// wreckage, burning fuel, a crater, a torn-off engine nacelle), the torn
+// hull ends gape open (ragged breaches with rubble, plates hanging from the
+// lintels, the decks' cross-section, sparking cables), torn decks open over
+// jagged wreckage, fuel and coolant leak into toxic pools, the bow half's
+// decks rise section by section toward the nose, which rests buried in the
+// ground it ploughed up (the bridge window looks out at the heaped earth).
 //
 // Dev hooks (tests / screenshots): globalThis.__SHIPFORCE = 'ss_mess,ss_med'
 // favours room kinds, globalThis.__SHIPSTAT (an array) collects template

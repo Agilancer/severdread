@@ -444,6 +444,17 @@ function buildCargo(ctx, Fr, last) {
     }
   }
   if (boxes < (last ? 1 : 2)) return no(ctx, 'containers ' + boxes);
+  // the crashed ship's sunk hold is partly flooded (burst coolant / ballast)
+  if (wreck) {
+    const fr = bestRect(m, { minT: 3, minS: 3, maxT: 5, maxS: 7, t0 });
+    if (fr) {
+      const cells = [];
+      for (let t = fr.t; t < fr.t + fr.dt; t++) for (let s = fr.s; s < fr.s + fr.ds; s++) cells.push(cellL(ctx, Fr, t, s));
+      pitSet(ctx, cells, 'water', 0.35);
+      markMask(m, fr.t - 1, fr.s - 1, fr.dt + 2, fr.ds + 2);
+      useL(ctx, Fr, fr.t, fr.s, fr.dt, fr.ds);
+    }
+  }
   // pallets and a forklift in the aisles
   stock(ctx, rng.int(1, 3), ['pallet', 'pallet', 'crates', 'drum']);
   for (let k = 0; k < 6; k++) {

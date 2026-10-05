@@ -47,7 +47,11 @@ the passage runs along x, the span along z), `cells` all door cells (all
   by the mesh, cells in front / behind get at least that head room). The
   generators build their keyed gates as 3-wide doorways (gen_arch gate
   connections, natural `gateWall`, mazekit `buildGate`, platkit gatehouses,
-  the city boss plaza); narrower spans are only a fallback.
+  the city boss plaza); narrower spans are only a fallback. A gen_arch gate
+  between rooms at different heights is flat and takes its stairs as a
+  flight in one of the rooms; with `opt.gateLanding` (the starship) that
+  flight ends in a flat landing in front of the doorway, so the span has
+  level floor on both sides.
 - Plain doors stay 1 cell wide (passage height, at most 3.5).
 - World (`world.js`): `doorByCell` / `doorAt` map every door cell; doors
   open when the player (or a monster) comes near the whole footprint. Each

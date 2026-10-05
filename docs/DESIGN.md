@@ -95,6 +95,28 @@ hand rails, AABB colliders, light fixtures). See `docs/ARCHITECTURE.md`.
   gallery, ore stores, gear pits (clockwork), carcass hook halls and cold
   rooms (meat plant), magma breaches where the rock breaks in (volcano
   base), and the converter house as the boss arena.
+- `gen_starship.js` (large space freighter, crashed starship): the level is
+  a ship's hull seen from inside, laid out along its length from the stern to
+  the bow. The engine room spans the stern (ceiling 12-14): the reactor core
+  rises out of a coolant well, a catwalk ring round it is reached from two
+  raised platforms up railed stairs, power conduits run aft to the thruster
+  housings, tank farms and turbines stand beside it. A spine corridor runs
+  down the middle (hull frames, pipe bundles, cable trays, steel-framed
+  bulkheads that carry the keyed gates) to the bridge at the bow: helm
+  stations under a panoramic window, a holo table and the raised command
+  deck. Side decks (`starship_decks.js`, `starship_holds.js`) hold cargo
+  holds (container rows, gantry crane, deck-level gallery, freight lift), a
+  shuttle hangar, crew quarters with bunk bays and an officer's cabin, the
+  mess hall and galley, the med bay, the armory and its ammunition cage,
+  airlocks and the docking port, two-level maintenance decks, life support /
+  hydroponics, an observation lounge and stores. The freighter floats in open
+  space (void under the star field) seen through framed viewports and the
+  hangar's open launch bay (`starship_finish.js`). The crashed ship lies
+  broken in two in a ravine on an alien world: the crash site between the
+  halves is open ground with wreckage, fires, fuel pools, a crater and a
+  torn-off nacelle; the torn hull ends show the decks' cross-section round
+  ragged breaches; torn decks open over wreckage, fuel leaks pool on the
+  decks, the bow half climbs toward its buried nose.
 - Caves, canyons, mountains, mazes, halls, rooftops, sky islands and convoys
   have their own generators built on the same toolkit.
 
