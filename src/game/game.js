@@ -656,7 +656,7 @@ export class Game {
         b.add(c.fx, MODE.ADD, pk.x, y, pk.z, 0.55, 0.55, { uv: [0, 0, 0.25, 1], tint: [...col, 0.35], anchorY: 0.5, spherical: true, fullbright: true });
       } else if (pk.kind === 'ammo') {
         // packs and (bigger) boxes from the ammo sheet, a soft glow in the type's colour
-        const ic = c.ammoIconGL(pk.icon, pk.type), sz = pk.big ? 0.62 : 0.42;
+        const ic = c.ammoIconGL(pk.icon, pk.type), sz = pk.big ? 0.72 : 0.42;
         const col = hexToRgb(AMMO[pk.type].color);
         b.add(c.fx, MODE.ADD, pk.x, y, pk.z, sz * 1.9, sz * 1.5, { uv: [0, 0, 0.25, 1], tint: [...col, (pk.big ? 0.42 : 0.3) + 0.08 * Math.sin(t * 4 + pk.phase)], anchorY: 0.5, spherical: true, fullbright: true });
         b.add(ic, MODE.CUTOUT, pk.x, y - 0.22, pk.z, sz, sz, { fullbright: true, glow: [col[0] * 0.12, col[1] * 0.12, col[2] * 0.12, 0] });

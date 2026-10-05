@@ -220,7 +220,7 @@ export class HUD {
       const n = ammoCount(sv, wa.type), max = ammoMax(wa.type, p.stats);
       const f = n < wa.cost ? 0 : n / max;
       // count white (amber when low, red when empty, flashing on a dry click); the label in the type colour
-      parts = { icon: game.content.ammoIcon(wa.type), n: String(n), max: '/' + max, col: flash ? '#ff3030' : f <= 0 ? '#ff3030' : f < 0.25 ? '#ffb020' : '#ffffff', lcol: f <= 0 ? '#ff3030' : AMMO[wa.type].color, label: (AMMO[wa.type].short || AMMO[wa.type].name).toUpperCase() };
+      parts = { icon: game.content.ammoIcon(wa.type), n: String(n), max: '/' + max, col: flash ? '#ffffff' : f <= 0 ? '#ff3030' : f < 0.25 ? '#ffb020' : '#ffffff', lcol: f <= 0 ? '#ff3030' : AMMO[wa.type].color, label: (AMMO[wa.type].short || AMMO[wa.type].name).toUpperCase() };
     }
     g.font = `${big}px ${FONT_BIG}`;
     const nw = parts.n ? g.measureText(parts.n).width : big * 1.6;

@@ -172,9 +172,9 @@ export class UI {
             <div><h3>LOOT</h3>Enemies, bosses and chests drop weapons, armour and rings. Equip them in the ${k('Tab / I', 'BAG')} screen;
               its <b>MAP</b> tab (${k('M', 'MAP')}) shows every enemy, the boss and the portal.</div>
             <div><h3>THE CREW</h3>Talk to the robots in the station (${k('E', 'USE')}) to buy, sell, upgrade and craft gear.</div>
-            <div><h3>AMMO</h3>Heavy weapons (shotguns, rockets, plasma, rail, flamers, crossbows...) use <b>ammo</b>: grab the packs and
-              boxes lying around, dropped by enemies and in chests, or buy refills at the station shop. Basic guns and melee
-              <b>never run dry</b> - an empty gun switches to one that can fire.</div>
+            <div><h3>AMMO</h3>Heavy weapons (shotguns, rockets, plasma, rail, flamers, crossbows...) use <b>ammo</b> from packs and boxes
+              in the level, enemy drops, chests and the station shop. Basic guns and melee <b>never run dry</b>; an empty gun
+              switches to one that can fire.</div>
             <div><h3>DYING</h3>Death ends the run: you keep your level, gear and bag, but the dive starts again at depth 1.</div>
           </div>
           <h3>CONTROLS</h3>
