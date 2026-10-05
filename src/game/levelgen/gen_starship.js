@@ -33,6 +33,8 @@ import { TS, F, clamp, DIR_X, DIR_Z, OPP, SKY_H } from './common.js';
 import { FACE } from './deco.js';
 import { genArch, TEMPLATES } from './gen_arch.js';
 import { SS, shipVariant } from './starship_rooms.js';
+import './starship_decks.js';
+import './starship_holds.js';
 import { finishShip } from './starship_finish.js';
 
 for (const [k, fn] of Object.entries(SS)) if (!TEMPLATES[k]) TEMPLATES[k] = fn;
@@ -110,6 +112,9 @@ export function genStarship(rng, theme, depth) {
     ceilH: CEIL,
     skyTemplates: ['ss_crash'],
     floorSlot: (r) => (r.leaf.kind === 'ss_crash' ? TS.GROUND : FLOOR_OF[r.template] ?? TS.FLOOR),
+    // stairs between decks go into the spine / side rooms, never into the
+    // engine room (its reactor well fills the floor) or onto the bridge
+    noFlight: (r) => r.leaf.kind === 'ss_engine' || r.leaf.kind === 'ss_bridge' || r.leaf.kind === 'ss_crash',
     doorChance: 0.1,
   });
   L.ship = S;
@@ -126,7 +131,9 @@ function deckFloor(leaf, rng) {
   switch (leaf.kind) {
     case 'ss_spine': case 'ss_dock': case 'ss_airlock': return base;
     case 'ss_crash': return 0;
-    case 'ss_engine': return base + rng.pick([-1.2, -1.8, -1.8, -2.4]);
+    // the engine room stays on the spine deck (its bulkhead is often the boss
+    // gate, which must be flat); its height lives in the well and catwalks
+    case 'ss_engine': return base;
     case 'ss_bridge': return base + rng.pick([1.2, 1.2, 1.8]);
     case 'ss_cargo': return base + rng.pick([-2.4, -3.0, -3.0]);
     case 'ss_hangar': return base + rng.pick([0, -1.2, -1.8]);
@@ -146,7 +153,7 @@ function shipLayout({ W, H, rng, add }, S) {
   S.sternWest = sternWest;
   const leaves = [];
   const push = (u0, len, z0, h, kind, o = {}) => {
-    const n = { x: sternWest ? X0 + u0 : X1 - u0 - len, z: z0, w: len, h, kind, u0, len, ...o };
+    const n = { x: sternWest ? X0 + u0 : X1 - u0 - len, z: z0, w: len, h, kind, u0, len, ship: S, ...o };
     leaves.push(n);
     return n;
   };
@@ -163,7 +170,9 @@ function shipLayout({ W, H, rng, add }, S) {
   // stern / bow ends
   const sternPad = crashed ? rng.int(1, 2) : rng.int(1, 3);
   const bowPad = crashed ? rng.int(1, 2) : rng.int(6, 9);
-  let E = clamp(Math.round(Lu * 0.17), 15, 22);
+  // the engine room needs depth for the reactor well between the thrusters on
+  // the aft wall and the exits on its bow wall
+  let E = clamp(Math.round(Lu * 0.21), 17, 25);
   let B = clamp(Math.round(Lu * 0.15), 13, 18);
   const uE0 = sternPad;
   const uB1 = Lu - bowPad;
@@ -172,12 +181,12 @@ function shipLayout({ W, H, rng, add }, S) {
   if (crashed) {
     const G = clamp(Math.round(Lu * 0.2), 14, 22);
     // both halves need the end room and at least one spine section
-    while (E + B + G + 2 * 11 > uB1 - uE0 && (E > 13 || B > 12)) { if (E > 13) E--; if (B > 12) B--; }
+    while (E + B + G + 2 * 11 > uB1 - uE0 && (E > 16 || B > 12)) { if (E > 16) E--; if (B > 12) B--; }
     const lo = uE0 + E + 11, hi = uB1 - B - 11 - G;
     const g0 = clamp(Math.round(lo + (hi - lo) * rng.float(0.3, 0.7)), lo, Math.max(lo, hi));
     gap = [g0, g0 + G];
   } else {
-    while (E + B + 22 > uB1 - uE0 && (E > 14 || B > 12)) { if (E > 14) E--; if (B > 12) B--; }
+    while (E + B + 22 > uB1 - uE0 && (E > 16 || B > 12)) { if (E > 16) E--; if (B > 12) B--; }
   }
   const uE1 = uE0 + E, uB0 = uB1 - B;
   S.u = { uE0, uE1, uB0, uB1, gap };
@@ -272,6 +281,10 @@ function shipLayout({ W, H, rng, add }, S) {
   // the boss waits in the engine room or on the bridge
   S.bossKind = rng.chance(C.bossEngine) ? 'ss_engine' : 'ss_bridge';
   for (const n of leaves) { S.leaves.push(n); add(n, false); }
+  // which cells lie inside a leaf (the rest is space / alien ground outside the hull)
+  S.W = W; S.H = H;
+  S.inLeaf = new Uint8Array(W * H);
+  for (const n of leaves) for (let z = n.z; z < n.z + n.h; z++) for (let x = n.x; x < n.x + n.w; x++) S.inLeaf[z * W + x] = n.kind === 'ss_crash' ? 2 : 1;
 }
 
 // split [u0, u0 + len) into bays of 11..maxL cells (one bay when short)

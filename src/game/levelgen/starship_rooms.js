@@ -73,6 +73,22 @@ function hullSide(ctx) {
   if (r.leaf.z + r.leaf.h === S.hull.hz1) return 2;
   return -1;
 }
+// walls of the room that are the outer hull (beyond the wall ring lies space /
+// the alien ground), as wall sides 0..3 (+x, -x, +z, -z)
+function outerSides(ctx) {
+  const { room: r } = ctx;
+  const S = r.leaf.ship;
+  if (!S || !S.inLeaf) return [];
+  const out = [];
+  const outside = (x, z) => x < 0 || z < 0 || x >= S.W || z >= S.H || !S.inLeaf[z * S.W + x];
+  for (let k = 0; k < 4; k++) {
+    let all = true;
+    if (k < 2) { const x = k === 0 ? r.x + r.w + 1 : r.x - 2; for (let z = r.z; z < r.z + r.h && all; z++) if (!outside(x, z)) all = false; }
+    else { const z = k === 2 ? r.z + r.h + 1 : r.z - 2; for (let x = r.x; x < r.x + r.w && all; x++) if (!outside(x, z)) all = false; }
+    if (all) out.push(k);
+  }
+  return out;
+}
 // box in frame coordinates (t away from the frame wall, s along it)
 function fb(deco, Fr, t0, t1, s0, s1, y0, y1, tex, o) {
   const [ax, az] = Fr.pt(t0, s0), [bx, bz] = Fr.pt(t1, s1);
@@ -343,7 +359,7 @@ SS.ss_engine = (ctx) => {
   try { done = ok1() && roomOK(ctx); } catch (e) { stat('error', 'ss_engine', String(e && e.stack).slice(0, 300)); }
   if (!done) {
     deco.rollback(m0); restore(ctx, s0); ctx.used = new Set();
-    stat('fallback', 'ss_engine');
+    stat('fallback', 'ss_engine', ctx.why, r.w, r.h);
     // fallback: the core standing on the deck behind a railing
     const cx = r.x + r.w / 2, cz = r.z + r.h / 2;
     if (ok(ctx, Math.floor(cx) - 2, Math.floor(cz) - 2, 4, 4, 1)) {
@@ -358,84 +374,104 @@ function buildCore(ctx, Fr, up, boss) {
   const { g, deco, rng, room: r } = ctx;
   const y = r.floor, top = y + r.ceilH;
   ctx.used = new Set();
-  // the core sits in the middle (t across the room's depth, s along the aft wall)
-  const tc = Math.floor(Fr.L / 2), sc = Math.floor(Fr.Wd / 2) + rng.int(-1, 1);
-  // well: half sizes (t, s); ring at Chebyshev distance 2 around the 3x3 core
-  const ht = Math.max(3, Math.min(boss ? 4 : 5, tc - 3)), hs = Math.max(3, Math.min(boss ? 5 : 7, sc - 7));
-  if (tc - ht < 3 || Fr.L - (tc + ht + 1) < 3) return no(ctx, 'well depth');
-  // well cells (rounded rectangle), avoiding exit approaches with a margin
+  const n = nSteps(up);
+  const platW = 3, platD = 3;
+  // core half size c (3x3 or 5x5 cells), the catwalk ring at Chebyshev
+  // distance c + 1 round it, the coolant well one more cell beyond the ring
+  const big = Fr.L >= 18 && Fr.Wd >= 34;
+  const c = big ? 2 : 1, rd = c + 1;
+  // the well clears the thrusters on the aft wall (t < 3) and the exit
+  // approaches on the bow wall (3 deep + a margin cell)
+  const tMin = 3, tMax = Fr.L - 5;
+  let ht = Math.min(rd + (boss ? 1 : 2), Math.floor((tMax - tMin) / 2));
+  if (ht < rd + 1) return no(ctx, 'well depth');
+  const tc = tMin + ht + Math.floor((tMax - tMin - 2 * ht) / 2);
+  // across the hall: well, platforms (3) and flights (n) on both sides
+  let hs = Math.min(rd + (boss ? 3 : 5), Math.floor((Fr.Wd - 2 * (platD + n + 2) - 1) / 2));
+  if (hs < rd + 1) return no(ctx, 'well width');
+  const room = Fr.Wd - 2 * (hs + platD + n + 2) - 1;
+  const sc = hs + platD + n + 2 + (room > 0 ? rng.int(0, room) : 0);
+  // well cells (rounded rectangle), clear of exit approaches with a margin
   const well = [];
   for (let t = tc - ht; t <= tc + ht; t++) for (let s = sc - hs; s <= sc + hs; s++) {
     const dt = Math.abs(t - tc), ds = Math.abs(s - sc);
-    if (dt >= ht - 0.5 && ds >= hs - 0.5) continue;           // round the corners
-    if (!canUseL(ctx, Fr, t, s, 1, 1, 1)) return no(ctx, 'well reserved');
+    if (dt >= ht && ds >= hs) continue;           // round the corners
+    if (!canUseL(ctx, Fr, t, s, 1, 1, 1)) {
+      if (globalThis.__SHIPDBG) { const res = []; for (const i of r.reserved) { for (let tt = 0; tt < Fr.L; tt++) for (let ss = 0; ss < Fr.Wd; ss++) if (cellL(ctx, Fr, tt, ss) === i) res.push(tt + ':' + ss); } console.log('WELL', t, s, tc, sc, ht, hs, Fr.L, Fr.Wd, res.join(' '), 'side', Fr.side, 'room', r.x, r.z, r.w, r.h, 'exits', r.exits.map((e) => e.conn.axis + e.conn.line + ':' + (e.conn.A === r ? e.conn.B.leaf.kind : e.conn.A.leaf.kind)).join(' ')); }
+      return no(ctx, 'well reserved');
+    }
     well.push(cellL(ctx, Fr, t, s));
   }
-  const wellSet = new Set(well);
-  pitSet(ctx, well, 'poison', 3.2);
-  const yPit = y - 3.2;
-  // the ring catwalk (bridge cells at y + up)
-  const ring = [];
-  for (let t = tc - 2; t <= tc + 2; t++) for (let s = sc - 2; s <= sc + 2; s++) {
-    if (Math.max(Math.abs(t - tc), Math.abs(s - sc)) !== 2) continue;
-    ring.push(cellL(ctx, Fr, t, s));
-  }
-  // bridges along s from the ring to both platforms
-  const platW = 3, platD = 3;
   const sides = [];
   for (const dir of [-1, 1]) {
     const sEdge = dir < 0 ? sc - hs : sc + hs;          // last well column
     const p0 = dir < 0 ? sEdge - platD : sEdge + 1;     // platform columns [p0, p0 + platD)
-    const n = nSteps(up);
-    // stairs from the platform going away from the well
-    const f0 = dir < 0 ? p0 - n : p0 + platD;
+    const f0 = dir < 0 ? p0 - n : p0 + platD;           // the flight runs on away from the well
     if (f0 < 1 || f0 + n > Fr.Wd - 1) return no(ctx, 'platform room');
-    if (!okL(ctx, Fr, tc - 1, Math.min(p0, f0), platW, platD + n + 1, 1)) return no(ctx, 'platform reserved');
+    if (!okL(ctx, Fr, tc - 1, Math.min(p0, f0), platW, platD + n, 1)) return no(ctx, 'platform reserved');
+    // the foot of the flight needs a free landing
+    const foot = dir < 0 ? f0 - 1 : f0 + n;
+    if (!okL(ctx, Fr, tc - 1, foot, platW, 1, 0)) return no(ctx, 'flight foot');
     sides.push({ dir, p0, f0, n });
   }
-  for (const i of ring) { const x = i % g.w, z = (i / g.w) | 0; g.open(x, z, y + up, g.ceil[i], { floorTex: TS.GRATE, wallTex: TS.GRATE, light: g.light[i], region: r.id }); g.flags[i] &= ~(F.PIT | F.HAZARD); g.flags[i] |= F.BRIDGE | F.NOSPAWN; g.hazType[i] = 0; }
-  const deck = new Set(ring);
+  pitSet(ctx, well, 'poison', 3.2);
+  const yPit = y - 3.2;
+  const bridgeCell = (i) => {
+    const x = i % g.w, z = (i / g.w) | 0;
+    g.open(x, z, y + up, g.ceil[i], { floorTex: TS.GRATE, wallTex: TS.GRATE, light: g.light[i], region: r.id });
+    g.flags[i] &= ~(F.PIT | F.HAZARD); g.flags[i] |= F.BRIDGE | F.NOSPAWN; g.hazType[i] = 0;
+  };
+  // the ring catwalk round the core
+  for (let t = tc - rd; t <= tc + rd; t++) for (let s = sc - rd; s <= sc + rd; s++) {
+    if (Math.max(Math.abs(t - tc), Math.abs(s - sc)) === rd) bridgeCell(cellL(ctx, Fr, t, s));
+  }
   for (const sd of sides) {
-    // bridge cells over the well from the ring to the platform
-    const sa = sd.dir < 0 ? sd.p0 + platD : sc + 3, sb = sd.dir < 0 ? sc - 3 : sd.p0 - 1;
-    for (let s = Math.min(sa, sb); s <= Math.max(sa, sb); s++) {
-      const i = cellL(ctx, Fr, tc, s);
-      const x = i % g.w, z = (i / g.w) | 0;
-      g.open(x, z, y + up, g.ceil[i], { floorTex: TS.GRATE, wallTex: TS.GRATE, light: g.light[i], region: r.id });
-      g.flags[i] &= ~(F.PIT | F.HAZARD); g.flags[i] |= F.BRIDGE | F.NOSPAWN; g.hazType[i] = 0;
-      deck.add(i);
-    }
-    // platform (solid deck) and its flight down to the floor, away from the well
-    for (const i of setHeightL(ctx, Fr, tc - 1, sd.p0, platW, platD, y + up, { floorTex: TS.GRATE, wallTex: TS.METAL })) deck.add(i);
+    // catwalks over the well from the ring to the platform, two cells wide on the big core
+    const sa = sd.dir < 0 ? sd.p0 + platD : sc + rd + 1, sb = sd.dir < 0 ? sc - rd - 1 : sd.p0 - 1;
+    for (let s = Math.min(sa, sb); s <= Math.max(sa, sb); s++) for (const t of big ? [tc - 1, tc, tc + 1] : [tc]) bridgeCell(cellL(ctx, Fr, t, s));
+    // platform (solid steel deck) and its flight down to the floor, away from the well
+    setHeightL(ctx, Fr, tc - 1, sd.p0, platW, platD, y + up, { floorTex: TS.GRATE, wallTex: TS.METAL });
     flightL(ctx, Fr, tc - 1, sd.f0, platW, sd.n, sd.dir < 0 ? 'latN' : 'lat', y, y + up);
     useL(ctx, Fr, tc - 2, Math.min(sd.p0, sd.f0) - 1, platW + 2, platD + sd.n + 2);
-    // console on the platform facing the core
-    const ct = tc + 1, cs = sd.dir < 0 ? sd.p0 : sd.p0 + platD - 1;
-    const [cx, cz] = Fr.cell(ct, cs);
+    // control desk on the platform corner, facing the core
+    const cs = sd.dir < 0 ? sd.p0 : sd.p0 + platD - 1;
+    const [cx, cz] = Fr.cell(tc + 1, cs);
     deco.console(cx, cz, y + up, Fr.dirOf(sd.dir < 0 ? 'lat' : 'latN'), { width: 0.7 });
-    // support legs under the platform edge facing the well
+    // steel legs under the platform edge on the well side
     for (const t of [tc - 1, tc + 1]) {
       const sl = sd.dir < 0 ? sd.p0 + platD - 0.25 : sd.p0 + 0.05;
       fb(deco, Fr, t + 0.35, t + 0.65, sl, sl + 0.2, yPit, y, TS.BEAM, { faces: FACE.SIDES });
     }
+    // catwalk support struts down into the well
+    for (let s = Math.min(sa, sb) + 1; s < Math.max(sa, sb); s += 3) fb(deco, Fr, tc + 0.4, tc + 0.6, s + 0.4, s + 0.6, yPit, y + up - 0.35, TS.BEAM, { faces: FACE.SIDES });
   }
-  // the core: 3x3 cells in the middle of the ring
+  // the core: (2c+1)^2 cells inside the ring
   const [kx, kz] = Fr.pt(tc + 0.5, sc + 0.5);
-  P.reactorCore(ctx, kx, kz, yPit, top, 1.25, { ceil: top, coils: [0.3, 0.62] });
-  // a second, higher service ring around the core (inspection gantry, out of reach)
+  const R = big ? 2.1 : 1.25;
+  P.reactorCore(ctx, kx, kz, yPit, top, R, { ceil: top, coils: big ? [0.25, 0.5, 0.75] : [0.3, 0.62], lightR: big ? 13 : 10 });
+  // a higher inspection gantry round the core (out of reach)
   const yr = y + up + 4.2;
+  const gq = rd + 0.5;
   if (yr < top - 2.5) {
-    for (const [t0, t1, s0, s1] of [[-2.5, 2.5, -2.5, -1.9], [-2.5, 2.5, 1.9, 2.5], [-2.5, -1.9, -1.9, 1.9], [1.9, 2.5, -1.9, 1.9]]) {
+    for (const [t0, t1, s0, s1] of [[-gq, gq, -gq, -gq + 0.6], [-gq, gq, gq - 0.6, gq], [-gq, -gq + 0.6, -gq + 0.6, gq - 0.6], [gq - 0.6, gq, -gq + 0.6, gq - 0.6]]) {
       fb(deco, Fr, tc + 0.5 + t0, tc + 0.5 + t1, sc + 0.5 + s0, sc + 0.5 + s1, yr, yr + 0.12, TS.GRATE);
     }
-    for (const [ta, sa] of [[-2.45, -2.45], [2.4, -2.45], [-2.45, 2.4], [2.4, 2.4]]) fb(deco, Fr, tc + 0.5 + ta, tc + 0.5 + ta + 0.05, sc + 0.5 + sa, sc + 0.5 + sa + 0.05, yr, top, TS.METAL, { faces: FACE.SIDES });
-    for (const [t0, t1, s0, s1] of [[-2.5, 2.5, -2.5, -2.45], [-2.5, 2.5, 2.45, 2.5], [-2.5, -2.45, -2.5, 2.5], [2.45, 2.5, -2.5, 2.5]]) fb(deco, Fr, tc + 0.5 + t0, tc + 0.5 + t1, sc + 0.5 + s0, sc + 0.5 + s1, yr + 0.95, yr + 1.02, TS.RAIL);
+    for (const [ta, sa] of [[-gq + 0.05, -gq + 0.05], [gq - 0.1, -gq + 0.05], [-gq + 0.05, gq - 0.1], [gq - 0.1, gq - 0.1]]) fb(deco, Fr, tc + 0.5 + ta, tc + 0.5 + ta + 0.05, sc + 0.5 + sa, sc + 0.5 + sa + 0.05, yr, top, TS.METAL, { faces: FACE.SIDES });
+    for (const [t0, t1, s0, s1] of [[-gq, gq, -gq, -gq + 0.05], [-gq, gq, gq - 0.05, gq], [-gq, -gq + 0.05, -gq, gq], [gq - 0.05, gq, -gq, gq]]) fb(deco, Fr, tc + 0.5 + t0, tc + 0.5 + t1, sc + 0.5 + s0, sc + 0.5 + s1, yr + 0.95, yr + 1.02, TS.RAIL);
   }
-  // rails: deck edges over the well, well rim at floor level
+  // power conduits from the core cap aft to the drive housings in the aft wall
+  const yc = Math.min(top - 1.6, y + up + 3.0);
+  for (const ds of big ? [-1.2, 1.2] : [-0.6, 0.6]) {
+    const [ax, az] = Fr.pt(0, sc + 0.5 + ds), [bx, bz] = Fr.pt(tc + 0.5 - R, sc + 0.5 + ds);
+    if (Fr.away < 2) cylH(deco, Math.min(ax, bx), Math.max(ax, bx), yc, az, 0.26, true, TS.PIPE);
+    else cylH(deco, Math.min(az, bz), Math.max(az, bz), yc, ax, 0.26, false, TS.PIPE);
+    for (let t = 1.5; t < tc - R; t += 2.5) fb(deco, Fr, t, t + 0.18, sc + 0.5 + ds - 0.34, sc + 0.5 + ds + 0.34, yc - 0.34, yc + 0.34, TS.TRIM);
+  }
+  // rails: catwalk / platform edges over the well and the floor round its rim
   railAll(ctx);
   hazardLines(ctx, well.filter((i) => g.flags[i] & F.PIT));
   for (const i of well) ctx.used.add(i);
-  void wellSet; void deck;
+  ctx.engineCore = { tc, sc, ht, hs };
   return true;
 }
 // thrusters on the aft wall, turbines / tanks / risers along the walls
@@ -560,10 +596,7 @@ function buildBridge(ctx, Fr) {
   return true;
 }
 
-// placeholders filled in below
-for (const k of ['ss_cargo', 'ss_hangar', 'ss_quarters', 'ss_mess', 'ss_med', 'ss_armory', 'ss_airlock', 'ss_dock', 'ss_maint', 'ss_life', 'ss_lounge', 'ss_storage', 'ss_crash']) {
-  SS[k] = (ctx) => TEMPLATES.plain(ctx);
-}
+// the side decks are filled in by starship_decks.js / starship_holds.js
 
-export { SS, tryFrames, sidesLong, sidesShort, hullSide, fb, fcol, cellL, wallClosed, railAll, panelLights, highBay, pipeRun, wallScreen, wallMachine, crashed, gallery, deckFace, isCrashed, no };
+export { SS, tryFrames, sidesLong, sidesShort, hullSide, outerSides, fb, fcol, cellL, wallClosed, railAll, panelLights, highBay, pipeRun, wallScreen, wallMachine, crashed, gallery, deckFace, isCrashed, no };
 export { cellsOf, canUseL, useL, okL, ok, use, setHeightL, retexFloor, flightL, snap, restore, roomOK, wallSpots, wallBox, hangLight, paint, hazardLines, pitSet, freeMask, bestRect, markMask, glassLineL, lineOpening, cabinet, machineBlock, counter, monitor, bed, ivStand, vitalsMonitor, trolley, curtain, riser, steelTable, openShelf, nSteps, lightStrip, edgeCells, tank, seatRow, rackRow, cylV, cylH, crane, pallet, drum, forklift, workbench, P, stat };
