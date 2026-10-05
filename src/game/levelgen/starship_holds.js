@@ -74,12 +74,26 @@ function buildAirlock(ctx, Fr, last, dock) {
   }
   if (s0 < 0) return no(ctx, 'hatch wall');
   // the chamber: an insulated bulkhead at t = D with the inner hatch opposite the outer one
-  const D = Fr.L >= 10 ? 4 : 3;
-  const op = lineOpening(ctx, Fr, D, 3, 3, s0);
-  if (!op) return no(ctx, 'inner hatch');
+  let D = 0, op = null;
+  for (const d of Fr.L >= 10 ? [4, 3, 5] : [3, 4]) {
+    if (d > Fr.L - 4) continue;
+    op = lineOpening(ctx, Fr, d, 3, 3, s0);
+    if (op) { D = d; break; }
+  }
+  if (!op && !last) return no(ctx, 'inner hatch');
   hatch(ctx, Fr, s0, y, { collar: dock, light: dock ? AMBER : ALARM });
   useL(ctx, Fr, 0, s0 - 1, 1, 5);
-  glassLineL(ctx, Fr, D, 0, Fr.Wd, y, Math.min(r.ceilH, 4.2), [op], { pane: TS.PANEL, header: TS.METAL });
+  if (!op) {
+    // no room for the bulkhead: an open airlock bay with the gantry over the hatch
+    D = 3;
+    const [g0x, g0z] = Fr.pt(1.5, s0 - 0.6), [g1x, g1z] = Fr.pt(1.5, s0 + 3.6);
+    if (okL(ctx, Fr, 1, s0, 2, 3)) showerGantry(ctx, g0x, g0z, g1x, g1z, y, Math.min(2.8, r.ceilH - 0.4));
+    paint(ctx, ...wr(Fr, 2.6, 2.75, s0, s0 + 3), y);
+    useL(ctx, Fr, 0, s0 - 1, 3, 5);
+    return airlockRoom(ctx, Fr, last, dock, D, null, s0);
+  }
+  // the bulkhead is hull wall (WALL), framed in steel
+  glassLineL(ctx, Fr, D, 0, Fr.Wd, y, r.ceilH, [op], { pane: TS.WALL, header: TS.WALL, thick: 0.2 });
   for (const [a, b] of [[op[0] - 0.95, op[0] - 0.04], [op[1] + 0.04, op[1] + 0.95]]) if (a >= 0 && b <= Fr.Wd) slideDoor(ctx, Fr, D, a, b, y, 1, TS.METAL);
   // red / green cycle lamps over the inner hatch
   fb(deco, Fr, D + 0.08, D + 0.16, op[0] + 0.3, op[0] + 0.6, y + 3.05, y + 3.25, TS.LIGHT, { uv: 'fit', emissive: 1 });
@@ -102,6 +116,11 @@ function buildAirlock(ctx, Fr, last, dock) {
     }
   }
   useL(ctx, Fr, 0, 0, D + 1, Fr.Wd);
+  return airlockRoom(ctx, Fr, last, dock, D, op, s0);
+}
+function airlockRoom(ctx, Fr, last, dock, D, op, s0) {
+  const { deco, room: r } = ctx;
+  const y = r.floor;
   // the suit room: EVA suits and lockers on the walls, benches, the cycle console
   let suits = 0;
   for (const [x, z, d] of wallSpots(ctx)) {
@@ -118,7 +137,8 @@ function buildAirlock(ctx, Fr, last, dock) {
     steelBench(ctx, ...wr(Fr, br.t + 0.25, br.t + 0.75, br.s + 0.1, br.s + br.ds - 0.1), y);
     useL(ctx, Fr, br.t, br.s, 1, br.ds);
   }
-  const cs = op[1] + 1 < Fr.Wd ? op[1] : op[0] - 1;
+  const o2 = op || [s0, s0 + 3];
+  const cs = o2[1] + 1 < Fr.Wd ? o2[1] : o2[0] - 1;
   if (cs >= 0 && cs < Fr.Wd && okL(ctx, Fr, D + 1, cs, 1, 1)) {
     const [x, z] = Fr.cell(D + 1, cs);
     deco.console(x, z, y, Fr.toward, { width: 0.8 });
@@ -156,8 +176,12 @@ SS.ss_maint = (ctx) => {
 function buildMaint(ctx, Fr, last) {
   const { g, deco, rng, room: r } = ctx;
   const y = r.floor, top = y + r.ceilH;
-  const up = r.ceilH >= 7.4 ? 3.6 : 3.0;
-  const G = gallery(ctx, Fr, 3, y + up, { minDeck: 4, floorTex: TS.GRATE });
+  // the service deck: as high and deep as the free wall allows
+  let G = null, up = 0;
+  for (const [u, gD, md] of [[r.ceilH >= 7.4 ? 3.6 : 3.0, 3, 4], [3.0, 3, 3], [3.0, 2, 3], [2.4, 2, 3]]) {
+    G = gallery(ctx, Fr, gD, y + u, { minDeck: md, floorTex: TS.GRATE });
+    if (G) { up = u; break; }
+  }
   if (!G) return no(ctx, 'deck');
   deckFace(ctx, G);
   // junction boxes and valves on the wall of the deck, a control panel at one end
@@ -277,9 +301,14 @@ function buildLife(ctx, Fr, last) {
   }
   // hydroponic rack rows (1 deep, 2-wide aisles) across the rest of the floor
   let racks = 0;
-  for (let t = 2; t < Fr.L - 1; t += 3) {
-    for (const [a, b] of runs(Fr.Wd, (s) => m[t][s], 3)) {
-      for (let s = a; s + 3 <= b; s += 5) {
+  const rowStart = [1, 2].reduce((best, t0) => {
+    let n = 0;
+    for (let t = t0; t < Fr.L - 1; t += 3) n += runs(Fr.Wd, (s) => m[t][s], 2).reduce((q, [a, b]) => q + b - a, 0);
+    return n > best[1] ? [t0, n] : best;
+  }, [2, -1])[0];
+  for (let t = rowStart; t < Fr.L - 1; t += 3) {
+    for (const [a, b] of runs(Fr.Wd, (s) => m[t][s], 2)) {
+      for (let s = a; s + 2 <= b; s += 5) {
         const e = Math.min(b, s + 4);
         P.plantRack(ctx, ...wr(Fr, t + 0.1, t + 0.9, s + 0.1, e - 0.1), y, r.ceilH >= 6 ? 4 : 3);
         markMask(m, t, s, 1, e - s);
@@ -288,7 +317,7 @@ function buildLife(ctx, Fr, last) {
       }
     }
   }
-  if (racks < (last ? 1 : 2)) return no(ctx, 'racks');
+  if (racks < (last ? 1 : 2) && !(last && scrub)) return no(ctx, 'racks');
   // oxygen tanks on free wall spots
   let o2 = 0;
   for (const [x, z] of rng.shuffle(wallSpots(ctx))) {
@@ -298,7 +327,7 @@ function buildLife(ctx, Fr, last) {
     o2++;
   }
   // grow-light strips over the racks
-  for (let t = 2.4; t < Fr.L - 1; t += 3) lightStrip(ctx, ...wr(Fr, t, t + 0.2, 1, Fr.Wd - 1), top, PURPLE, 5);
+  for (let t = rowStart + 0.4; t < Fr.L - 1; t += 3) lightStrip(ctx, ...wr(Fr, t, t + 0.2, 1, Fr.Wd - 1), top, PURPLE, 5);
   r.lit = true;
   void scrub;
   return true;
@@ -495,15 +524,42 @@ SS.ss_crash = (ctx) => {
   const y = r.floor;
   ctx.used = new Set();
   const cells = ctx.cells;
-  // scorched ground in a furrow down the middle (the ploughed track of the crash)
+  // bare rock in a furrow down the middle (the track the hull ploughed)
   const alongZ = r.h >= r.w;
   const L = alongZ ? r.h : r.w, Wd = alongZ ? r.w : r.h;
   const mid = Math.floor(Wd / 2) + rng.int(-1, 1);
   for (const i of cells) {
     const x = i % g.w, z = (i / g.w) | 0;
     const v = alongZ ? x - r.x : z - r.z;
-    if (Math.abs(v - mid) <= 1 && !r.reserved.has(i)) g.floorTex[i] = TS.FLOOR2;
+    if (Math.abs(v - mid) <= 1 && !r.reserved.has(i)) g.floorTex[i] = TS.ROCK;
     g.light[i] = Math.max(g.light[i], 0.75);
+  }
+  // uneven ground: low mounds of ploughed-up earth (0.3 steps) and an impact
+  // crater; exit approaches and the ground in front of them stay level
+  const near = new Set();
+  for (const i of r.reserved) { const x = i % g.w, z = (i / g.w) | 0; for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) near.add(g.idx(x + dx, z + dz)); }
+  const shape = (cx, cz, R, f) => {
+    for (let z = Math.floor(cz - R); z <= Math.ceil(cz + R); z++) for (let x = Math.floor(cx - R); x <= Math.ceil(cx + R); x++) {
+      if (x < r.x || z < r.z || x >= r.x + r.w || z >= r.z + r.h) continue;
+      const i = g.idx(x, z);
+      if (near.has(i) || !g.type[i]) continue;
+      const d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
+      if (d > R) continue;
+      const h = f(d);
+      if (Math.abs(h) < 0.01) continue;
+      g.floor[i] = y + h;
+      g.wallTex[i] = TS.ROCK;
+    }
+  };
+  for (let k = 0; k < rng.int(2, 4); k++) {
+    const R = rng.float(2.2, 3.6), cx = rng.float(r.x + R, r.x + r.w - R), cz = rng.float(r.z + R, r.z + r.h - R);
+    shape(cx, cz, R, (d) => Math.round(Math.min(1.2, (R - d) * 0.45) / 0.3) * 0.3);
+  }
+  let crater = null;
+  {
+    const R = rng.float(2.4, 3.2), cx = rng.float(r.x + R + 1, r.x + r.w - R - 1), cz = rng.float(r.z + R + 1, r.z + r.h - R - 1);
+    shape(cx, cz, R, (d) => -Math.round(Math.min(0.9, (R - d) * 0.4) / 0.3) * 0.3);
+    crater = [cx, cz];
   }
   // fuel pools (poison) and a crater
   const pools = rng.int(1, 3);
@@ -536,6 +592,15 @@ SS.ss_crash = (ctx) => {
     else P.alienPlant(ctx, cx, cz, y, rng.float(0.8, 1.2));
     use(ctx, x, z, 2, 2);
     placed++;
+  }
+  // the chunk of hull that made the crater, smoking in its bottom
+  if (crater) {
+    const [cx, cz] = crater;
+    const i = g.idx(Math.floor(cx), Math.floor(cz));
+    if (g.type[i] && !(g.flags[i] & (F.OBSTACLE | F.PIT | F.HAZARD))) {
+      P.debris(ctx, cx, cz, g.floor[i], 1.1);
+      P.fire(ctx, cx + 0.4, cz - 0.3, g.floor[i], 0.7, { debris: false, obstacle: false });
+    }
   }
   // a torn-off engine nacelle lying on the ground, still burning
   const m = (() => { const out = []; for (let t = 0; t < L; t++) { const row = []; for (let s = 0; s < Wd; s++) { const x = alongZ ? r.x + s : r.x + t, z = alongZ ? r.z + t : r.z + s; row.push(ok(ctx, x, z, 1, 1, 1)); } out.push(row); } return out; })();

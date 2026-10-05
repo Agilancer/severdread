@@ -817,13 +817,21 @@ export const THEME_TEX = {
   // a cream-and-stripe wainscot, pale clean-room tile for feature floors,
   // steel columns and linen on cushions / sheets
   bio_lab: { wall: '18:1,3 22:2,3 3:0,9', wall2: '3:0,0 4:2,3', floor: '22:2,9 22:2,0 G:small_tile_floor', ceil: '#ceiling_tile 3:0,9', accent: '1:3,1 4:2,3', metal: '22:1,0 22:1,6', crate2: '3:2,9 4:2,8 14:0,5', machine: '4:2,6 3:2,0 3:2,1 4:2,7 3:2,6 4:1,7', panel: '4:2,3 4:0,1', floor3: '22:2,5 22:4,4', pillar: '24:2,5 22:1,9', trim: '22:1,0 3:0,6', carpet: '#linen' },
-  crashed_starship: { ground: 'ground@nature', wall2: '4:4,2 12:3,1', rock: 'rock@nature' },
+  // starship archetype: frosted steel-framed glazing (cryo pods, visors,
+  // booths), cyan plasma on the reactor / drives / holo projectors, the alien
+  // world's purple crystal soil and cracked violet rock round the wreck
+  crashed_starship: { ground: '6:4,8 7:4,7', wall2: '4:4,2', metal: '12:1,0 12:2,0', rock: '5:0,7 7:0,6', glass: '3:3,6', neon: 'A:nature_energy:cyan_energy' },
   cave_base: { ground: 'ground@nature', wall2: 'rock@nature', ceil2: 'rock@nature', rock: 'rock@nature' },
   data_core: { wall: '3:2,1 4:1,1 14:3,7', wall2: '14:0,0 22:3,2', floor: '#neon_grid_cyan', floor2: 'G:hex_dark_floor_b 2:0,4', ceil: '14:1,9 8:2,4', side: '14:0,0 22:0,0', accent: '3:2,7 14:3,7' },
   orbital_elevator: {},
   // ---- industrial
   space_freighter: { wall: '2:0,0 14:0,5 2:0,9 20:0,4', wall2: '20:0,8 13:0,2 20:0,3', side: '12:2,0 8:0,0', floor: '12:2,0 8:2,2', floor2: '8:2,4 14:1,3', accent: '1:3,1' },
-  large_freighter: { wall: '2:0,0 14:0,5 2:0,9', wall2: '20:0,8 20:0,3 13:0,2', floor: '8:2,4 8:2,2', floor2: '12:2,0 14:0,8' },
+  // the freighter: grey hull panels in the crew decks, banded riveted
+  // bulkhead steel in the holds and plant rooms (WALL2) - the corrugated
+  // container steel stays on the containers (CRATE2) - ribbed steel trims,
+  // riveted plate wainscot and partitions, worn (not rusted through) steel
+  // on furniture and fittings, frosted glazing, cyan plasma
+  large_freighter: { wall: '4:0,0 3:0,1 4:0,6', wall2: '12:1,3 12:2,3', trim: '3:0,6', panel: '12:1,1 12:1,7', metal: '12:1,0 12:1,2', floor: '8:2,4 8:2,2', floor2: '12:2,0 14:0,8', glass: '3:3,6', neon: 'A:nature_energy:cyan_energy' },
   volcano_base: { wall2: 'rock@hell', ground: 'ground@hell', rock: 'rock@hell', glass: '#glass_pane' },
   // foundry archetype: brass PANEL (gear wheels, locker doors), dark framed control-room glass
   clockwork_foundry: { wall: '13:0,1 13:0,5 12:3,8 12:3,2', wall2: '17:1,5 17:0,1 14:1,8', floor: '8:2,2 8:2,3', ceil: '8:1,5 14:1,3', accent: 'G:rusty_chains 17:1,1', machine: '17:1,5 14:1,8 2:2,6', pipe: '17:1,7 17:0,1 17:1,4', metal: '13:0,0 12:3,0', panel: '2:0,8 17:0,4', glass: '#glass_pane_dark' },

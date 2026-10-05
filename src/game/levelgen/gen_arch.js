@@ -242,7 +242,10 @@ export function genArch(rng, theme, depth, opt = {}) {
       const depthA = c.axis === 'x' ? c.A.w : c.A.h, depthB = c.axis === 'x' ? c.B.w : c.B.h;
       const n = Math.ceil(Math.abs(dh) / 0.6 - 1e-6);
       const lowA = c.A.floor < c.B.floor;
-      let okA = depthA >= n + 4, okB = depthB >= n + 4;
+      // opt.gateLanding: a keyed gate's flight ends in a flat landing cell in
+      // front of the doorway, so the door span stands on level floor
+      c.landing = opt.gateLanding && c.gate ? 1 : 0;
+      let okA = depthA >= n + 4 + c.landing, okB = depthB >= n + 4 + c.landing;
       // opt.noFlight(room): keep flights out of that room whenever the other one can take them
       if (opt.noFlight && okA && okB) { if (opt.noFlight(c.A)) okA = false; else if (opt.noFlight(c.B)) okB = false; }
       c.flightIn = okA && okB ? (lowA ? (rng.chance(0.75) ? 'A' : 'B') : (rng.chance(0.75) ? 'B' : 'A')) : okA ? 'A' : okB ? 'B' : null;
@@ -267,7 +270,7 @@ export function genArch(rng, theme, depth, opt = {}) {
   };
   const addExit = (c, side, depthRes, flightHere) => {
     const r = c[side];
-    for (const i of resCells(c, side, c.pos, depthRes)) r.reserved.add(i);
+    for (const i of resCells(c, side, c.pos, depthRes)) { r.reserved.add(i); if (flightHere) (r.flightReserved || (r.flightReserved = new Set())).add(i); }
     const into = side === 'A' ? -1 : 1;
     r.exits.push({ conn: c, side, firstIn: (side === 'A' ? c.line - 1 : c.line) + into, into, flight: flightHere });
   };
@@ -282,12 +285,15 @@ export function genArch(rng, theme, depth, opt = {}) {
     let placed = false;
     for (const side of sides) {
       const r = c[side];
-      if ((c.axis === 'x' ? r.w : r.h) < c.n + 4) continue;
+      if ((c.axis === 'x' ? r.w : r.h) < c.n + 4 + (c.landing || 0)) continue;
       const positions = [c.pos];
       for (let p = c.a0; p <= c.a1 - c.width; p++) if (p !== c.pos) positions.push(p);
       for (const pos of positions) {
         const other = side === 'A' ? 'B' : 'A';
-        const clash = resCells(c, side, pos, c.n + 3).some((i) => c[side].reserved.has(i)) || resCells(c, other, pos, 3).some((i) => c[other].reserved.has(i));
+        // (a landing gate's approach on the far side may share floor with plain
+        // exit approaches there - only another flight would be overwritten)
+        const farRes = c.landing ? c[other].flightReserved || new Set() : c[other].reserved;
+        const clash = resCells(c, side, pos, c.n + 3 + (c.landing || 0)).some((i) => c[side].reserved.has(i)) || resCells(c, other, pos, 3).some((i) => farRes.has(i));
         if (clash) continue;
         c.pos = pos; c.flightIn = side; placed = true; break;
       }
@@ -300,8 +306,8 @@ export function genArch(rng, theme, depth, opt = {}) {
       addExit(c, 'A', 3, false); addExit(c, 'B', 3, false);
       continue;
     }
-    addExit(c, 'A', c.flightIn === 'A' ? c.n + 3 : 3, c.flightIn === 'A');
-    addExit(c, 'B', c.flightIn === 'B' ? c.n + 3 : 3, c.flightIn === 'B');
+    addExit(c, 'A', c.flightIn === 'A' ? c.n + 3 + (c.landing || 0) : 3, c.flightIn === 'A');
+    addExit(c, 'B', c.flightIn === 'B' ? c.n + 3 + (c.landing || 0) : 3, c.flightIn === 'B');
   }
 
   // ---- carve rooms (base box) then apply templates
@@ -470,9 +476,27 @@ export function genArch(rng, theme, depth, opt = {}) {
     const firstIn = wallCell + into;
     // the flight runs from deep in the room (at r.floor) toward the wall (at other.floor)
     const n = c.n;
-    const startA = firstIn + into * (n - 1);         // lowest/first row (farthest from the wall)
+    const land = c.landing || 0;
+    const startA = firstIn + into * (n - 1 + land);  // lowest/first row (farthest from the wall)
     const dirToWall = c.axis === 'x' ? (into < 0 ? 0 : 1) : (into < 0 ? 2 : 3);
     const [sx, sz] = cellOf(c, startA, c.pos);
+    if (land) {
+      // the landing in front of the doorway, at the passage height, railed where it drops away
+      const lc = [];
+      for (let k = 0; k < c.width; k++) {
+        const [lx, lz] = cellOf(c, firstIn, c.pos + k);
+        g.open(lx, lz, other.floor, Math.max(r.floor + r.ceilH, other.floor + 3.2), { sky: r.sky, light: r.light, floorTex: r.floorSlot, ceilTex: r.ceilSlot, wallTex: TS.SIDE, region: r.id });
+        g.flags[g.idx(lx, lz)] |= F.NOSPAWN;
+        lc.push(g.idx(lx, lz));
+      }
+      deco.stairs(sx, sz, dirToWall, c.width, r.floor, other.floor, { rise: Math.abs(other.floor - r.floor) / n, light: r.light, region: r.id, style: style.railStyle, ceil: r.floor + r.ceilH, rails: false });
+      const fl = [];
+      for (let k = 0; k < n; k++) for (let w = 0; w < c.width; w++) { const [fx, fz] = cellOf(c, startA - into * k, c.pos + w); fl.push(g.idx(fx, fz)); }
+      for (const i of fl) { if (!r.sky) g.ceil[i] = Math.max(g.ceil[i], r.floor + r.ceilH); g.region[i] = r.id; }
+      deco.stairRails(fl, { style: style.railStyle });
+      deco.railEdges(lc, { style: style.railStyle, allow: new Set(fl) });
+      return;
+    }
     const cells = deco.stairs(sx, sz, dirToWall, c.width, r.floor, other.floor, { rise: Math.abs(other.floor - r.floor) / n, light: r.light, region: r.id, style: style.railStyle, ceil: r.floor + r.ceilH });
     for (const i of cells) { if (!r.sky) g.ceil[i] = Math.max(g.ceil[i], r.floor + r.ceilH); g.region[i] = r.id; }
     // if the flight goes DOWN into this room from a higher passage, the rows are already correct;

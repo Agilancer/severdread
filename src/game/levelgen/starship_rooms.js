@@ -176,11 +176,72 @@ function crashed(ctx, density = 1) {
     } else if (ok(ctx, x, z, 1, 1)) P.debris(ctx, x + 0.5, z + 0.5, g.floor[i], rng.float(0.5, 0.8), { obstacle: false });
     n && k++;
   }
+  // a torn deck: a hole over jagged wreckage, emergency barriers round it;
+  // a fuel / coolant leak pooling on the deck
+  if (r.area >= 70 && r.template !== 'ss_spine' && r.template !== 'ss_crash' && rng.chance(Math.min(0.85, 0.35 + 0.4 * density))) tornDeck(ctx);
+  if (r.area >= 50 && r.template !== 'ss_crash' && rng.chance(0.45 * density)) fuelLeak(ctx);
   // flickering emergency light
   if (rng.chance(0.6)) {
     const i = g.idx(Math.floor(r.x + r.w / 2), Math.floor(r.z + r.h / 2));
     if (g.type[i] && !g.sky[i]) deco.light(r.x + r.w / 2, g.ceil[i] - 0.6, r.z + r.h / 2, ALARM, 6, { flicker: true });
   }
+}
+
+// a hole torn in the deck (jagged wreckage below), railed off; kept only if
+// the room still works
+function tornDeck(ctx) {
+  const { g, deco, rng, room: r } = ctx;
+  const Fr = frame(r, 3);
+  ctx.used = ctx.used || new Set();
+  const m = freeMask(ctx, Fr, 1);
+  const pr = bestRect(m, { minT: 2, minS: 2, maxT: 3, maxS: 4, score: (t, s, dt, ds) => dt * ds + rng.float(0, 3) });
+  if (!pr) return;
+  const s0 = snap(ctx), mk = deco.mark();
+  const cells = [];
+  for (let t = pr.t; t < pr.t + pr.dt; t++) for (let s = pr.s; s < pr.s + pr.ds; s++) {
+    // ragged outline: drop some corner cells
+    const corner = (t === pr.t || t === pr.t + pr.dt - 1) && (s === pr.s || s === pr.s + pr.ds - 1);
+    if (corner && rng.chance(0.5) && pr.dt * pr.ds > 4) continue;
+    cells.push(cellL(ctx, Fr, t, s));
+  }
+  pitSet(ctx, cells, 'spikes', 2.4);
+  for (const i of cells) g.wallTex[i] = TS.WALL2;
+  // bent plates hanging into the hole, sparks from the cut cables
+  for (let k = 0; k < 2; k++) {
+    const i = rng.pick(cells), x = i % g.w, z = (i / g.w) | 0;
+    deco.bar([x + rng.float(0.1, 0.9), r.floor - 0.05, z + rng.float(0, 1)], [x + rng.float(0.2, 0.8), r.floor - rng.float(1.0, 1.8), z + rng.float(0.2, 0.8)], 0.5, 0.05, rng.pick([TS.FLOOR, TS.METAL, TS.GRATE]));
+  }
+  const ci = cells[(cells.length / 2) | 0];
+  P.sparkCable(ctx, (ci % g.w) + 0.5, ((ci / g.w) | 0) + 0.5, r.floor - 0.1, 0.9, { light: true });
+  const ring = new Set();
+  for (const i of cells) {
+    const x = i % g.w, z = (i / g.w) | 0;
+    for (let d = 0; d < 4; d++) { const j = g.idx(x + DIR_X[d], z + DIR_Z[d]); if (g.type[j] && !(g.flags[j] & (F.PIT | F.STAIR))) ring.add(j); }
+  }
+  deco.railEdges(ring, { style: ctx.style.railStyle });
+  hazardLines(ctx, cells);
+  if (!roomOK(ctx, 0.8)) { deco.rollback(mk); restore(ctx, s0); return; }
+  for (let t = pr.t - 1; t <= pr.t + pr.dt; t++) for (let s = pr.s - 1; s <= pr.s + pr.ds; s++) if (t >= 0 && s >= 0 && t < Fr.L && s < Fr.Wd) ctx.used.add(cellL(ctx, Fr, t, s));
+}
+// leaking fuel / coolant: a shallow toxic pool on the deck by a burst pipe
+function fuelLeak(ctx) {
+  const { g, deco, rng, room: r } = ctx;
+  const Fr = frame(r, rng.int(0, 3));
+  ctx.used = ctx.used || new Set();
+  const m = freeMask(ctx, Fr, 1);
+  const pr = bestRect(m, { minT: 2, minS: 2, maxT: 2, maxS: 3, score: (t, s, dt, ds) => -t * 2 + rng.float(0, 4) });
+  if (!pr) return;
+  const cells = [];
+  for (let t = pr.t; t < pr.t + pr.dt; t++) for (let s = pr.s; s < pr.s + pr.ds; s++) cells.push(cellL(ctx, Fr, t, s));
+  pitSet(ctx, cells, 'poison', 0.3);
+  // the burst pipe dripping into it from the ceiling
+  const i = cells[0], x = (i % g.w) + 0.5, z = ((i / g.w) | 0) + 0.5;
+  const top = g.ceil[i];
+  if (top - g.floor[i] < 12) {
+    cylH(deco, x - 1.2, x + 1.2, top - 0.4, z, 0.16, true, TS.PIPE);
+    deco.box(x - 0.05, r.floor, z - 0.05, x + 0.05, top - 0.5, z + 0.05, TS.POISON, { emissive: 0.6 });
+  }
+  for (const c of cells) ctx.used.add(c);
 }
 
 // a raised deck along the frame wall (t in [0, gD)) at height y with in-line
@@ -268,7 +329,7 @@ SS.ss_spine = (ctx) => {
       if (r.reserved.has(cell(u, sv ? Wd - 1 : 0)) && !wallAt(u, sv)) continue;
       const v0 = sv ? Wd - 0.3 : 0, v1 = sv ? Wd : 0.3;
       if (broken && sv) continue;
-      B(u + 0.28, u + 0.72, v0, v1, y, top, TS.PILLAR, { faces: FACE.SIDES });
+      B(u + 0.28, u + 0.72, v0, v1, y, top, TS.BEAM, { faces: FACE.SIDES });
       B(u + 0.22, u + 0.78, sv ? Wd - 0.36 : 0, sv ? Wd : 0.36, y, y + 0.25, TS.TRIM, { faces: FACE.SIDES | FACE.TOP });
       C(u + 0.28, u + 0.72, v0, v1, y, top, { obstacle: false });
       // knee brace up into the arch
@@ -356,7 +417,7 @@ SS.ss_engine = (ctx) => {
   const ok1 = () => buildCore(ctx, Fr, up, boss);
   const s0 = snap(ctx), m0 = deco.mark();
   let done = false;
-  try { done = ok1() && roomOK(ctx); } catch (e) { stat('error', 'ss_engine', String(e && e.stack).slice(0, 300)); }
+  try { done = ok1() && (roomOK(ctx) || no(ctx, 'roomOK') || (globalThis.__SHIPDBG && dbgRoom(ctx))); } catch (e) { stat('error', 'ss_engine', String(e && e.stack).slice(0, 300)); }
   if (!done) {
     deco.rollback(m0); restore(ctx, s0); ctx.used = new Set();
     stat('fallback', 'ss_engine', ctx.why, r.w, r.h);
@@ -370,6 +431,17 @@ SS.ss_engine = (ctx) => {
   engineWalls(ctx, Fr);
   crashed(ctx, 0.6);
 };
+function dbgRoom(ctx) {
+  const { g, room: r } = ctx;
+  const set = new Set(ctx.cells);
+  const ex = [];
+  for (const e of r.exits) { const c = e.conn; for (let k = 0; k < c.width; k++) { const a = e.firstIn, b = c.pos + k; ex.push(c.axis === 'x' ? g.idx(a, b) : g.idx(b, a)); } }
+  const dist = g.bfs([ex[0]], { blocked: (b) => !set.has(b), avoid: F.OBSTACLE });
+  let walk = 0, reach = 0; const un = [];
+  for (const i of ctx.cells) { if (!g.type[i] || (g.flags[i] & (F.PIT | F.VOID | F.OBSTACLE | F.HAZARD))) continue; walk++; if (dist[i] >= 0) reach++; else un.push((i % g.w) + ',' + ((i / g.w) | 0) + ':' + g.floor[i].toFixed(1)); }
+  console.log('ENGDBG exits', ex.map((i) => (i % g.w) + ',' + ((i / g.w) | 0) + '=' + dist[i]).join(' '), 'reach', reach, '/', walk, 'un', un.slice(0, 30).join(' '));
+  return false;
+}
 function buildCore(ctx, Fr, up, boss) {
   const { g, deco, rng, room: r } = ctx;
   const y = r.floor, top = y + r.ceilH;
@@ -378,7 +450,7 @@ function buildCore(ctx, Fr, up, boss) {
   const platW = 3, platD = 3;
   // core half size c (3x3 or 5x5 cells), the catwalk ring at Chebyshev
   // distance c + 1 round it, the coolant well one more cell beyond the ring
-  const big = Fr.L >= 18 && Fr.Wd >= 34;
+  const big = Fr.L >= 16 && Fr.Wd >= 30;
   const c = big ? 2 : 1, rd = c + 1;
   // the well clears the thrusters on the aft wall (t < 3) and the exit
   // approaches on the bow wall (3 deep + a margin cell)
@@ -431,7 +503,8 @@ function buildCore(ctx, Fr, up, boss) {
     for (let s = Math.min(sa, sb); s <= Math.max(sa, sb); s++) for (const t of big ? [tc - 1, tc, tc + 1] : [tc]) bridgeCell(cellL(ctx, Fr, t, s));
     // platform (solid steel deck) and its flight down to the floor, away from the well
     setHeightL(ctx, Fr, tc - 1, sd.p0, platW, platD, y + up, { floorTex: TS.GRATE, wallTex: TS.METAL });
-    flightL(ctx, Fr, tc - 1, sd.f0, platW, sd.n, sd.dir < 0 ? 'latN' : 'lat', y, y + up);
+    // the flight climbs toward its platform (+s for the platform on the -s side)
+    flightL(ctx, Fr, tc - 1, sd.f0, platW, sd.n, sd.dir < 0 ? 'lat' : 'latN', y, y + up);
     useL(ctx, Fr, tc - 2, Math.min(sd.p0, sd.f0) - 1, platW + 2, platD + sd.n + 2);
     // control desk on the platform corner, facing the core
     const cs = sd.dir < 0 ? sd.p0 : sd.p0 + platD - 1;
@@ -541,28 +614,32 @@ function buildBridge(ctx, Fr) {
     helm.push(s);
   }
   if (!helm.length) return no(ctx, 'helm');
-  // command deck: raised 1.2, centred, behind the helm row
-  const up = 1.2, n = nSteps(up);
-  const dw = Math.min(7, Fr.Wd - 6), dd = 3;
-  const t0 = 5 + n, s0 = Math.floor((Fr.Wd - dw) / 2);
-  let deck = null;
-  if (t0 + dd < Fr.L - 1 && dw >= 5 && okL(ctx, Fr, t0 - n, s0 - 1, dd + n, dw + 2, 0)) {
+  // the panoramic window over the sill consoles (cut through the bow by the finishing pass)
+  if (outerSides(ctx).includes(Fr.side)) (r.shipWindows || (r.shipWindows = [])).push({ side: Fr.side, s0: 1, s1: Fr.Wd - 1, sill: 1.0, head: Math.min(r.ceilH - 0.6, 4.6), kind: 'bridge' });
+  // command deck behind the helm row: raised a step or two, the tactical desk
+  // along its front between the two flights, the captain's chair behind it
+  const up = Fr.L >= 14 ? 1.2 : 0.6, n = nSteps(up);
+  const dw = Math.min(9, Fr.Wd - 6), dd = 3;
+  const s0 = Math.floor((Fr.Wd - dw) / 2);
+  let deck = null, t0 = 0;
+  for (let tt = 4 + n; tt + dd <= Fr.L - 4 && !deck && dw >= 5; tt++) {
+    if (!okL(ctx, Fr, tt - n, s0 - 1, dd + n, dw + 2, 0)) continue;
+    t0 = tt;
     const cells = setHeightL(ctx, Fr, t0, s0, dd, dw, y + up, { floorTex: TS.FLOOR3, wallTex: TS.METAL });
-    // two flights down toward the helm at both ends of the deck front
     flightL(ctx, Fr, t0 - n, s0, n, 2, 'away', y, y + up);
     flightL(ctx, Fr, t0 - n, s0 + dw - 2, n, 2, 'away', y, y + up);
-    // tactical rail: a console desk along the deck front between the flights
     for (let s = s0 + 2; s < s0 + dw - 2; s++) {
       fb(deco, Fr, t0 + 0.05, t0 + 0.6, s, s + 1, y + up, y + up + 0.95, faced(Fr.toward, TS.METAL, TS.METAL, TS.MACHINE), { uv: 'fit', solid: true, obstacle: false });
+      fb(deco, Fr, t0 + 0.1, t0 + 0.5, s + 0.1, s + 0.9, y + up + 0.95, y + up + 0.98, TS.SCREEN, { uv: 'fit', emissive: 0.8 });
     }
-    // captain's chair facing the window, armrest consoles
     const [cx, cz] = Fr.pt(t0 + 1.7, s0 + dw / 2);
     P.chair(ctx, cx, cz, y + up, Fr.toward, { big: true });
-    // side consoles on the deck
     for (const s of [s0, s0 + dw - 1]) {
       const [x, z] = Fr.cell(t0 + dd - 1, s);
       deco.console(x, z, y + up, Fr.toward, { width: 0.8 });
     }
+    // the deck's steel fascia
+    fb(deco, Fr, t0 - 0.04, t0, s0 + 2, s0 + dw - 2, y, y + up, TS.TRIM, { faces: FACE.SIDES });
     useL(ctx, Fr, t0 - n, s0 - 1, dd + n + 1, dw + 2);
     deck = { cells, t0, s0, dw, dd };
   }

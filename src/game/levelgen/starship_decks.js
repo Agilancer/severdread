@@ -250,7 +250,7 @@ function buildMess(ctx, Fr, last) {
   const y = r.floor;
   const hull = outerSides(ctx);
   if (hull.includes(Fr.side) && !last) return no(ctx, 'galley on the hull');
-  const run = longest(runs(Fr.Wd, (s) => wallFree(ctx, Fr, s, 3), 6));
+  const run = longest(runs(Fr.Wd, (s) => wallFree(ctx, Fr, s, 3), last ? 4 : 5));
   if (!run) return no(ctx, 'galley wall');
   let [a, b] = run;
   while (b - a > 11) { a++; if (b - a > 11) b--; }

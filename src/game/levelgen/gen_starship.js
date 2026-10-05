@@ -116,6 +116,7 @@ export function genStarship(rng, theme, depth) {
     // engine room (its reactor well fills the floor) or onto the bridge
     noFlight: (r) => r.leaf.kind === 'ss_engine' || r.leaf.kind === 'ss_bridge' || r.leaf.kind === 'ss_crash',
     doorChance: 0.1,
+    gateLanding: true,
   });
   L.ship = S;
   finishShip(L, theme, rng, S);
