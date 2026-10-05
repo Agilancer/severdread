@@ -126,10 +126,10 @@ archetype.
   supply, a little more in total since more of the drops fit), the station
   issue lifts the first floors to ~60-70%, and it is never enough to use
   ammo guns only. Saved up, a boss is fought ~90% on ammo.
-- Shop refills: `ammoRefillCost` = 360 x 1.08^(deepest depth - 1) credits
-  for a full load of one type (~30-50% of what a floor there pays): a top-up
-  before a dive is affordable, buying enough to fire only ammo guns would
-  eat the credits upgrades need.
+- Shop refills: `ammoRefillCost` = 240 x 1.08^(deepest depth - 1) credits
+  for a full load of one type (~20-30% of what a floor there pays, about a
+  rare gun in the shop): a top-up before a dive is easy, buying enough to
+  fire only ammo guns would eat the credits upgrades need.
 - Pickups take what fits; the rest stays on the floor. A pickup of a full
   type is not pulled in and stays where it is ("SHELLS FULL").
 - HUD: type icon + count / max (amber below 25%, red when empty) or an

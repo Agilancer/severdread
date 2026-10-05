@@ -15,7 +15,7 @@
 //     split it, the station issue lets the first floors lean on ammo more,
 //     and it is never enough to fire ammo guns only; saved up, a boss is
 //     fought mostly with ammo and lasts ~15-40 s
-//   - a full shop refill costs a real share of a floor's credits
+//   - a full shop refill costs a real share (15-40%) of a floor's credits
 //   - nothing drops more than a couple of item levels above the floor
 // Run with -v for the tables.
 import fs from 'fs';
@@ -246,7 +246,7 @@ for (const [k, p] of PAIRS.entries()) two[k].forEach((x, i) => {
   // two guns of different types get a little more in total than either alone (more of the drops fit), never double
   band(x.both / Math.max(...x.solo), 0.9, 1.45, `depth ${ECON_D[i]}: ${p.join(' + ')} vs alone`);
 });
-for (const d of [3, 5, 10, 20, 30]) band(B.ammoRefillCost(d) / floorCredits(d), 0.25, 0.6, `depth ${d}: shop full load vs a floor's credits`);
+for (const d of [3, 5, 10, 20, 30]) band(B.ammoRefillCost(d) / floorCredits(d), 0.15, 0.4, `depth ${d}: shop full load vs a floor's credits`);
 
 // ---------------------------------------------------------------- item levels
 if (maxIlvlOver > 2) fails.push(`an item dropped ${maxIlvlOver} levels above its floor`);

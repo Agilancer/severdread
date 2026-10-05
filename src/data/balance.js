@@ -81,10 +81,11 @@ export function rarityShift(depth, itemFind) {
   return (1 + depth * 0.035) * (1 + itemFind);
 }
 // Station shop: credits for a full load of one ammo type (empty to base
-// capacity), by the deepest floor reached - about 40% of what a floor there
-// pays (kills, chests, the boss): a top-up before a dive is affordable, buying
-// enough to fire only ammo guns would eat the credits upgrades need
-export function ammoRefillCost(depth) { return Math.round(360 * Math.pow(1.08, Math.max(1, depth) - 1)); }
+// capacity), by the deepest floor reached - about a quarter of what a floor
+// there pays (kills, chests, the boss), about a rare gun in the shop: a
+// top-up before a dive is easy, buying enough to fire only ammo guns would
+// eat the credits upgrades need
+export function ammoRefillCost(depth) { return Math.round(240 * Math.pow(1.08, Math.max(1, depth) - 1)); }
 export function itemValue(ilvl, rarityValueMult) { return Math.round(12 * Math.pow(1.07, ilvl - 1) * rarityValueMult); }
 
 // Bag upgrade cost (k = upgrade number starting at 1)
