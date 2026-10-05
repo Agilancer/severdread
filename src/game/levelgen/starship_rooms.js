@@ -266,7 +266,19 @@ function tornDeck(ctx) {
     const x = i % g.w, z = (i / g.w) | 0;
     for (let d = 0; d < 4; d++) { const j = g.idx(x + DIR_X[d], z + DIR_Z[d]); if (g.type[j] && !(g.flags[j] & (F.PIT | F.STAIR))) ring.add(j); }
   }
-  deco.railEdges(ring, { style: ctx.style.railStyle });
+  // deck plates peeled up round the rim, yellow emergency barriers
+  for (let k = 0; k < Math.min(4, cells.length); k++) {
+    const i = rng.pick(cells), x = i % g.w, z = (i / g.w) | 0;
+    for (let d = 0; d < 4; d++) {
+      const j = g.idx(x + DIR_X[d], z + DIR_Z[d]);
+      if (!ring.has(j) || rng.chance(0.5)) continue;
+      const ex = x + 0.5 + DIR_X[d] * 0.5, ez = z + 0.5 + DIR_Z[d] * 0.5;
+      const sx = DIR_Z[d] !== 0 ? rng.float(-0.35, 0.35) : 0, sz = DIR_X[d] !== 0 ? rng.float(-0.35, 0.35) : 0;
+      deco.bar([ex + sx, r.floor - 0.02, ez + sz], [ex + sx - DIR_X[d] * 0.35, r.floor + rng.float(0.25, 0.55), ez + sz - DIR_Z[d] * 0.35], 0.45, 0.04, rng.pick([TS.FLOOR, TS.GRATE, TS.METAL]));
+      break;
+    }
+  }
+  deco.railEdges(ring, { style: 'metal', tex: TS.PAINT });
   hazardLines(ctx, cells);
   if (!roomOK(ctx, 0.8)) { deco.rollback(mk); restore(ctx, s0); return; }
   for (let t = pr.t - 1; t <= pr.t + pr.dt; t++) for (let s = pr.s - 1; s <= pr.s + pr.ds; s++) if (t >= 0 && s >= 0 && t < Fr.L && s < Fr.Wd) ctx.used.add(cellL(ctx, Fr, t, s));
