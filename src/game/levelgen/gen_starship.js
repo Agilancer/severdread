@@ -131,6 +131,8 @@ export function genStarship(rng, theme, depth) {
     gateLanding: true,
   });
   L.ship = S;
+  // scatter pillars and computers belong inside the hull, not on the crash site's ground
+  L.scatterIndoor = true;
   finishShip(L, theme, rng, S);
   if (globalThis.__SHIPSTAT) for (const r of L.rooms) if (r.template === 'plain') globalThis.__SHIPSTAT.push(['plain', r.leaf.kind]);
   return L;

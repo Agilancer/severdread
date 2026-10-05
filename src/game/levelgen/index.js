@@ -286,7 +286,7 @@ function populate(L, rng, theme, depth, playerLevel) {
     }
   }
   // ---- scatter terrain: pillars, explosive barrels, pedestals, spike traps (levelgen/scatter.js)
-  const scatter = placeScatter({ g, deco, rng: rng.fork('scatter'), theme, depth, dist, startIdx, bossCell, portalCell, arenaSet, spawns, chests, keys, doors, lockSpans: lockSpans.map((sp) => sp.cells), props, jumpGap: L.jumpGap || 0 });
+  const scatter = placeScatter({ g, deco, rng: rng.fork('scatter'), theme, depth, dist, startIdx, bossCell, portalCell, arenaSet, spawns, chests, keys, doors, lockSpans: lockSpans.map((sp) => sp.cells), props, jumpGap: L.jumpGap || 0, indoor: !!L.scatterIndoor });
   bakeLights(g, lights, theme);
   const decoOut = deco.result();
 

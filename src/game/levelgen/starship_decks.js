@@ -230,11 +230,55 @@ function buildQuarters(ctx, Fr, last) {
     }
   }
   // bunk bays down both long walls
-  const n = bunkBays(ctx, Fr) + (Fr.L >= 5 ? bunkBays(ctx, opp(r, Fr)) : 0);
+  let n = bunkBays(ctx, Fr) + (Fr.L >= 5 ? bunkBays(ctx, opp(r, Fr)) : 0);
   if (n < (last ? 1 : 4)) return no(ctx, 'bunks ' + n);
+  // deep quarters: a row of bunks back to back down the middle, a partition
+  // between the berths and a bank of lockers at each end, aisles of two or
+  // more cells on both sides
+  let isl = null;
+  if (Fr.L >= 8 && Fr.Wd >= 8) {
+    const t0 = Math.floor((Fr.L - 2) / 2);
+    isl = bestRect(freeMask(ctx, Fr, 1), { minT: 2, maxT: 2, minS: 4, maxS: 10, t0, t1: t0 + 2, s0: 2, s1: Fr.Wd - 2 });
+    if (isl) {
+      const pairs = Math.floor((isl.ds - 2) / 2);
+      const s0 = isl.s + Math.floor((isl.ds - (pairs * 2 + 2)) / 2);
+      const t = isl.t;
+      for (let k = 0; k < pairs; k++) {
+        const sa = s0 + 1 + 2 * k;
+        const A = wr(Fr, t + 0.04, t + 0.96, sa + 0.08, sa + 1.92), B = wr(Fr, t + 1.04, t + 1.96, sa + 0.08, sa + 1.92);
+        P.bunk(ctx, ...A, y, Fr.away, { light: k % 2 === 0 });
+        P.bunk(ctx, ...B, y, Fr.toward);
+      }
+      // the partition between the two rows of berths, posts at the bunk joints
+      fb(deco, Fr, t + 0.96, t + 1.04, s0 + 1, s0 + 1 + pairs * 2, y, y + 2.3, TS.PANEL);
+      for (let k = 0; k <= pairs; k++) fb(deco, Fr, t + 0.9, t + 1.1, s0 + 1 + 2 * k - 0.05, s0 + 1 + 2 * k + 0.05, y, y + 2.35, TS.METAL, { faces: FACE.SIDES | FACE.TOP });
+      // locker banks at both ends of the row, back to back
+      for (const se of [s0, s0 + 1 + pairs * 2]) {
+        for (const [tt, d] of [[t, Fr.away], [t + 1, Fr.toward]]) {
+          const [lx, lz] = Fr.cell(tt, se);
+          P.lockers(ctx, lx, lz, d, y, 1);
+        }
+      }
+      useL(ctx, Fr, t, s0, 2, pairs * 2 + 2);
+      n += pairs * 2;
+    }
+  }
+  // lockers along the free stretches of the short walls (not by the doors)
+  for (const sd of [Fr.side < 2 ? 2 : 0, Fr.side < 2 ? 3 : 1]) {
+    if (ctx.cabinSide === sd) continue;
+    const Fs = frame(r, sd);
+    let k = 0;
+    for (let s = 1; s < Fs.Wd - 1 && k < 4; s++) {
+      if (!wallFree(ctx, Fs, s) || !okL(ctx, Fs, 0, s, 2, 1)) continue;
+      const [lx, lz] = Fs.cell(0, s);
+      P.lockers(ctx, lx, lz, Fs.toward, y, 1, rng.chance(0.3) ? TS.PANEL : TS.CRATE2);
+      useL(ctx, Fs, 0, s, 1, 1);
+      k++;
+    }
+  }
   // a table with stools in the aisle (wide quarters)
   const m = freeMask(ctx, Fr, 0);
-  const tb = bestRect(m, { minT: 2, minS: 3, maxT: 2, maxS: 3, t0: 1, t1: Fr.L - 1 });
+  const tb = isl ? null : bestRect(m, { minT: 2, minS: 3, maxT: 2, maxS: 3, t0: 1, t1: Fr.L - 1 });
   if (tb && Fr.L >= 6) {
     const [x0, z0, x1, z1] = wr(Fr, tb.t + 0.45, tb.t + 1.55, tb.s + 0.6, tb.s + 2.4);
     steelTable(ctx, x0, z0, x1, z1, y, { lip: false });
@@ -403,9 +447,44 @@ function buildMed(ctx, Fr, last) {
     } else machineBlock(ctx, x, z, Fo.toward, y, 1.9, 0.6);
     useL(ctx, Fo, 0, s, 1, 1);
   }
-  // surgery table under the lamp cluster, an instrument trolley and the anaesthesia cart
+  // surgery table under the lamp cluster, an instrument trolley and the
+  // anaesthesia cart - in deep bays inside a glazed operating theatre (steel
+  // framed glass on all four sides, the doorway toward the ward aisle, a
+  // scrub sink beside it), otherwise out on the ward floor
   const m = freeMask(ctx, Fr, 1);
-  const sr = bestRect(m, { minT: 3, minS: 3, maxT: 3, maxS: 4, t0: 2, score: (t, s, dt, ds) => -Math.abs(t + dt / 2 - Fr.L / 2) - Math.abs(s + ds / 2 - Fr.Wd / 2) });
+  const centre = (t, s, dt, ds) => -Math.abs(t + dt / 2 - Fr.L / 2) * 0.5 - Math.abs(s + ds / 2 - Fr.Wd / 2);
+  let sr = null, theatre = null;
+  if (Fr.L >= 10 && Fr.Wd >= 9) {
+    // against a side wall (that wall closes the theatre) or two cells clear of it, never a one-cell slot
+    const slot = (s, ds) => s === 1 || s + ds === Fr.Wd - 1;
+    theatre = bestRect(m, { minT: 4, maxT: 5, minS: 5, maxS: 6, t0: 4, t1: Fr.L - 2, score: (t, s, dt, ds) => dt * ds + centre(t, s, dt, ds) - (slot(s, ds) ? 100 : 0) });
+    if (theatre && slot(theatre.s, theatre.ds)) theatre = null;
+    if (theatre) {
+      const { t, s, dt, ds } = theatre;
+      const gh = Math.min(2.95, r.ceilH - 0.4);
+      const ow = ds >= 6 ? 3 : 2, o0 = s + Math.floor((ds - ow) / 2);
+      glassLineL(ctx, Fr, t, s, s + ds, y, gh, [[o0, o0 + ow]]);
+      glassLineL(ctx, Fr, t + dt, s, s + ds, y, gh);
+      for (const sl of [s, s + ds]) {
+        if (sl === 0 || sl === Fr.Wd) continue;
+        const [ax, az] = Fr.pt(t, sl), [bx, bz] = Fr.pt(t + dt, sl);
+        glassWall(ctx, Math.round(ax), Math.round(az), Math.round(bx), Math.round(bz), y, gh);
+      }
+      // the sliding glass leaf parked open beside the doorway
+      doorLeafL(ctx, Fr, t, o0 + ow, Math.min(s + ds, o0 + ow + 1), y, 1);
+      // scrub sink against the glass beside the doorway, on the ward side
+      if (o0 - s >= 1) {
+        const [x0, z0, x1, z1] = wr(Fr, t - 0.6, t - 0.08, o0 - 0.95, o0 - 0.1);
+        deco.box(x0, y, z0, x1, y + 0.9, z1, { side: TS.METAL, top: TS.METAL, bottom: TS.METAL });
+        const [w0, v0, w1, v1] = wr(Fr, t - 0.5, t - 0.18, o0 - 0.8, o0 - 0.25);
+        deco.box(w0, y + 0.9, v0, w1, y + 0.94, v1, TS.WATER, { emissive: 0.2 });
+        deco.collider(x0, y, z0, x1, y + 0.94, z1);
+      }
+      useL(ctx, Fr, t - 1, s - 1, dt + 2, ds + 2);
+      sr = { t: t + Math.floor((dt - 3) / 2), s: s + 1, dt: 3, ds: ds - 2 };
+    }
+  }
+  if (!sr) sr = bestRect(m, { minT: 3, minS: 3, maxT: 3, maxS: 4, t0: 2, score: centre });
   if (sr) {
     const tc = sr.t + 1.5, sc = sr.s + sr.ds / 2;
     steelTable(ctx, ...wr(Fr, tc - 0.4, tc + 0.4, sc - 1.0, sc + 1.0), y, { top: TS.CARPET });
@@ -417,9 +496,11 @@ function buildMed(ctx, Fr, last) {
       deco.box(lx + ox - 0.17, top - 1.28, lz + oz - 0.17, lx + ox + 0.17, top - 1.25, lz + oz + 0.17, TS.LIGHT, { uv: 'fit', emissive: 1 });
     }
     deco.light(lx, top - 1.8, lz, [1, 1, 0.95], 6);
-    const [tx, tz] = Fr.pt(tc + 1.1, sc - 0.6);
+    // in the theatre the doorway is on the near (t) side: the carts stand on the far side
+    const fs = theatre ? 1 : -1;
+    const [tx, tz] = Fr.pt(tc - 1.1 * fs, sc - 0.6 * fs);
     trolley(ctx, tx, tz, y, Fr.away >= 2);
-    const [ax, az] = Fr.pt(tc - 1.15, sc + 0.9);
+    const [ax, az] = Fr.pt(tc + 1.15 * fs, sc + 0.9);
     deco.box(ax - 0.3, y, az - 0.25, ax + 0.3, y + 1.25, az + 0.25, { side: TS.MACHINE, top: TS.METAL, bottom: TS.METAL }, { uv: 'fit', solid: true });
     monitor(ctx, ax, az, y + 1.25, Fr.away);
     useL(ctx, Fr, sr.t, sr.s, sr.dt, sr.ds);

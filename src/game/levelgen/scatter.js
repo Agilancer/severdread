@@ -142,6 +142,9 @@ export function placeScatter(ctx) {
   const cx = (i) => (i % W) + 0.5, cz = (i) => ((i / W) | 0) + 0.5;
 
   const counts = scatterCounts(reachN, depth, style.density ?? 1, style.term ?? 0);
+  // ctx.indoor (the starship): pillars and computers stay under the roof,
+  // the open ground outside the hull keeps only barrels and traps
+  const indoor = !!ctx.indoor;
   const arena = ctx.arenaSet || new Set();
 
   // ------------------------------------------------------------ pillars
@@ -149,7 +152,7 @@ export function placeScatter(ctx) {
     const ax = rng.int(0, 3), az = rng.int(0, 3), sp = rng.pick([4, 4, 5]);
     const cand = [];
     for (let i = 0; i < n; i++) {
-      if (!free(i, 1.9) || !clearAround(i, 2)) continue;
+      if (!free(i, 1.9) || !clearAround(i, 2) || (indoor && g.sky[i])) continue;
       const room = roominess(i);
       if (room < 14) continue;
       const ws = wallSides(i), nw = bits(ws);
@@ -304,7 +307,7 @@ export function placeScatter(ctx) {
     // computers belong indoors: city offices only under a roof; elsewhere a
     // kiosk, cabinet or radar may stand outside (base yards, rig decks), a
     // desk never does
-    const city = style.family === 'city';
+    const city = style.family === 'city' || indoor;
     const spots = new Set(), list = [];   // wall-backed spots: i * 4 + wall dir
     for (let i = 0; i < n; i++) {
       if (!free(i, 2.2) || arena.has(i) || !clearAround(i, 1) || (city && g.sky[i])) continue;
@@ -384,7 +387,7 @@ export function placeScatter(ctx) {
     const props = new Uint8Array(n);
     for (const o of [...out.pillars, ...out.explosives, ...out.pedestals]) props[o.cell] = 1;
     out.wallTerminals = placeWallTerminals(g, deco, rng, {
-      count: counts.wallTerminals, styles: style.terminalWall, tech: (style.term ?? 0) >= 0.6, indoor: style.family === 'city',
+      count: counts.wallTerminals, styles: style.terminalWall, tech: (style.term ?? 0) >= 0.6, indoor: style.family === 'city' || indoor,
       reach: reach0, blocked, props, near: out.terminals,
     });
   }
