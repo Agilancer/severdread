@@ -19,11 +19,12 @@
   pushes toward the level-200 cap.
 - Area level `L` = depth up to 50, then +1.5 per depth (depth 150 = 200).
   Monsters and loot both scale with it.
-- Monster HP `1.085^L · (1 + 0.04L) · (1 + ramp)`, damage
-  `1.065^L · (1 + 0.02L) · (1 + 0.6 ramp)`, where `ramp = 1 − e^(−(L−1)/6)`
+- Monster HP `1.085^L · (1 + 0.05L) · (1 + 1.5 ramp)`, damage
+  `1.065^L · (1 + 0.02L) · (1 + 0.6 ramp)`, where `ramp = 1 − e^(−(L−1)/4)`
   is how much of a full kit of on-level gear a player has picked up (0 on
-  depth 1, ~0.85 by depth 12). Count `12 + 1.6d` (capped 70), elite chance up
-  to 30%.
+  depth 1, ~0.65 by depth 5, ~0.95 by depth 12) - four guns and four rings
+  whose stats all count, not just the gun in hand. Count `12 + 1.6d` (capped
+  70, times the level size), elite chance up to 30%.
 - Drops: item level = area level −2 … +1 (pedestals +1, shop one below the
   deepest floor reached), never the character level, so gear can't outrun the
   floor and replaying shallow floors doesn't hand out deep gear. Rarity
@@ -40,10 +41,26 @@
   +15 = 2.35×; max +5 … +15 by rarity, cost credits + reagents that change as
   levels rise (boss-only reagents at higher levels). Bag: +5 slots per
   upgrade, 40 → 200, escalating cost.
-- `tests/balance.test.js` plays a first run down to depth 60 with the real
-  item / stat code and checks that a standard monster still takes about as
-  long to kill as on depth 1 with the starting pistol (~0.6 s), and that it
-  takes 6–18 monster hits to die, through depth 30.
+- `tests/balance.test.js` plays 31 first runs down to depth 60 with the real
+  item / stat / balance code (best unlimited gun, three best ammo guns, best
+  armour, four rings) and models each floor's ammo (see below). Standard
+  monster kill time in a typical fight (pellets that land, splash / pierce /
+  chain on neighbours, misses spend ammo too), through depth 30:
+  - best unlimited gun 0.85-1.3x the depth-1 starting pistol (~0.6 s);
+    that's the sustained pace
+  - best ammo gun 0.5-0.8x of that: the rationed burst
+  - blended over the share of firing time a floor's ammo sustains:
+    0.8-1.15x the depth-1 pistol (0.7 on depths 2-3, where the station
+    issue lets a run lean on ammo)
+  - 6-18 monster hits to kill the player; a boss fight 15-40 s.
+
+  | depth | kill time: unlimited | ammo gun / unlimited | blended | ammo share of firing | boss fight |
+  |---|---|---|---|---|---|
+  | 2 | 1.00 | 0.82 | 1.00 | 0.47 | 31 s |
+  | 5 | 1.13 | 0.74 | 0.89 | 0.61 | 25 s |
+  | 12 | 1.20 | 0.68 | 0.97 | 0.40 | 26 s |
+  | 20 | 1.19 | 0.69 | 0.99 | 0.41 | 24 s |
+  | 30 | 1.19 | 0.61 | 0.94 | 0.39 | 21 s |
 
 ## Ammo (src/data/ammo.js, src/game/ammo.js)
 
@@ -52,17 +69,30 @@ hitters can't be fired forever while the basic guns are a reliable baseline.
 
 | type | weapons (cost per shot) | max | pack / box |
 |---|---|---|---|
-| Shells | shotgun 1, super shotgun 2 | 40 | 8 / 24 |
-| Heavy Rounds | minigun 1 per bullet, sniper 10 | 400 | 60 / 200 |
-| Explosives | rocket, grenade, nail grenade launcher 1 | 30 | 4 / 12 |
-| Cells | plasma 1, lightning 1, disc 3, spreader 5, rail 10 | 300 | 40 / 120 |
-| Fuel | flamethrower, sprayer 1 per tick | 600 | 80 / 240 |
-| Bolts | crossbow, harpoon, javelin 1 | 40 | 8 / 24 |
+| Shells | shotgun 1, super shotgun 2 | 35 | 2 / 6 |
+| Heavy Rounds | minigun 1 per bullet, sniper 15 | 360 | 22 / 65 |
+| Explosives | rocket, grenade, nail grenade launcher 1 | 30 | 2 / 5 |
+| Cells | plasma 1, lightning 1, disc 3, spreader 5, rail 10 | 220 | 13 / 40 |
+| Fuel | flamethrower, sprayer 1 per tick | 520 | 30 / 95 |
+| Bolts | crossbow, harpoon, javelin 1 | 30 | 2 / 5 |
 
 Pistols, revolvers, SMGs, rifles, LMGs, throwing stars and melee never run
-dry (the starter guns are among them). A full load is ~25-40 s of
-continuous fire; `ARCH_AMMO` is the one table (every archetype listed).
+dry (the starter guns are among them). Sized in seconds of fire of the
+type's guns: a full load ~25 s (most of a boss fight), a pack ~1.5 s, a box
+~4.5 s; costs keep every gun of a type draining at about the same rate
+(sniper 15 x 1/s ~ minigun 17/s; the lightning gun drains cells fastest).
+`ARCH_AMMO` is the one table: type, cost and the damage premium per
+archetype.
 
+- Premium (`power`): ammo guns hit harder, so a gun of the same rarity and
+  level kills ~1.15-1.2x as fast as an unlimited one in a typical fight -
+  more where the sim's single shot undersells the gun (shotguns 1.7 / 1.65:
+  half the pellets land at mid range; spreader 1.55, minigun 1.35, lightning
+  1.35, nail grenades 1.4, disc 1.25, sprayer / crossbow 1.25, javelin 1.2,
+  flamer 1.15, harpoon 1.1, grenade 1.05), none where splash, pierce and big
+  hits already carry it (rocket, rail, sniper, plasma 1). With three ammo
+  slots and the epic art all ammo guns, the best ammo gun ends up ~1.3-1.6x
+  the best unlimited one. The sidearm is a pistol: no premium.
 - A shot costs once: pellets, fans, rings, helix, multishot and double tap
   never cost extra; the minigun spends only once it actually fires.
 - Firing an empty gun: dry click, "NO SHELLS" toast, automatic switch to the
@@ -71,20 +101,30 @@ continuous fire; `ARCH_AMMO` is the one table (every archetype listed).
   selected by number and shows empty. If nothing equipped can fire, an
   emergency SIDEARM (common pistol of the area level, 70% damage, not an
   item) comes out until ammo arrives - the player is never soft-locked.
-- Stock lives in the save (`save.ammo`, old saves get half of each type),
+- Stock lives in the save (`save.ammo`, old saves get the station issue),
   carries over between floors of a run and is clamped to capacity at each
   level start. Capacity: base max x (1 + Ammo Capacity), an affix on body /
-  legs / rings, at most +100% in total.
-- Sources: monsters (normal 10% a pack, elites 40% a pack + 15% a box,
-  bosses 1-2 boxes; 70% of drops lean toward the ammo the equipped guns
-  use), level caches (2-5 boxes + 4-8 packs per level from
-  `levelgen/ammo.js`: dead ends and side rooms off the start -> boss route,
-  beside chests, one box before the boss arena, at most one pack inside it;
-  positions per seed, types picked at load from the equipped guns), one box
-  in every chest, a pack with every new ammo gun picked up or bought, a top
-  up to 50% of every type when a new run starts at the station ("station
-  issue"), and refills at the station shop (`ammoRefillCost`: ~30 credits
-  for a full load at depth 1, x1.075 per deepest depth reached).
+  legs / rings, at most +75% in total: more to save up for a boss, never
+  more found.
+- Sources (70% of everything leans toward the ammo the equipped guns use):
+  monsters (normal 10% a pack, elites 35% a pack + 15% a box, bosses 1-2
+  boxes for the next floor), level caches (`AMMO_SPOTS` 1-2 boxes + 2-3
+  packs times the level size, from `levelgen/ammo.js`: dead ends and side
+  rooms off the start -> boss route, beside chests, one box just before the
+  boss arena that is always for an equipped gun, at most one pack inside
+  it; positions per seed, types picked at load), a pack in every chest
+  (`AMMO_CHEST`; deep floors have up to 7), a pack with every new ammo gun
+  picked up or bought, a top up to 35% of every type when a new run starts
+  at the station ("station issue"), and refills at the station shop.
+- Economy (`tests/balance.test.js`): a floor's finds keep one ammo gun
+  firing for ~30-45% of the floor's firing time (two types share the
+  supply, a little more in total since more of the drops fit), the station
+  issue lifts the first floors to ~60-70%, and it is never enough to use
+  ammo guns only. Saved up, a boss is fought ~90% on ammo.
+- Shop refills: `ammoRefillCost` = 360 x 1.08^(deepest depth - 1) credits
+  for a full load of one type (~30-50% of what a floor there pays): a top-up
+  before a dive is affordable, buying enough to fire only ammo guns would
+  eat the credits upgrades need.
 - Pickups take what fits; the rest stays on the floor. A pickup of a full
   type is not pulled in and stays where it is ("SHELLS FULL").
 - HUD: type icon + count / max (amber below 25%, red when empty) or an

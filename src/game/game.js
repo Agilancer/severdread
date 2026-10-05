@@ -224,7 +224,7 @@ export class Game {
     const depth = continueRun && this.save.run.active ? this.save.run.depth + 1 : 1;
     if (!continueRun) {
       this.save.run = { active: true, depth: 0, themes: [] }; this.save.stats.runs++;
-      topUpAmmo(this.save, this.player.stats);   // station issue: every ammo type at least half full
+      topUpAmmo(this.save, this.player.stats);   // station issue: every ammo type up to at least AMMO_ISSUE of a load
     }
     this.sfx('teleport');
     this.post.warp = 1;

@@ -32,14 +32,18 @@ const verbose = process.argv.includes('-v');
 const bases = buildWeaponBases(JSON.parse(fs.readFileSync(new URL('../assets/manifest.json', import.meta.url))));
 const START = { archetype: 'pistol', damage: ARCHETYPES.pistol.damage, rate: ARCHETYPES.pistol.rate, upgrade: 0, element: 'physical', rarity: 'common', level: 1, patterns: [], stats: {}, abilities: [] };
 
-// A typical fight against single-target damage: the share of a shot that
-// lands (shotgun pellets at mid range, a third of a spreader's fan) plus what
-// splash / pierce / chain / nails add on the monster's neighbours, minus
-// spin-up and melee reach
+// A typical fight: the share of a gun's full single-target damage (every
+// pellet) it really deals, relative to the rifle. Measured in the browser with
+// real shots (rare guns at area level, perfect aim on the nearest monster):
+// packs of 4 ranged / slow melee / fast melee monsters closing from 8 m and
+// lone ones, geometric mean. Pellet spread, slow orbs that miss movers and
+// overkill pull it down; splash, pierce, ricochet, chains and nails on the
+// monster's neighbours push it up. Short reach (melee, flamers): their melee
+// packs x 0.85.
 const FIGHT = {
-  pistol: 1, revolver: 1, smg: 0.95, rifle: 1, lmg: 0.95, shuriken: 1.1, blade: 0.85, mace: 0.85, club: 0.85,
-  shotgun: 0.6, super_shotgun: 0.55, minigun: 0.85, sniper: 0.9, rail: 1.1, rocket: 1.4, grenade: 1.3, nailgun: 3,
-  plasma: 1.1, lightning: 1.3, launcher: 1.25, spreader: 0.5, flamer: 1.2, sprayer: 1.2, crossbow: 1.1, harpoon: 1.15, javelin: 1.15,
+  pistol: 1, revolver: 0.95, smg: 1, rifle: 1, lmg: 0.85, shuriken: 1.35, blade: 0.85, mace: 0.85, club: 0.85,
+  shotgun: 0.5, super_shotgun: 0.35, minigun: 0.85, sniper: 1.1, rail: 1.4, rocket: 1.1, grenade: 1.3, nailgun: 2.8,
+  plasma: 0.65, lightning: 2.05, launcher: 1.3, spreader: 0.3, flamer: 0.95, sprayer: 0.8, crossbow: 1.15, harpoon: 1.15, javelin: 1.1,
 };
 const AIM = 0.75;          // share of shots that land: firing time (and the ammo spent) is 1/AIM of perfect aim
 const SIZE = 1.3;          // real levels average ~1.3x enemyCount (generateLevel's size factor, measured)

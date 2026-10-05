@@ -35,12 +35,12 @@ export const AMMO_CAP_MAX = 0.75;     // Ammo Capacity stat: at most +75% in tot
 export const ARCH_AMMO = {
   pistol: null, revolver: null, smg: null, rifle: null, lmg: null, shuriken: null,
   blade: null, mace: null, club: null,
-  shotgun: ['shells', 1, 1.7], super_shotgun: ['shells', 2, 1.65],
+  shotgun: ['shells', 1, 2.1], super_shotgun: ['shells', 2, 2.5],
   minigun: ['heavy', 1, 1.35], sniper: ['heavy', 15, 1],
-  rocket: ['explosives', 1, 1], grenade: ['explosives', 1, 1.05], nailgun: ['explosives', 1, 1.4],
-  plasma: ['cells', 1, 1], lightning: ['cells', 1, 1.35], launcher: ['cells', 3, 1.25], spreader: ['cells', 5, 1.55], rail: ['cells', 10, 1],
-  flamer: ['fuel', 1, 1.15], sprayer: ['fuel', 1, 1.25],
-  crossbow: ['bolts', 1, 1.25], harpoon: ['bolts', 1, 1.1], javelin: ['bolts', 1, 1.2],
+  rocket: ['explosives', 1, 1.25], grenade: ['explosives', 1, 1.05], nailgun: ['explosives', 1, 1.55],
+  plasma: ['cells', 1, 1.75], lightning: ['cells', 1, 1], launcher: ['cells', 3, 1.2], spreader: ['cells', 5, 2.5], rail: ['cells', 10, 1],
+  flamer: ['fuel', 1, 1.5], sprayer: ['fuel', 1, 1.9],
+  crossbow: ['bolts', 1, 1.2], harpoon: ['bolts', 1, 1.15], javelin: ['bolts', 1, 1.3],
 };
 
 // {type, cost, power} for a weapon item / archetype id, or null when it never runs dry
