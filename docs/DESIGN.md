@@ -49,11 +49,11 @@
   too), medians through depth 30:
   - best unlimited gun 0.85-1.3x the depth-1 starting pistol (~0.6 s): the
     sustained pace (1.0-1.25 now)
-  - best ammo gun 0.5-0.8x of that: the rationed burst (0.53-0.74)
+  - best ammo gun 0.5-0.8x of that: the rationed burst (0.53-0.73; 0.81 on
+    depth 2, where the first ammo gun is usually a common)
   - blended over the share of firing time a floor's ammo sustains:
-    0.8-1.15x the depth-1 pistol (0.81-1.04; depths 2-3 may go to 0.7, where
-    the station issue lets a run lean on ammo)
-  - 6-18 monster hits to kill the player (11-14.5); a boss fight 15-40 s
+    0.8-1.15x the depth-1 pistol (0.81-1.04)
+  - 6-18 monster hits to kill the player (11-14.5); a boss fight ~20-40 s
     (19-31 s).
 
   | depth | kill time: unlimited | ammo gun / unlimited | blended | ammo share of firing | boss fight |
@@ -97,7 +97,7 @@ archetype.
   and lightning gun get none: pierce and chains already make them ~1.45-1.55x
   - they are the powerful guns the ammo limit is for. With three ammo slots,
   and the epic art all ammo guns, the best ammo gun ends up ~1.35-1.9x the
-  best unlimited one. The sidearm is a pistol: no premium.
+  best unlimited one from depth 3 on. The sidearm is a pistol: no premium.
 - A shot costs once: pellets, fans, rings, helix, multishot and double tap
   never cost extra; the minigun spends only once it actually fires.
 - Firing an empty gun: dry click, "NO SHELLS" toast, automatic switch to the

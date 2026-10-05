@@ -14,7 +14,7 @@
 //     one ammo type firing for ~30-50% of the floor's firing time, two types
 //     split it, the station issue lets the first floors lean on ammo more,
 //     and it is never enough to fire ammo guns only; saved up, a boss is
-//     fought mostly with ammo and lasts ~15-40 s
+//     fought mostly with ammo and lasts ~20-40 s
 //   - a full shop refill costs a real share (15-40%) of a floor's credits
 //   - nothing drops more than a couple of item levels above the floor
 // Run with -v for the tables.
@@ -181,11 +181,11 @@ for (let d = 1; d <= 60; d++) {
   // single dive is under-levelled by design (several runs reach depth 50)
   if (d < 2 || d > 30) continue;
   band(u, 0.85, 1.3, `depth ${d}: best unlimited gun kills in`);
-  // the first floors: the first ammo gun is a common, and the station issue lets them lean on ammo
-  band(au, 0.5, d <= 3 ? 0.85 : 0.8, `depth ${d}: best ammo gun vs unlimited`);
-  band(b, d <= 3 ? 0.7 : 0.8, 1.15, `depth ${d}: blended kill time`);
+  // depth 2: the first ammo gun is usually a common, a step behind the unlimited one
+  band(au, 0.5, d <= 2 ? 0.85 : 0.8, `depth ${d}: best ammo gun vs unlimited`);
+  band(b, 0.8, 1.15, `depth ${d}: blended kill time`);
   band(hits, 6, 18, `depth ${d}: hits to die`);
-  band(med(d, 'bossT', w), 15, 40, `depth ${d}: boss fight seconds`);
+  band(med(d, 'bossT', w), 17, 40, `depth ${d}: boss fight seconds`);   // ~20-40 s
   if (d >= 6) band(med(d, 'share', w), 0.2, 0.65, `depth ${d}: share of firing time on ammo`);
 }
 if (verbose) {
