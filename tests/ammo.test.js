@@ -32,7 +32,7 @@ const mk = (arch, seed = 1, rarity = 'common') => {
 for (const k of Object.keys(ARCHETYPES)) {
   check(k in ARCH_AMMO, `archetype ${k} missing from ARCH_AMMO`);
   const a = ARCH_AMMO[k];
-  if (a) check(AMMO[a[0]] && Number.isInteger(a[1]) && a[1] > 0, `bad ammo entry for ${k}: ${a}`);
+  if (a) check(AMMO[a[0]] && Number.isInteger(a[1]) && a[1] > 0 && a[2] >= 1 && a[2] <= 2.5, `bad ammo entry for ${k}: ${a}`);
 }
 for (const k of Object.keys(ARCH_AMMO)) check(k in ARCHETYPES, `ARCH_AMMO has unknown archetype ${k}`);
 for (const k of ['pistol', 'revolver', 'smg', 'rifle', 'lmg', 'shuriken', 'blade', 'mace', 'club']) check(ARCH_AMMO[k] === null, `${k} should be unlimited`);

@@ -26,8 +26,8 @@ export function areaLevel(depth) { const d = Math.max(1, depth); return d <= 50 
 
 // How much of a full kit of on-level gear (rarity, affixes, patterns, armour,
 // a few character levels ahead) a player has picked up by this area level:
-// 0 on the first floor, ~0.65 by depth 5, ~0.95 by depth 12, then ~1
-export function gearRamp(L) { return 1 - Math.exp(-(Math.max(1, L) - 1) / 4); }
+// 0 on the first floor, ~0.6 by depth 5, ~0.9 by depth 12, then ~1
+export function gearRamp(L) { return 1 - Math.exp(-(Math.max(1, L) - 1) / 4.5); }
 
 // Monster stat multipliers per dungeon depth. The item-level curve alone
 // assumes a plain common weapon; the gear ramp lets monsters keep up with the
@@ -35,7 +35,7 @@ export function gearRamp(L) { return 1 - Math.exp(-(Math.max(1, L) - 1) / 4); }
 // count), so the best UNLIMITED gun kills at about the depth-1 pistol's pace
 // on every floor and the ammo guns are the faster, rationed extra - with a
 // floor's ammo the blended pace stays close to depth 1 (tests/balance.test.js)
-export function monsterHpMult(depth) { const L = areaLevel(depth); return Math.pow(1.085, L - 1) * (1 + 0.05 * (L - 1)) * (1 + 1.5 * gearRamp(L)); }
+export function monsterHpMult(depth) { const L = areaLevel(depth); return Math.pow(1.085, L - 1) * (1 + 0.05 * (L - 1)) * (1 + 1.55 * gearRamp(L)); }
 export function monsterDmgMult(depth) { const L = areaLevel(depth); return Math.pow(1.065, L - 1) * (1 + 0.02 * (L - 1)) * (1 + 0.6 * gearRamp(L)); }
 export function monsterArmor(depth) { return 2 + areaLevel(depth) * 1.5; }
 export function monsterLevel(depth) { return depth; }

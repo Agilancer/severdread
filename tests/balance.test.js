@@ -33,17 +33,15 @@ const bases = buildWeaponBases(JSON.parse(fs.readFileSync(new URL('../assets/man
 const START = { archetype: 'pistol', damage: ARCHETYPES.pistol.damage, rate: ARCHETYPES.pistol.rate, upgrade: 0, element: 'physical', rarity: 'common', level: 1, patterns: [], stats: {}, abilities: [] };
 
 // A typical fight: the share of a gun's full single-target damage (every
-// pellet) it really deals, relative to the rifle. Measured in the browser with
-// real shots (rare guns at area level, perfect aim on the nearest monster):
-// packs of 4 ranged / slow melee / fast melee monsters closing from 8 m and
-// lone ones, geometric mean. Pellet spread, slow orbs that miss movers and
-// overkill pull it down; splash, pierce, ricochet, chains and nails on the
-// monster's neighbours push it up. Short reach (melee, flamers): their melee
-// packs x 0.85.
+// pellet) it really deals, relative to the rifle - measured in the browser
+// with real shots by tests/fight.mjs (packs of ranged / slow / fast melee
+// monsters and lone ones, two runs averaged). Pellet spread, slow orbs that
+// miss movers, walking in and overkill pull it down; splash, pierce,
+// ricochet, chains and nails on the monster's neighbours push it up.
 const FIGHT = {
-  pistol: 1, revolver: 0.95, smg: 1, rifle: 1, lmg: 0.85, shuriken: 1.35, blade: 0.85, mace: 0.85, club: 0.85,
-  shotgun: 0.5, super_shotgun: 0.35, minigun: 0.85, sniper: 1.1, rail: 1.4, rocket: 1.1, grenade: 1.3, nailgun: 2.8,
-  plasma: 0.65, lightning: 2.05, launcher: 1.3, spreader: 0.3, flamer: 0.95, sprayer: 0.8, crossbow: 1.15, harpoon: 1.15, javelin: 1.1,
+  pistol: 1, revolver: 0.9, smg: 1, rifle: 1, lmg: 0.85, shuriken: 1.3, blade: 0.9, mace: 0.85, club: 0.85,
+  shotgun: 0.5, super_shotgun: 0.35, minigun: 0.85, sniper: 1.1, rail: 1.35, rocket: 1, grenade: 1.1, nailgun: 2.6,
+  plasma: 0.65, lightning: 2.15, launcher: 1.2, spreader: 0.3, flamer: 0.9, sprayer: 0.7, crossbow: 1.3, harpoon: 1.1, javelin: 1.1,
 };
 const AIM = 0.75;          // share of shots that land: firing time (and the ammo spent) is 1/AIM of perfect aim
 const SIZE = 1.3;          // real levels average ~1.3x enemyCount (generateLevel's size factor, measured)
@@ -158,8 +156,8 @@ function run(seed) {
 }
 
 const runs = Array.from({ length: 31 }, (_, i) => run(1000 + (i + 1) * 77));
-// median over the runs, pooled over depths d-1..d+1 (gear comes in steps)
-const med = (d, k, w = 1) => {
+// median over the runs, pooled over depths d-2..d+2 (gear comes in steps)
+const med = (d, k, w = 2) => {
   const v = [];
   for (let e = Math.max(1, d - w); e <= Math.min(60, d + w); e++) for (const r of runs) if (Number.isFinite(r[e - 1][k])) v.push(r[e - 1][k]);
   v.sort((a, b) => a - b);
@@ -174,7 +172,7 @@ if (verbose) {
   console.log('depth  lvl  unlim  ammo/unl  blend   ammoShare  bossOnAmmo  bossFight  hitsToDie  types');
 }
 for (let d = 1; d <= 60; d++) {
-  const w = d === 1 ? 0 : 1, u = med(d, 'ttkU', w) / ttk1, au = med(d, 'ttkA', w) / med(d, 'ttkU', w), b = med(d, 'ttkB', w) / ttk1, hits = med(d, 'hits', w);
+  const w = d === 1 ? 0 : d <= 3 ? 1 : 2, u = med(d, 'ttkU', w) / ttk1, au = med(d, 'ttkA', w) / med(d, 'ttkU', w), b = med(d, 'ttkB', w) / ttk1, hits = med(d, 'hits', w);
   if (verbose && SHOW.includes(d)) {
     console.log(String(d).padStart(5), String(med(d, 'level', 0)).padStart(4), u.toFixed(2).padStart(6), (Number.isFinite(au) ? au.toFixed(2) : '-').padStart(9), b.toFixed(2).padStart(6),
       med(d, 'share', w).toFixed(2).padStart(11), med(d, 'bossShare', w).toFixed(2).padStart(11), (med(d, 'bossT', w).toFixed(0) + ' s').padStart(10), hits.toFixed(1).padStart(10), String(med(d, 'types', 0)).padStart(6));
@@ -187,8 +185,13 @@ for (let d = 1; d <= 60; d++) {
   band(au, 0.5, d <= 3 ? 0.85 : 0.8, `depth ${d}: best ammo gun vs unlimited`);
   band(b, d <= 3 ? 0.7 : 0.8, 1.15, `depth ${d}: blended kill time`);
   band(hits, 6, 18, `depth ${d}: hits to die`);
-  band(med(d, 'bossT'), 15, 40, `depth ${d}: boss fight seconds`);
-  if (d >= 6) band(med(d, 'share'), 0.2, 0.65, `depth ${d}: share of firing time on ammo`);
+  band(med(d, 'bossT', w), 15, 40, `depth ${d}: boss fight seconds`);
+  if (d >= 6) band(med(d, 'share', w), 0.2, 0.65, `depth ${d}: share of firing time on ammo`);
+}
+if (verbose) {
+  const rng = (k, f, d0 = 2) => { const v = []; for (let d = d0; d <= 30; d++) v.push(f(d, d <= 3 ? 1 : 2)); return `${k} ${Math.min(...v).toFixed(2)}-${Math.max(...v).toFixed(2)}`; };
+  console.log('depths 2-30: ' + [rng('unlimited', (d, w) => med(d, 'ttkU', w) / ttk1), rng('ammo/unl', (d, w) => med(d, 'ttkA', w) / med(d, 'ttkU', w)), rng('blended', (d, w) => med(d, 'ttkB', w) / ttk1),
+    rng('blended(4+)', (d, w) => med(d, 'ttkB', w) / ttk1, 4), rng('share(6+)', (d, w) => med(d, 'share', w), 6), rng('boss s', (d, w) => med(d, 'bossT', w)), rng('hits', (d, w) => med(d, 'hits', w))].join(', '));
 }
 // the first floors lean on the station issue more than later ones
 const early = (med(2, 'share', 0) + med(3, 'share', 0)) / 2, later = [8, 12, 16, 20, 25, 30].reduce((a, d) => a + med(d, 'share'), 0) / 6;
@@ -252,7 +255,7 @@ const lv40 = new Rng(9);
 for (let k = 0; k < 200; k++) { const l = rollItemLevel(lv40, 3); if (l > B.areaLevel(3) + 1) { fails.push(`depth 3 rolled item level ${l}`); break; } }
 
 const r2 = (v) => v.toFixed(2);
-console.log(`balance: depth-1 kill ${ttk1.toFixed(2)} s; depth 5/12/20/30 unlimited ${[5, 12, 20, 30].map((d) => r2(med(d, 'ttkU') / ttk1)).join('/')}x, ammo ${[5, 12, 20, 30].map((d) => r2(med(d, 'ttkA') / med(d, 'ttkU'))).join('/')}x of that, blended ${[5, 12, 20, 30].map((d) => r2(med(d, 'ttkB') / ttk1)).join('/')}x; ammo share ${[5, 12, 20, 30].map((d) => r2(med(d, 'share'))).join('/')}; one type ${r2(overall.reduce((a, b) => a + b) / overall.length)}; hits to die ${[1, 5, 12, 20, 30].map((d) => med(d, 'hits').toFixed(1)).join('/')}`);
+console.log(`balance: depth-1 kill ${ttk1.toFixed(2)} s; depth 5/12/20/30 unlimited ${[5, 12, 20, 30].map((d) => r2(med(d, 'ttkU') / ttk1)).join('/')}x, ammo ${[5, 12, 20, 30].map((d) => r2(med(d, 'ttkA') / med(d, 'ttkU'))).join('/')}x of that, blended ${[5, 12, 20, 30].map((d) => r2(med(d, 'ttkB') / ttk1)).join('/')}x; ammo share ${[5, 12, 20, 30].map((d) => r2(med(d, 'share'))).join('/')}; one type ${r2(overall.reduce((a, b) => a + b) / overall.length)}; hits to die ${[1, 5, 12, 20, 30].map((d) => med(d, 'hits', d === 1 ? 0 : 2).toFixed(1)).join('/')}`);
 for (const f of fails) console.log('FAIL', f);
 console.log(fails.length ? 'balance failures' : 'balance OK');
 process.exit(fails.length ? 1 : 0);

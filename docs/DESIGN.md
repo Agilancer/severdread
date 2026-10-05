@@ -19,10 +19,10 @@
   pushes toward the level-200 cap.
 - Area level `L` = depth up to 50, then +1.5 per depth (depth 150 = 200).
   Monsters and loot both scale with it.
-- Monster HP `1.085^L · (1 + 0.05L) · (1 + 1.5 ramp)`, damage
-  `1.065^L · (1 + 0.02L) · (1 + 0.6 ramp)`, where `ramp = 1 − e^(−(L−1)/4)`
+- Monster HP `1.085^L · (1 + 0.05L) · (1 + 1.55 ramp)`, damage
+  `1.065^L · (1 + 0.02L) · (1 + 0.6 ramp)`, where `ramp = 1 − e^(−(L−1)/4.5)`
   is how much of a full kit of on-level gear a player has picked up (0 on
-  depth 1, ~0.65 by depth 5, ~0.95 by depth 12) - four guns and four rings
+  depth 1, ~0.6 by depth 5, ~0.9 by depth 12) - four guns and four rings
   whose stats all count, not just the gun in hand. Count `12 + 1.6d` (capped
   70, times the level size), elite chance up to 30%.
 - Drops: item level = area level −2 … +1 (pedestals +1, shop one below the
@@ -43,24 +43,26 @@
   upgrade, 40 → 200, escalating cost.
 - `tests/balance.test.js` plays 31 first runs down to depth 60 with the real
   item / stat / balance code (best unlimited gun, three best ammo guns, best
-  armour, four rings) and models each floor's ammo (see below). Standard
-  monster kill time in a typical fight (pellets that land, splash / pierce /
-  chain on neighbours, misses spend ammo too), through depth 30:
-  - best unlimited gun 0.85-1.3x the depth-1 starting pistol (~0.6 s);
-    that's the sustained pace
-  - best ammo gun 0.5-0.8x of that: the rationed burst
+  armour, four rings) and models each floor's ammo (see below). Kill time of
+  a standard monster in a typical fight (how much of a gun's damage really
+  lands, measured with real shots by `tests/fight.mjs`; misses spend ammo
+  too), medians through depth 30:
+  - best unlimited gun 0.85-1.3x the depth-1 starting pistol (~0.6 s): the
+    sustained pace (1.0-1.25 now)
+  - best ammo gun 0.5-0.8x of that: the rationed burst (0.53-0.74)
   - blended over the share of firing time a floor's ammo sustains:
-    0.8-1.15x the depth-1 pistol (0.7 on depths 2-3, where the station
-    issue lets a run lean on ammo)
-  - 6-18 monster hits to kill the player; a boss fight 15-40 s.
+    0.8-1.15x the depth-1 pistol (0.81-1.04; depths 2-3 may go to 0.7, where
+    the station issue lets a run lean on ammo)
+  - 6-18 monster hits to kill the player (11-14.5); a boss fight 15-40 s
+    (19-31 s).
 
   | depth | kill time: unlimited | ammo gun / unlimited | blended | ammo share of firing | boss fight |
   |---|---|---|---|---|---|
-  | 2 | 1.00 | 0.82 | 1.00 | 0.47 | 31 s |
-  | 5 | 1.13 | 0.74 | 0.89 | 0.61 | 25 s |
-  | 12 | 1.20 | 0.68 | 0.97 | 0.40 | 26 s |
-  | 20 | 1.19 | 0.69 | 0.99 | 0.41 | 24 s |
-  | 30 | 1.19 | 0.61 | 0.94 | 0.39 | 21 s |
+  | 2 | 1.00 | 0.81 | 1.00 | 0.46 | 31 s |
+  | 5 | 1.11 | 0.71 | 0.86 | 0.65 | 25 s |
+  | 12 | 1.15 | 0.66 | 0.92 | 0.42 | 22 s |
+  | 20 | 1.16 | 0.65 | 0.95 | 0.41 | 22 s |
+  | 30 | 1.18 | 0.58 | 0.91 | 0.37 | 21 s |
 
 ## Ammo (src/data/ammo.js, src/game/ammo.js)
 
@@ -84,15 +86,18 @@ type's guns: a full load ~25 s (most of a boss fight), a pack ~1.5 s, a box
 `ARCH_AMMO` is the one table: type, cost and the damage premium per
 archetype.
 
-- Premium (`power`): ammo guns hit harder, so a gun of the same rarity and
-  level kills ~1.15-1.2x as fast as an unlimited one in a typical fight -
-  more where the sim's single shot undersells the gun (shotguns 1.7 / 1.65:
-  half the pellets land at mid range; spreader 1.55, minigun 1.35, lightning
-  1.35, nail grenades 1.4, disc 1.25, sprayer / crossbow 1.25, javelin 1.2,
-  flamer 1.15, harpoon 1.1, grenade 1.05), none where splash, pierce and big
-  hits already carry it (rocket, rail, sniper, plasma 1). With three ammo
-  slots and the epic art all ammo guns, the best ammo gun ends up ~1.3-1.6x
-  the best unlimited one. The sidearm is a pistol: no premium.
+- Premium (`power`): ammo guns hit harder, so that one of the same rarity
+  and level kills ~1.2x as fast as the unlimited guns in a typical fight
+  (`tests/fight.mjs` measures how much of its full damage each gun really
+  deals - the FIGHT table of the balance test). Guns whose shot undersells
+  in a real fight get the most: super shotgun and spreader 2.5 (pellets and
+  fans spread wide), sprayer 2.15, shotgun 2.1, plasma 1.75 (slow orbs miss
+  movers), nail grenades and flamer 1.6, rocket and minigun 1.35, disc and
+  javelin 1.3, grenade 1.25, harpoon 1.15, crossbow 1.05. Railgun, sniper
+  and lightning gun get none: pierce and chains already make them ~1.45-1.55x
+  - they are the powerful guns the ammo limit is for. With three ammo slots,
+  and the epic art all ammo guns, the best ammo gun ends up ~1.35-1.9x the
+  best unlimited one. The sidearm is a pistol: no premium.
 - A shot costs once: pellets, fans, rings, helix, multishot and double tap
   never cost extra; the minigun spends only once it actually fires.
 - Firing an empty gun: dry click, "NO SHELLS" toast, automatic switch to the

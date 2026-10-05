@@ -28,19 +28,20 @@ export const AMMO_CAP_MAX = 0.75;     // Ammo Capacity stat: at most +75% in tot
 // One shot costs once however many pellets / pattern projectiles / multishot
 // copies it throws; costs keep every gun of a type draining at about the same
 // rate (sniper 15 x 1/s ~ minigun 17/s). power: damage premium for spending
-// ammo, so an ammo gun of the same rarity and level kills ~1.5x as fast as an
-// unlimited one in a typical fight (splash / pierce / chain counted, shotgun
-// pellets at mid range - see FIGHT in tests/balance.test.js).
-// tests/ammo.test.js checks every ARCHETYPES key is here.
+// ammo, so an ammo gun of the same rarity and level kills ~1.2x as fast as an
+// unlimited one in a real fight (tests/fight.mjs measures how much of its full
+// damage each gun deals: wide pellets / fans and slow orbs get the most;
+// rail, sniper and lightning already out-kill everything through pierce and
+// chains and get none). tests/ammo.test.js checks every ARCHETYPES key is here.
 export const ARCH_AMMO = {
   pistol: null, revolver: null, smg: null, rifle: null, lmg: null, shuriken: null,
   blade: null, mace: null, club: null,
   shotgun: ['shells', 1, 2.1], super_shotgun: ['shells', 2, 2.5],
   minigun: ['heavy', 1, 1.35], sniper: ['heavy', 15, 1],
-  rocket: ['explosives', 1, 1.25], grenade: ['explosives', 1, 1.05], nailgun: ['explosives', 1, 1.55],
-  plasma: ['cells', 1, 1.75], lightning: ['cells', 1, 1], launcher: ['cells', 3, 1.2], spreader: ['cells', 5, 2.5], rail: ['cells', 10, 1],
-  flamer: ['fuel', 1, 1.5], sprayer: ['fuel', 1, 1.9],
-  crossbow: ['bolts', 1, 1.2], harpoon: ['bolts', 1, 1.15], javelin: ['bolts', 1, 1.3],
+  rocket: ['explosives', 1, 1.35], grenade: ['explosives', 1, 1.25], nailgun: ['explosives', 1, 1.6],
+  plasma: ['cells', 1, 1.75], lightning: ['cells', 1, 1], launcher: ['cells', 3, 1.3], spreader: ['cells', 5, 2.5], rail: ['cells', 10, 1],
+  flamer: ['fuel', 1, 1.6], sprayer: ['fuel', 1, 2.15],
+  crossbow: ['bolts', 1, 1.05], harpoon: ['bolts', 1, 1.15], javelin: ['bolts', 1, 1.3],
 };
 
 // {type, cost, power} for a weapon item / archetype id, or null when it never runs dry
