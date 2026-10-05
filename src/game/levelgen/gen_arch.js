@@ -50,7 +50,8 @@ export function genArch(rng, theme, depth, opt = {}) {
   const p = theme.params || {};
   const style = { ...styleOf(theme), ...(opt.style || {}) };
   const size = Math.round(clamp(58 + depth * 0.9, 58, 96) * (p.size || 1) * (opt.scale || 1));
-  const W = size, H = Math.round(size * rng.float(0.78, 0.95));
+  // opt.aspect [min, max]: map depth / width (long hulls, strips...)
+  const W = size, H = Math.round(size * rng.float(...(opt.aspect || [0.78, 0.95])));
   const g = newGrid(W, H, 10);
   const deco = new Deco(g, { ...theme, railStyle: style.railStyle }, rng);
   const baseLight = theme.light ?? 0.75, lightVar = theme.lightVar ?? 0.25;
@@ -109,10 +110,12 @@ export function genArch(rng, theme, depth, opt = {}) {
 
   // ---- start, boss, spanning tree, zones
   const startPool = rooms.filter((r) => !r.leaf.big).length ? rooms.filter((r) => !r.leaf.big) : rooms;
-  const start = startPool.reduce((b, r) => (r.cx + r.cz < b.cx + b.cz ? r : b), startPool[0]);
+  // opt.pickStart(rooms, rng) / opt.pickBoss(rooms, start, graphDist, rng): generators choose (null = default)
+  const start = (opt.pickStart && opt.pickStart(rooms, rng)) || startPool.reduce((b, r) => (r.cx + r.cz < b.cx + b.cz ? r : b), startPool[0]);
   const gd = graphDist(start.id);
-  let boss = null, bs = -1;
-  for (const r of rooms) {
+  let boss = opt.pickBoss ? opt.pickBoss(rooms, start, gd, rng) : null, bs = -1;
+  if (boss && (boss === start || gd[boss.id] < 0)) boss = null;
+  for (const r of boss ? [] : rooms) {
     if (r === start || gd[r.id] < 0 || (opt.forceBig && r.leaf.big)) continue;
     const sc = gd[r.id] * 3 + Math.min(r.area, 500) / 30 + (r.area >= 150 ? 6 : 0);
     if (sc > bs) { bs = sc; boss = r; }
@@ -124,7 +127,8 @@ export function genArch(rng, theme, depth, opt = {}) {
   let frontier = [...nbrs[start.id]];
   while (frontier.length) {
     rng.shuffle(frontier);
-    frontier.sort((a, b) => (a.i === boss.id || a.j === boss.id ? 1 : 0) - (b.i === boss.id || b.j === boss.id ? 1 : 0));
+    // opt.treeBias(edge): lower values join the tree first (e.g. a ship's spine before side-to-side links)
+    frontier.sort((a, b) => (a.i === boss.id || a.j === boss.id ? 1 : 0) - (b.i === boss.id || b.j === boss.id ? 1 : 0) || (opt.treeBias ? opt.treeBias(a) - opt.treeBias(b) : 0));
     const e = frontier.shift();
     const a = inTree.has(e.i), b = inTree.has(e.j);
     if (a && b) continue;
@@ -174,6 +178,8 @@ export function genArch(rng, theme, depth, opt = {}) {
       const pf = rooms[id].floor;
       if ((pf > 2.4 && dh > 0) || (pf < -2.4 && dh < 0)) dh = -dh;
       child.floor = clamp(pf + dh, -3.6, 4.8);
+      // opt.roomFloor(room, parentRoom, floor, rng): generators set deck heights by room use
+      if (opt.roomFloor) child.floor = opt.roomFloor(child, rooms[id], child.floor, rng);
     }
   }
   for (const e of edges) if (e.loop && Math.abs(rooms[e.i].floor - rooms[e.j].floor) > 3.6) e.skip = true;
@@ -181,7 +187,7 @@ export function genArch(rng, theme, depth, opt = {}) {
   // ---- templates
   const big = (r) => r.w >= 14 && r.h >= 14;
   for (const r of rooms) {
-    if (r === boss) { r.template = opt.arenaTemplate || 'arena'; continue; }
+    if (r === boss) { r.template = (typeof opt.arenaTemplate === 'function' ? opt.arenaTemplate(r, rng) : opt.arenaTemplate) || 'arena'; continue; }
     if (r === start) { r.template = opt.startTemplate ? opt.startTemplate(r, rng) : r.area > 160 && rng.chance(0.5) ? 'hall' : 'entry'; continue; }
     const base = [
       ['hall', r.w >= 10 && r.h >= 10 ? 2 : 0.4],
@@ -212,10 +218,15 @@ export function genArch(rng, theme, depth, opt = {}) {
   for (const e of edges) {
     if (e.skip) continue;
     const A = rooms[e.lo], B = rooms[e.hi];       // lo is on the -axis side
-    const door = e.gate || (!e.loop && rng.chance(opt.doorChance ?? 0.18)) || e.len < 4;
+    let door = e.gate || (!e.loop && rng.chance(opt.doorChance ?? 0.18)) || e.len < 4;
     // keyed gates are 3-wide doorways (the overlap a0..a1 is always >= 3);
     // plain doorways stay 1 wide
-    const width = e.gate ? Math.min(3, e.len) : door ? 1 : Math.min(e.len - 1, rng.pick(opt.connWidths || [2, 2, 3, 3, 4]));
+    let width = e.gate ? Math.min(3, e.len) : door ? 1 : Math.min(e.len - 1, rng.pick(opt.connWidths || [2, 2, 3, 3, 4]));
+    // opt.connWidth(edge, A, B, width): a generator's own opening width (e.g. a ship's bulkheads); gates stay 3 wide
+    if (opt.connWidth && !e.gate) {
+      const w = opt.connWidth(e, A, B, width);
+      if (w) { width = clamp(w, 1, e.len); door = width === 1; }
+    }
     const pos = rng.int(e.a0, e.a1 - width);
     conns.push({ ...e, A, B, door, width, pos });
   }
