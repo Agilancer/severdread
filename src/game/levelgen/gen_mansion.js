@@ -40,10 +40,11 @@ import { TS, F, clamp, newGrid } from './common.js';
 import { Deco } from './deco.js';
 import { Frame, GROUND, GF, UF, CF, OPP } from './mansion_kit.js';
 import { ROOMS } from './mansion_rooms.js';
+import { WINGS } from './mansion_wings.js';
 import { GROUNDS, finishExterior } from './mansion_grounds.js';
 import { finishRooms, boardedDoor } from './mansion_finish.js';
 
-const TEMPLATES = { ...ROOMS, ...GROUNDS };
+const TEMPLATES = { ...ROOMS, ...WINGS, ...GROUNDS };
 
 // base storey, ceiling height (above the base) and surfaces of each room kind
 const KIND = {
@@ -58,9 +59,9 @@ const KIND = {
   servhall: { floor: GF, ceil: [4.2, 4.8], floorTex: TS.FLOOR2, wall: TS.FACADE3, ceilTex: TS.CEIL },
   laundry: { floor: GF, ceil: [4.2, 4.8], floorTex: TS.FLOOR2, wall: TS.FACADE3, ceilTex: TS.CEIL },
   scullery: { floor: GF, ceil: [4.2, 4.8], floorTex: TS.FLOOR2, wall: TS.FACADE3, ceilTex: TS.CEIL },
-  cellar: { floor: CF, ceil: [3.6], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.CEIL2 },
-  crypt: { floor: CF, ceil: [5.4, 6], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.CEIL2 },
-  mausoleum: { floor: GROUND, ceil: [4.6], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.CEIL2 },
+  cellar: { floor: CF, ceil: [3.6], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.PITWALL },
+  crypt: { floor: CF, ceil: [5.4, 6], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.PITWALL },
+  mausoleum: { floor: GROUND, ceil: [4.6], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.PITWALL },
   conservatory: { floor: GF, ceil: [6.6], floorTex: TS.FLOOR3, wall: TS.GLASS, ceilTex: TS.GLASS },
   bwhall: { floor: UF, ceil: [4.2], floorTex: TS.CARPET, wall: TS.WALL, ceilTex: TS.CEIL },
   bedroom: { floor: UF, ceil: [4], floorTex: TS.FLOOR, wall: TS.WALL, ceilTex: TS.CEIL },
@@ -71,7 +72,7 @@ const KIND = {
   ballroom: { floor: GF, ceil: [10.2, 10.8], floorTex: TS.FLOOR3, wall: TS.WALL, ceilTex: TS.CEIL2 },
   chapel: { floor: GF, ceil: [9, 9.6], floorTex: TS.FLOOR2, wall: TS.FACADE, ceilTex: TS.CEIL2 },
   music: { floor: GF, ceil: [5.4, 6], floorTex: TS.FLOOR, wall: TS.WALL, ceilTex: TS.CEIL },
-  billiard: { floor: GF, ceil: [5.4, 6], floorTex: TS.FLOOR, wall: TS.WALL2, ceilTex: TS.CEIL },
+  study: { floor: GF, ceil: [5.4, 6], floorTex: TS.FLOOR, wall: TS.WALL2, ceilTex: TS.CEIL },
   secret: { floor: GF, ceil: [2.8], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.PITWALL },
 };
 export const HOUSE_TOP = 13;     // eaves of the house walls
@@ -215,7 +216,7 @@ function makePlan(rng, depth) {
   kinds.forEach((k, j) => { beds.push(room(k, bedU, vb, bedW, sizes[j])); vb += sizes[j] + 1; });
   const library = room('library', uP, vL0, wp, dLB);
   const ballroom = room('ballroom', uP, vB0, wp, dBR);
-  const rearKind = rng.weighted([['chapel', 0.6], ['music', 0.2], ['billiard', 0.2]], (o) => o[1])[0];
+  const rearKind = rng.weighted([['chapel', 0.6], ['music', 0.2], ['study', 0.2]], (o) => o[1])[0];
   const rear = room(rearKind, uP, vB0 + dBR + 2, wp, dCR);
   // ---- the secret stair: from a bookcase in the library up inside the wall
   // between the courtyard and the private wing to the bedroom wing's hall
@@ -227,8 +228,8 @@ function makePlan(rng, depth) {
   const cw = rng.int(7, 9), cd = Math.min(dLB - 4, rng.int(9, 11));
   const cv0 = clamp(vL0 + 3 + rng.int(0, Math.max(0, dLB - 4 - cd)), Math.max(garden.v + 3, secRows[1] + 1), garden.v + garden.dv - cd - 3);
   const cons = room('conservatory', uC + wc - cw, cv0, cw, cd, { inside: garden });
-  const mw = 5, mu0 = rng.chance(0.5) ? uC + 2 + rng.int(0, 3) : uC + wc - mw - 2 - rng.int(0, 3);
-  const maus = room('mausoleum', mu0, vCY1 - 6, mw, 6, { inside: grave });
+  const mw = 7, md = 7, mu0 = rng.chance(0.5) ? uC + 2 + rng.int(0, 2) : uC + wc - mw - 2 - rng.int(0, 2);
+  const maus = room('mausoleum', mu0, vCY1 - md, mw, md, { inside: grave });
 
   // ---- candidate links between rooms that share a wall (axis 'u': side by
   // side across u, 'v': one behind the other). hA / hB: port heights on the A /
@@ -248,8 +249,8 @@ function makePlan(rng, depth) {
   };
   // front door: centre of the foyer's front wall
   L(fore, foyer, { axis: 'v', pos: mid3(uC, uC + wc), hA: GF, hB: GF, kind: 'frontdoor', gate: true, bias: 0 });
-  // foyer <-> dining: the front part of the foyer's side wall
-  L(dining, foyer, { axis: 'u', pos: rng.int(v0 + 2, v0 + Math.min(d0S, d0C - 7) - 4), hA: GF, hB: GF, kind: 'door', gate: true, bias: 0.4 });
+  // foyer <-> dining: the front part of the foyer's side wall (the stairs rise behind it)
+  L(dining, foyer, { axis: 'u', pos: v0 + 1 + rng.int(0, Math.max(0, d0C - 15)), hA: GF, hB: GF, kind: 'door', gate: true, bias: 0.4 });
   // gallery ports (upper floor): the bedroom wing / the back stair
   const galV = v0 + d0C - 3;
   L(foyer, bwhall, { axis: 'u', pos: galV, hA: UF, hB: UF, kind: 'door', gate: true, bias: 0.3, board: true });
@@ -277,12 +278,13 @@ function makePlan(rng, depth) {
   L(cellar, crypt, { axis: 'u', pos: pick(cellar, crypt, 'u', 3, 2), hA: CF, hB: CF, kind: 'arch', gate: true, bias: 1.2 });
   // courtyard
   L(garden, grave, { axis: 'v', pos: pick(garden, grave, 'v', 3, 3), hA: GROUND, hB: GROUND, kind: 'gardengate', gate: true, bias: 1 });
-  L(grave, maus, { axis: 'v', pos: mu0 + 1, hA: GROUND, hB: GROUND, kind: 'mausdoor', gate: true, bias: 1, wall: [maus.v - 1, maus.v] });
-  L(maus, crypt, { axis: 'v', pos: mu0 + 1, hA: CF, hB: CF, kind: 'mausstair', bias: 1.2 });
+  L(grave, maus, { axis: 'v', pos: mu0 + 2, hA: GROUND, hB: GROUND, kind: 'mausdoor', gate: true, bias: 1, wall: [maus.v - 1, maus.v] });
+  L(maus, crypt, { axis: 'v', pos: mu0 + 2, hA: CF, hB: CF, kind: 'mausstair', bias: 1.2 });
   // private wing
   for (const b of beds) L(bwhall, b, { axis: 'u', pos: b.v + 1 + rng.int(0, Math.max(0, b.dv - 4)), w: 2, hA: UF, hB: UF, kind: 'door', bias: 0.5 });
   L(bwhall, library, { axis: 'v', pos: uP, hA: UF, hB: UF, kind: 'door', gate: true, bias: 0.8, board: true });
-  L(library, ballroom, { axis: 'v', pos: pick(library, ballroom, 'v', 3, 2), hA: GF, hB: GF, kind: 'door', gate: true, bias: 0.9 });
+  // (clear of the mezzanine stair along the library's far side wall)
+  L(library, ballroom, { axis: 'v', pos: uP + 2 + rng.int(0, Math.max(0, wp - 9)), hA: GF, hB: GF, kind: 'door', gate: true, bias: 0.9 });
   // the conservatory opens off the library; its glass door onto the garden
   L(cons, library, { axis: 'u', pos: mid3(cons.v, cons.v + cons.dv), hA: GF, hB: GF, kind: 'arch', gate: true, bias: 1 });
   {
@@ -303,7 +305,9 @@ function makePlan(rng, depth) {
   L(sec, library, { axis: 'u', pos: sec.v + sec.dv - 1, w: 1, hA: GF, hB: GF, kind: 'bookcase', tree: false, pair: true });
 
   // ---- start and boss
-  fore.start = { u: Math.floor(Wp / 2) + rng.int(-4, 4), v: 2 };
+  // the start: inside the gates at the end of the drive, facing the front door
+  fore.driveU = links.find((l) => l.kind === 'frontdoor').pos + 1;
+  fore.start = { u: fore.driveU, v: 2 };
   const bossPool = [[crypt, 0.42], [ballroom, rearKind === 'chapel' ? 0.46 : 0], [rear, rearKind === 'chapel' ? 0.12 : 0]];
   const boss = rng.weighted(bossPool, (o) => o[1])[0];
   return { rooms, links, Wp, Hp, uS, uC, uP, ws, wc, wp, v0, vEnd, Fd, d0C, d0S, d0P, vK0, dK, galV, boss, startYaw: 2, garden, grave, cons, maus, fore, sec, stairInScullery };

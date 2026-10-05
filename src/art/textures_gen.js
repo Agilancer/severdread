@@ -950,6 +950,27 @@ Object.assign(TEXGEN, {
           p.line(x0, y0, x1, y1, mix(ac, [255, 255, 255], 0.4));
         }
       }
+    } else if (pal.kind === 'portrait') {
+      // an old oil portrait: a dark figure in a dark coat against a brown ground,
+      // the pale face lit from one side, the varnish crazed and darkened
+      const coat = rgb(pal.alt || '#1c1612'), skin = rgb(pal.accent || '#b8987a');
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const vig = Math.min(1, Math.hypot(x - 31.5, y - 26) / 40);
+        p.set(x, y, shade(mix(base, [70, 52, 34], 0.35 - vig * 0.35), (tfbm(x / 9, y / 9, 64 / 9, seed, 3) - 0.5) * 0.25 - vig * 0.4));
+      }
+      const fx = 32 + r.int(-2, 2), fy = 24 + r.int(-1, 2);
+      p.ellipse(fx, 60, 22, 16, coat);                              // shoulders
+      p.ellipse(fx, 52, 7, 6, shade(coat, 0.1));
+      p.polygon([[fx - 5, 44], [fx + 5, 44], [fx + 3, 54], [fx - 3, 54]], [196, 186, 168]);   // collar
+      p.rect(fx - 3, fy + 9, 6, 6, shade(skin, -0.35));               // neck
+      p.ellipse(fx, fy, 8, 11, skin);                                // face
+      for (let y = fy - 11; y <= fy + 11; y++) for (let x = fx; x <= fx + 8; x++) p.set(x, y, shade(skin, -0.45), 110);  // shadowed side
+      p.ellipse(fx, fy - 8, 9, 6, shade(coat, 0.15));                // hair
+      p.rect(fx - 9, fy - 8, 3, 10, shade(coat, 0.15));
+      for (const ex of [fx - 4, fx + 3]) { p.rect(ex, fy - 1, 2, 2, r.chance(0.3) ? [150, 30, 20] : [26, 18, 14]); }
+      p.rect(fx - 2, fy + 5, 4, 1, shade(skin, -0.5));
+      crack(p, r, base, 6, 26);
+      for (let y = 0; y < S; y += 4) for (let x = (y / 4) % 2 ? 2 : 0; x < S; x += 4) p.set(x, y, [0, 0, 0], 26);
     } else { // cinema
       for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
         const sky = mix([250, 196, 130], [150, 186, 236], 1 - y / 40);

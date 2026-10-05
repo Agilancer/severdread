@@ -402,6 +402,12 @@ export const ROLES = {
     ice: '3:3,6 4:4,0',
     industrial: '19:4,2 2:4,2 3:3,6',
   },
+  // curtains, drapes, bed covers and upholstery
+  fabric: {
+    castle: '15:3,9 G:damask_red',
+    city: 'G:damask_red G:fleur_green',
+    hell: '15:3,8',
+  },
   glass_plain: {
     city: '24:1,1 24:1,7 22:2,5 23:1,7',
     station: '3:3,6 24:1,1',
@@ -660,6 +666,7 @@ export const PH = {
   screen_gold_runes: { type: 'screen_wall', kind: 'runes', base: '#2a2418', accent: '#ffd060' },
   screen_hell_runes: { type: 'screen_wall', kind: 'runes', base: '#1a0e0c', accent: '#ff4020' },
   cinema: { type: 'screen_wall', kind: 'cinema', base: '#d8e0f0', accent: '#4a6a9a' },
+  portrait: { type: 'screen_wall', kind: 'portrait', base: '#2a2016', alt: '#1a1410', accent: '#a88a6c' },
   // spikes (3D spike pyramids: tip at the top of the tile)
   spikes_steel: { type: 'spikes', base: '#9a9ea6', blood: 0.6 },
   spikes_iron: { type: 'spikes', base: '#5a5450', blood: 1 },
@@ -716,6 +723,7 @@ export const ROLE_PH = {
   spikes: { default: '#spikes_steel', hell: '#spikes_iron', castle: '#spikes_iron', nature: '#spikes_iron', desert: '#spikes_iron', organic: '#spikes_bone', heaven: '#spikes_gold', ice: '#spikes_ice', cyber: '#spikes_neon' },
   glass: { default: '#glass_pane', castle: '#glass_pane_dark', hell: '#glass_pane_dark', ice: '#glass_ice', heaven: '#glass_gold' },
   glass_plain: { default: '#glass_plain' },
+  fabric: { default: '#curtain_red' },
   stair: { default: '#tread_steel', industrial: '#tread_dark' },
   carpet: { default: '#carpet_red', cyber: '#carpet_arcade', heaven: '#carpet_blue', nature: '#carpet_green', station: '#carpet_grey' },
   road: { default: '#asphalt_lines' },
@@ -744,7 +752,7 @@ export const SLOT_ROLE = {
   SIDEWALK: 'sidewalk', ROOF: 'roof', GLASS: 'glass', ROCK: 'rock', GROUND: 'ground', FOLIAGE: 'foliage', METAL: 'metal',
   CEIL2: 'ceil', FLOOR3: 'floor3', PITWALL: 'pitwall', WOOD: 'wood', SCREEN: 'screen', PAINT: 'paint', NEON: 'neon',
   CARPET: 'carpet',
-  GLASS_PLAIN: 'glass_plain', CHAIN: 'chain', FENCE: 'fence_panel', CURB: 'curb', STOREFRONT: 'storefront',
+  GLASS_PLAIN: 'glass_plain', FABRIC: 'fabric', CHAIN: 'chain', FENCE: 'fence_panel', CURB: 'curb', STOREFRONT: 'storefront',
   CLADDING: 'cladding', PARAPET: 'parapet', ROAD_DETAIL: 'road_detail', ROOF_DETAIL: 'roof_detail',
   FACADE_RUIN: 'facade_ruin', FLOOR_BORDER: 'floor_border',
 };
@@ -753,7 +761,7 @@ export const SLOT_PRIORITY = [
   'WALL', 'FLOOR', 'CEIL', 'WALL2', 'FLOOR2', 'SIDE', 'ACCENT', 'DOOR', 'PILLAR', 'TRIM', 'PANEL', 'STAIR', 'GRATE',
   'FACADE', 'FACADE2', 'FACADE3', 'ROAD', 'SIDEWALK', 'ROOF', 'GROUND', 'ROCK', 'CEIL2', 'FLOOR3', 'PITWALL', 'CRATE',
   'CRATE2', 'MACHINE', 'SCREEN', 'METAL', 'RAIL', 'BEAM', 'PIPE', 'WOOD', 'CARPET', 'FOLIAGE', 'GLASS', 'LIGHT', 'PAINT',
-  'NEON', 'LAVA', 'POISON', 'WATER', 'SPIKES', 'GLASS_PLAIN', 'CHAIN', 'FENCE', 'CURB', 'STOREFRONT', 'CLADDING',
+  'NEON', 'LAVA', 'POISON', 'WATER', 'SPIKES', 'GLASS_PLAIN', 'FABRIC', 'CHAIN', 'FENCE', 'CURB', 'STOREFRONT', 'CLADDING',
   'PARAPET', 'ROAD_DETAIL', 'ROOF_DETAIL', 'FACADE_RUIN', 'FLOOR_BORDER',
 ];
 // roles drawn with uv 'fit' (one picture per face): uvScale must stay 1
@@ -863,7 +871,9 @@ export const THEME_TEX = {
   sunken_temple: { wall: 'G:moss_gothic_ruin G:stone_moss_bricks 15:2,4', wall2: '15:1,2 G:gothic_quatrefoil 15:1,0', floor: 'G:stone_moss_blocks 15:2,8 G:slab_dark_floor', floor2: 'G:mosaic_floor', accent: 'G:gold_filigree 15:1,2' },
   storm_spire: { wall: 'G:stone_dark_bricks G:gothic_arches 15:0,4', wall2: 'G:iron_spikes_black', floor: 'G:slab_dark_floor 15:0,8', floor2: 'G:wood_grey_planks 21:3,9', side: 'G:stone_dark_bricks 15:0,4' },
   sky_fortress: { wall: 'G:stone_grey_bricks 15:0,9', wall2: 'G:gold_filigree 22:4,0', floor: 'G:slab_dark_floor 15:0,8', floor2: '#cloud', side: 'G:stone_grey_bricks 15:0,9', accent: 'G:marble_columns G:gold_filigree' },
-  haunted_mansion: { wall: 'G:damask_red G:fleur_green', wall2: 'G:wood_dark_planks 22:3,1', floor: 'G:wood_grey_planks 21:3,9', floor2: '#carpet_red', ceil: 'G:wood_dark_planks', accent: 'G:gold_filigree', door: 'G:wood_iron_door 19:2,0', panel: 'G:wood_dark_planks 22:3,1', carpet: '#carpet_red', light: '#lantern', machine: '#bookshelf', side: 'G:wood_dark_planks', trim: 'G:gold_filigree 22:4,0', crate: '15:3,3', glass: '19:0,6 19:1,9 19:0,3' },
+  // mansion: papered and panelled rooms, floorboards, marble halls, flagstones below stairs and
+  // in the cellars, grey stone outside under slate, mossy garden walls, gravel walks
+  haunted_mansion: { wall: 'G:damask_red G:fleur_green', wall2: 'G:wood_dark_planks', floor: '21:3,9', floor2: 'G:slab_dark_floor 21:0,4', floor3: 'G:checker_floor G:marble_black_floor', ceil: '15:3,7 G:ornate_metal_tile', ceil2: 'G:star_carving G:gothic_quatrefoil', accent: 'G:gold_filigree', door: 'G:wood_iron_door 19:2,0', panel: '=WALL2', carpet: '#carpet_red', light: '#lantern', machine: '#bookshelf', side: '=WALL2', trim: '15:1,7 G:gothic_tracery', crate: '15:3,3', crate2: '15:3,4', glass: '19:0,6 19:0,3', facade: 'G:stone_grey_bricks 15:0,0', facade2: 'G:stone_moss_bricks G:stone_moss_blocks', facade3: 'G:plaster_brick_ruin 15:2,2', roof: '20:0,1 20:0,6', sidewalk: '20:1,1', ground: '6:2,1 5:2,5', pitwall: 'G:stone_dark_bricks G:cobweb_stone', pillar: '22:0,9 22:0,1', rock: '15:0,3', beam: '=WALL2', rail: '=WALL2', stair: '=WALL2', wood: 'G:wood_dark_planks', glass_plain: '#glass_pane_dark', fabric: '15:3,9 G:damask_red', paint: '#linen', screen: '#portrait', foliage: '#hedge' },
   cyber_castle: { floor: 'G:ornate_metal_tile 22:3,2', floor2: '#neon_grid_cyan', wall2: '14:0,0 22:4,1', accent: '#neon_grid_pink', light: '#light_cyan', neon: '#sign_cyan', ceil: '22:1,2 14:0,0', side: '22:0,0 G:stone_dark_bricks', machine: 'machine@cyber', screen: 'screen@cyber' },
   // ---- city
   ruined_city: { floor: '21:0,1 21:4,3 21:0,9', floor2: '21:0,8 21:4,1 21:0,2', wall2: 'G:plaster_brick_ruin 21:4,6 18:4,5', ceil: '21:3,4 20:1,7', accent: '21:4,7 21:4,9 21:2,7', legacy: { wall: 'facade_ruin@city facade3@city' } },

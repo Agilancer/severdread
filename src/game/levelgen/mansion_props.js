@@ -14,16 +14,10 @@
 //   frames, ACCENT gold leaf, FOLIAGE hedges and plants, LAVA embers in grates,
 //   CRATE / CRATE2 wine crates and casks, SIDE dark stained wood (piano,
 //   stair stringers, chests), BEAM ceiling beams and ribs, ROOF slates.
-import { TS, FACE, Frame, lbox, lcol, llight, lbar, ltex, CANDLE, FIRE, LAMP } from './mansion_kit.js';
+import { TS, FACE, Frame, lbox, lcol, llight, lbar, ltex, lface, pf, CANDLE, FIRE, LAMP } from './mansion_kit.js';
 import { cylV, cylH } from './foundry_props.js';
 
-const ROT = [3, 2, 0, 1];   // prop +a for a front facing local dir d (a rotation, never a mirror)
-
-// prop frame over the local rectangle a0..a1 x b0..b1 of frame fr, front toward local dir `face`
-export function pf(fr, a0, b0, a1, b1, face) {
-  const [x0, z0, x1, z1] = fr.rect(a0, b0, a1, b1);
-  return new Frame(x0, z0, x1 - x0, z1 - z0, fr.dir(ROT[face]), fr.dir(face));
-}
+export { pf };
 const B = lbox;
 const SOLID = { solid: true };
 const ST = FACE.SIDES | FACE.TOP;
@@ -35,14 +29,16 @@ export function chandelier(deco, x, z, ceil, o = {}) {
   const y = ceil - drop;
   deco.box(x - 0.04, y + 0.3, z - 0.04, x + 0.04, ceil, z + 0.04, TS.PIPE, { faces: FACE.SIDES });
   // two tiers of arms
-  for (const [rr, yy] of [[r, y], [r * 0.6, y + 0.45]]) {
-    deco.box(x - rr, yy, z - 0.05, x + rr, yy + 0.07, z + 0.05, TS.METAL);
-    deco.box(x - 0.05, yy, z - rr, x + 0.05, yy + 0.07, z + rr, TS.METAL);
-    deco.box(x - rr * 0.72, yy, z - rr * 0.72, x + rr * 0.72, yy + 0.05, z + rr * 0.72, TS.METAL, { faces: FACE.TOP | FACE.BOTTOM });
-    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]]) {
+  const tiers = r >= 0.8 ? [[r, y, 8], [r * 0.55, y + 0.45, 4]] : [[r, y, 4]];
+  for (const [rr, yy, n] of tiers) {
+    deco.box(x - rr, yy, z - 0.05, x + rr, yy + 0.07, z + 0.05, TS.METAL, { faces: FACE.SIDES | FACE.TOP | FACE.BOTTOM });
+    deco.box(x - 0.05, yy, z - rr, x + 0.05, yy + 0.07, z + rr, TS.METAL, { faces: FACE.SIDES | FACE.TOP | FACE.BOTTOM });
+    if (n > 4) deco.box(x - rr * 0.72, yy, z - rr * 0.72, x + rr * 0.72, yy + 0.05, z + rr * 0.72, TS.METAL, { faces: FACE.TOP | FACE.BOTTOM });
+    const pts = n > 4 ? [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]] : [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    for (const [dx, dz] of pts) {
       const cx = x + dx * rr, cz = z + dz * rr;
-      deco.box(cx - 0.035, yy + 0.07, cz - 0.035, cx + 0.035, yy + 0.24, cz + 0.035, TS.PAINT, { faces: ST });
-      deco.box(cx - 0.03, yy + 0.24, cz - 0.03, cx + 0.03, yy + 0.33, cz + 0.03, TS.LIGHT, { uv: 'fit', emissive: 1 });
+      deco.box(cx - 0.035, yy + 0.07, cz - 0.035, cx + 0.035, yy + 0.24, cz + 0.035, TS.PAINT, { faces: FACE.SIDES });
+      deco.box(cx - 0.03, yy + 0.24, cz - 0.03, cx + 0.03, yy + 0.33, cz + 0.03, TS.LIGHT, { uv: 'fit', emissive: 1, faces: FACE.SIDES | FACE.TOP });
     }
   }
   deco.box(x - 0.16, y - 0.35, z - 0.16, x + 0.16, y + 0.05, z + 0.16, TS.METAL);
@@ -146,7 +142,7 @@ export function table(deco, p, y, o = {}) {
 export function chair(deco, p, a, b, y, o = {}) {
   const s = 0.46, h = 0.48, back = o.back ?? 1.1;
   B(deco, p, a - s / 2, y + h - 0.06, b - s / 2, a + s / 2, y + h, b + s / 2, TS.WOOD);
-  B(deco, p, a - s / 2 + 0.04, y + h, b - s / 2 + 0.04, a + s / 2 - 0.04, y + h + 0.05, b + s / 2 - 0.04, TS.CARPET, { faces: ST });
+  B(deco, p, a - s / 2 + 0.04, y + h, b - s / 2 + 0.04, a + s / 2 - 0.04, y + h + 0.05, b + s / 2 - 0.04, TS.FABRIC, { faces: ST });
   for (const da of [-s / 2 + 0.02, s / 2 - 0.07]) for (const db of [-s / 2 + 0.02, s / 2 - 0.07]) B(deco, p, a + da, y, b + db, a + da + 0.05, y + h - 0.06, b + db + 0.05, TS.WOOD, { faces: FACE.SIDES });
   B(deco, p, a - s / 2, y + h, b - s / 2, a + s / 2, y + back, b - s / 2 + 0.06, TS.WOOD);
   if (o.solid) lcol(deco, p, a - s / 2, y, b - s / 2, a + s / 2, y + h, b + s / 2, { obstacle: false });
@@ -154,18 +150,18 @@ export function chair(deco, p, a, b, y, o = {}) {
 // upholstered armchair facing +b
 export function armchair(deco, p, a, b, y) {
   const s = 0.8;
-  B(deco, p, a - s / 2, y + 0.1, b - s / 2, a + s / 2, y + 0.45, b + s / 2, TS.CARPET, { solid: true });
-  B(deco, p, a - s / 2, y + 0.45, b - s / 2, a + s / 2, y + 1.05, b - s / 2 + 0.18, TS.CARPET);
-  for (const da of [-s / 2, s / 2 - 0.14]) B(deco, p, a + da, y + 0.45, b - s / 2 + 0.18, a + da + 0.14, y + 0.66, b + s / 2, TS.CARPET);
+  B(deco, p, a - s / 2, y + 0.1, b - s / 2, a + s / 2, y + 0.45, b + s / 2, TS.FABRIC, { solid: true });
+  B(deco, p, a - s / 2, y + 0.45, b - s / 2, a + s / 2, y + 1.05, b - s / 2 + 0.18, TS.FABRIC);
+  for (const da of [-s / 2, s / 2 - 0.14]) B(deco, p, a + da, y + 0.45, b - s / 2 + 0.18, a + da + 0.14, y + 0.66, b + s / 2, TS.FABRIC);
   for (const da of [-s / 2 + 0.04, s / 2 - 0.1]) for (const db of [-s / 2 + 0.04, s / 2 - 0.1]) B(deco, p, a + da, y, b + db, a + da + 0.06, y + 0.1, b + db + 0.06, TS.WOOD, { faces: FACE.SIDES });
 }
 // sofa / settee along the prop frame (back at b = 0)
 export function sofa(deco, p, y) {
   const w = p.la, d = Math.min(p.lb, 0.85);
-  B(deco, p, 0, y + 0.12, 0, w, y + 0.45, d, TS.CARPET, { solid: true });
-  B(deco, p, 0, y + 0.45, 0, w, y + 1.0, 0.2, TS.CARPET);
-  B(deco, p, 0, y + 0.45, 0.2, 0.16, y + 0.68, d, TS.CARPET);
-  B(deco, p, w - 0.16, y + 0.45, 0.2, w, y + 0.68, d, TS.CARPET);
+  B(deco, p, 0, y + 0.12, 0, w, y + 0.45, d, TS.FABRIC, { solid: true });
+  B(deco, p, 0, y + 0.45, 0, w, y + 1.0, 0.2, TS.FABRIC);
+  B(deco, p, 0, y + 0.45, 0.2, 0.16, y + 0.68, d, TS.FABRIC);
+  B(deco, p, w - 0.16, y + 0.45, 0.2, w, y + 0.68, d, TS.FABRIC);
   B(deco, p, 0.05, y, 0.05, w - 0.05, y + 0.12, d - 0.05, TS.WOOD, { faces: FACE.SIDES });
 }
 // long table with chairs down both sides (dining hall, servants' hall).
@@ -184,7 +180,7 @@ export function diningSet(deco, p, y, o = {}) {
   if (o.heads !== false) {
     for (const [a, side] of [[0.15, -1], [L - 0.15, 1]]) {
       B(deco, p, a - 0.23, y + 0.42, D / 2 - 0.23, a + 0.23, y + 0.48, D / 2 + 0.23, TS.WOOD);
-      B(deco, p, a - 0.23, y + 0.48, D / 2 - 0.23, a + 0.23, y + 0.53, D / 2 + 0.23, TS.CARPET, { faces: ST });
+      B(deco, p, a - 0.23, y + 0.48, D / 2 - 0.23, a + 0.23, y + 0.53, D / 2 + 0.23, TS.FABRIC, { faces: ST });
       const ba = side < 0 ? a - 0.23 : a + 0.17;
       B(deco, p, ba, y + 0.48, D / 2 - 0.23, ba + 0.06, y + 1.35, D / 2 + 0.23, TS.WOOD);
       for (const db of [-0.21, 0.16]) B(deco, p, a - 0.21, y, D / 2 + db, a - 0.16, y + 0.42, D / 2 + db + 0.05, TS.WOOD, { faces: FACE.SIDES });
@@ -203,7 +199,7 @@ export function diningSet(deco, p, y, o = {}) {
 function chairBack(deco, p, a, b, y, back) {
   const s = 0.46, h = 0.48;
   B(deco, p, a - s / 2, y + h - 0.06, b - s / 2, a + s / 2, y + h, b + s / 2, TS.WOOD);
-  B(deco, p, a - s / 2 + 0.04, y + h, b - s / 2 + 0.04, a + s / 2 - 0.04, y + h + 0.05, b + s / 2 - 0.04, TS.CARPET, { faces: ST });
+  B(deco, p, a - s / 2 + 0.04, y + h, b - s / 2 + 0.04, a + s / 2 - 0.04, y + h + 0.05, b + s / 2 - 0.04, TS.FABRIC, { faces: ST });
   for (const da of [-s / 2 + 0.02, s / 2 - 0.07]) for (const db of [-s / 2 + 0.02, s / 2 - 0.07]) B(deco, p, a + da, y, b + db, a + da + 0.05, y + h - 0.06, b + db + 0.05, TS.WOOD, { faces: FACE.SIDES });
   B(deco, p, a - s / 2, y + h, b + s / 2 - 0.06, a + s / 2, y + back, b + s / 2, TS.WOOD);
 }
@@ -216,7 +212,7 @@ export function bed(deco, p, y, o = {}) {
   const w = p.la, L = p.lb, posts = o.posts !== false;
   B(deco, p, 0.05, y + 0.2, 0.1, w - 0.05, y + 0.45, L - 0.05, TS.WOOD, { solid: true });
   B(deco, p, 0.1, y + 0.45, 0.15, w - 0.1, y + 0.68, L - 0.1, TS.PAINT, { faces: ST });
-  B(deco, p, 0.08, y + 0.6, 0.75, w - 0.08, y + 0.72, L - 0.08, TS.CARPET, { faces: ST });
+  B(deco, p, 0.08, y + 0.6, 0.75, w - 0.08, y + 0.72, L - 0.08, TS.FABRIC, { faces: ST });
   for (const a of [0.2, w / 2 + 0.05]) B(deco, p, a, y + 0.68, 0.22, a + w / 2 - 0.25, y + 0.84, 0.62, TS.PAINT, { faces: ST });
   // headboard / footboard
   B(deco, p, 0, y, 0, w, y + (o.head ?? 1.45), 0.1, TS.WOOD);
@@ -226,10 +222,10 @@ export function bed(deco, p, y, o = {}) {
     for (const [a, b] of [[0, 0], [w - 0.1, 0], [0, L - 0.1], [w - 0.1, L - 0.1]]) B(deco, p, a, y, b, a + 0.1, y + ph, b + 0.1, TS.WOOD, { faces: FACE.SIDES });
     // canopy frame and drapes
     B(deco, p, -0.02, y + ph, -0.02, w + 0.02, y + ph + 0.12, L + 0.02, TS.WOOD);
-    B(deco, p, 0, y + ph - 0.45, 0, 0.04, y + ph, L, TS.CARPET, { faces: FACE.SIDES });
-    B(deco, p, w - 0.04, y + ph - 0.45, 0, w, y + ph, L, TS.CARPET, { faces: FACE.SIDES });
-    B(deco, p, 0, y + ph - 0.45, L - 0.04, w, y + ph, L, TS.CARPET, { faces: FACE.SIDES });
-    for (const a of [0.02, w - 0.22]) B(deco, p, a, y + 0.5, L - 0.2, a + 0.2, y + ph, L - 0.05, TS.CARPET, { faces: FACE.SIDES });
+    B(deco, p, 0, y + ph - 0.45, 0, 0.04, y + ph, L, TS.FABRIC, { faces: FACE.SIDES });
+    B(deco, p, w - 0.04, y + ph - 0.45, 0, w, y + ph, L, TS.FABRIC, { faces: FACE.SIDES });
+    B(deco, p, 0, y + ph - 0.45, L - 0.04, w, y + ph, L, TS.FABRIC, { faces: FACE.SIDES });
+    for (const a of [0.02, w - 0.22]) B(deco, p, a, y + 0.5, L - 0.2, a + 0.2, y + ph, L - 0.05, TS.FABRIC, { faces: FACE.SIDES });
   }
 }
 export function crib(deco, p, y) {
@@ -330,7 +326,7 @@ export function painting(deco, p, y0, y1, o = {}) {
 export function curtains(deco, p, y0, y1) {
   const w = p.la;
   B(deco, p, -0.05, y1, 0, w + 0.05, y1 + 0.2, 0.14, TS.TRIM);
-  for (const a of [0, w - 0.32]) B(deco, p, a, y0, 0.03, a + 0.32, y1, 0.13, TS.CARPET);
+  for (const a of [0, w - 0.32]) B(deco, p, a, y0, 0.03, a + 0.32, y1, 0.13, TS.FABRIC);
 }
 export function rug(g, fr, a0, b0, a1, b1, tex = TS.CARPET) {
   for (let b = b0; b < b1; b++) for (let a = a0; a < a1; a++) { const i = fr.idx(g, a, b); if (i >= 0 && g.type[i] && !g.stairDir[i]) g.floorTex[i] = tex; }
@@ -368,9 +364,9 @@ export function shelves(deco, p, y, h = 2, o = {}) {
   let k = 0;
   for (let sy = 0.35; sy < h; sy += 0.55, k++) {
     B(deco, p, 0, y + sy, 0, w, y + sy + 0.04, d, TS.WOOD);
-    for (let a = 0.12; a < w - 0.12; a += 0.22 + ((k + a * 7) % 0.1)) {
+    for (let a = 0.12; a < w - 0.15; a += 0.3 + ((k + a * 7) % 0.12)) {
       const hh = 0.14 + ((a * 17 + k) % 0.12);
-      B(deco, p, a, y + sy + 0.04, 0.08, a + 0.12, y + sy + 0.04 + hh, d - 0.08, o.tex ?? (((a * 10) | 0) % 3 === 0 ? TS.GLASS : TS.ROCK), { emissive: 0.05 });
+      B(deco, p, a, y + sy + 0.04, 0.08, a + 0.16, y + sy + 0.04 + hh, d - 0.08, o.tex ?? (((a * 10) | 0) % 3 === 0 ? TS.CRATE2 : TS.ROCK), { faces: ST });
     }
   }
   lcol(deco, p, 0, y, 0, w, y + h, d);
@@ -405,7 +401,7 @@ export function wineRack(deco, p, y, h = 2.1) {
   for (const a of [0, w - 0.06]) B(deco, p, a, y, 0, a + 0.06, y + h, d, TS.WOOD, { faces: FACE.SIDES });
   for (let sy = 0.05; sy < h - 0.1; sy += 0.3) {
     B(deco, p, 0, y + sy, 0, w, y + sy + 0.04, d, TS.WOOD);
-    for (let a = 0.1; a < w - 0.1; a += 0.17) B(deco, p, a, y + sy + 0.06, d - 0.06, a + 0.09, y + sy + 0.15, d - 0.01, TS.GLASS, { emissive: 0.05 });
+    for (let a = 0.12; a < w - 0.1; a += 0.26) B(deco, p, a, y + sy + 0.06, d - 0.06, a + 0.12, y + sy + 0.17, d - 0.01, TS.CRATE2, { faces: lface(p, 2), lightMul: 0.6 });
   }
   B(deco, p, 0, y + h, 0, w, y + h + 0.05, d, TS.WOOD);
   lcol(deco, p, 0, y, 0, w, y + h, d);
@@ -417,6 +413,12 @@ export function sarcophagus(deco, p, y, o = {}) {
   const w = p.la, L = p.lb, h = o.h ?? 0.85;
   B(deco, p, -0.08, y, -0.08, w + 0.08, y + 0.18, L + 0.08, TS.PILLAR, SOLID);
   B(deco, p, 0, y + 0.18, 0, w, y + h, L, o.tex ?? TS.ROCK, SOLID);
+  if (o.open) {
+    // the lid slid half off, the dark inside showing
+    B(deco, p, 0.08, y + h - 0.02, 0.08, w - 0.08, y + h, L - 0.08, TS.PITWALL, { faces: FACE.TOP, lightMul: 0.3 });
+    B(deco, p, -0.05 + w * 0.35, y + h, L * 0.3, w + 0.05 + w * 0.35, y + h + 0.12, L + 0.25, TS.ROCK);
+    return;
+  }
   B(deco, p, -0.05, y + h, -0.05, w + 0.05, y + h + 0.12, L + 0.05, TS.ROCK);
   if (o.effigy !== false) {
     B(deco, p, w / 2 - 0.18, y + h + 0.12, 0.25, w / 2 + 0.18, y + h + 0.32, L - 0.3, TS.ROCK);
@@ -574,10 +576,335 @@ export function ironFence(deco, x0, z0, x1, z1, y, h = 1.6) {
   const a = horiz ? Math.min(x0, x1) : Math.min(z0, z1);
   const L = horiz ? z0 : x0;
   const seg = (p0, p1, y0, y1, th) => (horiz ? deco.box(p0, y0, L - th / 2, p1, y1, L + th / 2, TS.METAL) : deco.box(L - th / 2, y0, p0, L + th / 2, y1, p1, TS.METAL));
-  for (const yy of [y + 0.15, y + h - 0.25]) seg(a, a + len, yy, yy + 0.05, 0.05);
-  for (let t = 0.1; t < len; t += 0.18) seg(a + t - 0.015, a + t + 0.015, y, y + h, 0.03);
-  for (let t = 0.1; t < len; t += 0.18) seg(a + t - 0.03, a + t + 0.03, y + h, y + h + 0.1, 0.05);
-  for (const t of [0, len]) seg(a + t - 0.06, a + t + 0.06, y, y + h + 0.2, 0.12);
+  const seg2 = (p0, p1, y0, y1, th, faces) => (horiz ? deco.box(p0, y0, L - th / 2, p1, y1, L + th / 2, TS.METAL, { faces }) : deco.box(L - th / 2, y0, p0, L + th / 2, y1, p1, TS.METAL, { faces }));
+  for (const yy of [y + 0.15, y + h - 0.25]) seg2(a, a + len, yy, yy + 0.05, 0.05, FACE.SIDES | FACE.TOP);
+  for (let t = 0.2; t < len - 0.05; t += 0.36) seg2(a + t - 0.02, a + t + 0.02, y, y + h + 0.12, 0.035, FACE.SIDES | FACE.TOP);
+  for (const t of [0, len]) seg2(a + t - 0.06, a + t + 0.06, y, y + h + 0.2, 0.12, FACE.SIDES | FACE.TOP);
+}
+
+// ---------------------------------------------------------------- more fittings
+// square newel post at the foot of a flight, an oil lamp on top
+export function newel(deco, x, z, y, lamp = false) {
+  deco.box(x - 0.14, y, z - 0.14, x + 0.14, y + 1.15, z + 0.14, TS.WOOD, SOLID);
+  deco.box(x - 0.19, y + 1.15, z - 0.19, x + 0.19, y + 1.27, z + 0.19, TS.TRIM);
+  if (lamp) {
+    deco.box(x - 0.06, y + 1.27, z - 0.06, x + 0.06, y + 1.6, z + 0.06, TS.METAL);
+    deco.box(x - 0.13, y + 1.6, z - 0.13, x + 0.13, y + 1.9, z + 0.13, TS.LIGHT, { uv: 'fit', emissive: 1 });
+    deco.box(x - 0.16, y + 1.9, z - 0.16, x + 0.16, y + 1.95, z + 0.16, TS.METAL);
+    deco.light(x, y + 1.8, z, LAMP, 5.5, { flicker: true });
+  }
+}
+// two-candle iron sconce on wall ld of local cell (a, b)
+export function sconce(deco, fr, a, b, ld, y, o = {}) {
+  const wd = fr.dir(ld), x = fr.cx(a, b) + 0.5, z = fr.cz(a, b) + 0.5;
+  const dx = [1, -1, 0, 0][wd], dz = [0, 0, 1, -1][wd];
+  const wx = x + dx * 0.5, wz = z + dz * 0.5;             // the wall plane
+  const ax = dx === 0, w = 0.32;                          // along the wall: x when the wall faces z
+  const bx = (t0, t1) => [wx - dx * t1, wx - dx * t0];    // depth into the room
+  const bz = (t0, t1) => [wz - dz * t1, wz - dz * t0];
+  // back plate and arm
+  const plate = ax ? [x - 0.07, wz - dz * 0.03, x + 0.07, wz] : [wx - dx * 0.03, z - 0.07, wx, z + 0.07];
+  deco.box(Math.min(plate[0], plate[2]), y - 0.25, Math.min(plate[1], plate[3]), Math.max(plate[0], plate[2]), y + 0.1, Math.max(plate[1], plate[3]), TS.METAL);
+  const [ax0, ax1] = ax ? [x - w / 2, x + w / 2] : bx(0.02, 0.2);
+  const [az0, az1] = ax ? bz(0.02, 0.2) : [z - w / 2, z + w / 2];
+  deco.box(Math.min(ax0, ax1), y - 0.04, Math.min(az0, az1), Math.max(ax0, ax1), y, Math.max(az0, az1), TS.METAL);
+  for (const t of [-1, 1]) {
+    const cx = ax ? x + t * 0.13 : wx - dx * 0.16, cz = ax ? wz - dz * 0.16 : z + t * 0.13;
+    deco.box(cx - 0.025, y, cz - 0.025, cx + 0.025, y + 0.16, cz + 0.025, TS.PAINT, { faces: FACE.SIDES });
+    deco.box(cx - 0.02, y + 0.16, cz - 0.02, cx + 0.02, y + 0.23, cz + 0.02, TS.LIGHT, { uv: 'fit', emissive: 1, faces: FACE.SIDES | FACE.TOP });
+  }
+  deco.light(wx - dx * 0.3, y + 0.2, wz - dz * 0.3, o.color ?? CANDLE, o.radius ?? 5, { flicker: true });
+}
+// round pedestal table at world (x, z), radius r; an urn of dead flowers / a tea set
+export function roundTable(deco, x, z, y, r, o = {}) {
+  const tex = o.iron ? TS.METAL : TS.WOOD, h = o.h ?? 0.78;
+  cylV(deco, x, z, y + h - 0.06, y + h, r, tex);
+  deco.box(x - 0.07, y + 0.1, z - 0.07, x + 0.07, y + h - 0.06, z + 0.07, tex, { faces: FACE.SIDES });
+  deco.box(x - r * 0.5, y, z - 0.06, x + r * 0.5, y + 0.1, z + 0.06, tex);
+  deco.box(x - 0.06, y, z - r * 0.5, x + 0.06, y + 0.1, z + r * 0.5, tex);
+  deco.collider(x - r * 0.7, y, z - r * 0.7, x + r * 0.7, y + h, z + r * 0.7);
+  const t = y + h;
+  if (o.urn) {
+    cylV(deco, x, z, t, t + 0.35, 0.16, TS.PILLAR);
+    cylV(deco, x, z, t + 0.35, t + 0.42, 0.21, TS.PILLAR);
+    for (let k = 0; k < 7; k++) {
+      const ang = (k / 7) * Math.PI * 2, l = 0.25 + (k % 3) * 0.08;
+      deco.bar([x, t + 0.4, z], [x + Math.cos(ang) * l, t + 0.75 + (k % 2) * 0.2, z + Math.sin(ang) * l], 0.025, 0.025, TS.WOOD);
+      deco.box(x + Math.cos(ang) * l - 0.06, t + 0.72 + (k % 2) * 0.2, z + Math.sin(ang) * l - 0.06, x + Math.cos(ang) * l + 0.06, t + 0.82 + (k % 2) * 0.2, z + Math.sin(ang) * l + 0.06, k % 3 ? TS.FOLIAGE : TS.CARPET);
+    }
+  }
+  if (o.teaset) {
+    cylV(deco, x, z, t, t + 0.18, 0.08, TS.PAINT);
+    for (let k = 0; k < 3; k++) { const ang = (k / 3) * Math.PI * 2 + 0.4; cylV(deco, x + Math.cos(ang) * r * 0.6, z + Math.sin(ang) * r * 0.6, t, t + 0.07, 0.05, TS.PAINT); }
+  }
+}
+export function musicStand(deco, p, a, b, y) {
+  B(deco, p, a - 0.02, y, b - 0.02, a + 0.02, y + 1.0, b + 0.02, TS.METAL, { faces: FACE.SIDES });
+  B(deco, p, a - 0.2, y, b - 0.02, a + 0.2, y + 0.03, b + 0.02, TS.METAL);
+  B(deco, p, a - 0.24, y + 1.0, b - 0.03, a + 0.24, y + 1.32, b + 0.0, TS.PAINT);
+}
+// tall gilt mirror on a wall (prop frame: la = width, b = 0 on the wall)
+export function mirror(deco, p, y0, y1) {
+  const w = p.la;
+  B(deco, p, 0, y0, 0, w, y1, 0.06, TS.TRIM);
+  B(deco, p, 0.1, y0 + 0.1, 0.06, w - 0.1, y1 - 0.1, 0.075, TS.GLASS, { uv: 'fit', emissive: 0.3, faces: FACE.SIDES });
+  B(deco, p, w / 2 - 0.3, y1, 0, w / 2 + 0.3, y1 + 0.35, 0.08, TS.ACCENT, { uv: 'fit' });
+}
+// a few books lying on a table top (prop frame position a, b)
+export function books(deco, p, a, b, y) {
+  const tex = [TS.CARPET, TS.WOOD, TS.PAINT];
+  for (let k = 0; k < 3; k++) B(deco, p, a + k * 0.05 - 0.15, y + k * 0.05, b - 0.12 + k * 0.02, a + k * 0.05 + 0.13, y + k * 0.05 + 0.05, b + 0.1 + k * 0.02, tex[k], { faces: ST });
+  B(deco, p, a + 0.25, y, b - 0.14, a + 0.6, y + 0.02, b + 0.12, TS.PAINT, { faces: ST });
+}
+export function globe(deco, x, z, y) {
+  for (const [dx, dz] of [[-0.22, -0.22], [0.22, -0.22], [0, 0.26]]) deco.bar([x + dx, y, z + dz], [x, y + 0.6, z], 0.05, 0.05, TS.WOOD);
+  cylV(deco, x, z, y + 0.6, y + 0.66, 0.36, TS.WOOD);
+  cylV(deco, x, z, y + 0.66, y + 1.26, 0.3, TS.PAINT);
+  deco.box(x - 0.02, y + 0.6, z - 0.35, x + 0.02, y + 1.34, z + 0.35, TS.ACCENT, { faces: FACE.SIDES });
+  deco.collider(x - 0.36, y, z - 0.36, x + 0.36, y + 1.3, z + 0.36);
+}
+// writing desk with drawers, papers, an ink stand and a candle (front toward +b)
+export function desk(deco, p, y) {
+  const w = p.la, d = Math.min(p.lb, 0.8);
+  B(deco, p, 0, y + 0.72, 0, w, y + 0.78, d, TS.WOOD, SOLID);
+  for (const a of [0, w - 0.45]) B(deco, p, a, y, 0, a + 0.45, y + 0.72, d - 0.05, ltex(p, TS.WOOD, TS.CRATE2, 2), { uv: 'fit' });
+  B(deco, p, 0.5, y + 0.6, 0.05, w - 0.5, y + 0.72, d - 0.05, TS.WOOD);
+  B(deco, p, 0.3, y + 0.78, 0.15, 0.85, y + 0.8, 0.5, TS.PAINT, { faces: ST });
+  B(deco, p, w * 0.6, y + 0.78, 0.12, w * 0.6 + 0.12, y + 0.88, 0.24, TS.METAL);
+  candles(deco, p.px(w - 0.25, 0.25), p.pz(w - 0.25, 0.25), y + 0.78, 1, { radius: 4 });
+}
+// stag's head on a shield (prop frame on the wall)
+export function trophy(deco, p, y) {
+  const w = p.la, c = w / 2;
+  B(deco, p, c - 0.25, y - 0.3, 0, c + 0.25, y + 0.3, 0.05, TS.WOOD);
+  B(deco, p, c - 0.12, y - 0.2, 0.05, c + 0.12, y + 0.15, 0.45, TS.WOOD);
+  B(deco, p, c - 0.08, y - 0.3, 0.3, c + 0.08, y - 0.12, 0.55, TS.WOOD);
+  for (const sa of [-1, 1]) {
+    lbar(deco, p, c + sa * 0.08, y + 0.15, 0.25, c + sa * 0.45, y + 0.75, 0.3, 0.04, 0.04, TS.PAINT);
+    lbar(deco, p, c + sa * 0.3, y + 0.48, 0.28, c + sa * 0.22, y + 0.85, 0.35, 0.03, 0.03, TS.PAINT);
+  }
+}
+// low stone kerb round a local rectangle (pool rims)
+export function kerb(deco, fr, a0, b0, a1, b1, y, h = 0.4) {
+  const t = 0.18;
+  lbox(deco, fr, a0 - t, y, b0 - t, a1 + t, y + h, b0, TS.PILLAR);
+  lbox(deco, fr, a0 - t, y, b1, a1 + t, y + h, b1 + t, TS.PILLAR);
+  lbox(deco, fr, a0 - t, y, b0, a0, y + h, b1, TS.PILLAR);
+  lbox(deco, fr, a1, y, b0, a1 + t, y + h, b1, TS.PILLAR);
+}
+// stone fountain: a pedestal with a bowl, a jet and water in the bowl
+export function fountain(deco, x, z, y, s = 1, o = {}) {
+  cylV(deco, x, z, y, y + 0.9 * s, 0.22 * s, TS.PILLAR, { solid: true });
+  cylV(deco, x, z, y + 0.9 * s, y + 1.05 * s, 0.75 * s, TS.PILLAR);
+  cylV(deco, x, z, y + 1.05 * s, y + 1.2 * s, 0.75 * s, TS.PILLAR, { faces: FACE.SIDES });
+  cylV(deco, x, z, y + 1.1 * s, y + 1.14 * s, 0.68 * s, TS.WATER, { faces: FACE.TOP });
+  cylV(deco, x, z, y + 1.2 * s, y + 1.8 * s, 0.1 * s, TS.PILLAR);
+  cylV(deco, x, z, y + 1.8 * s, y + 1.9 * s, 0.3 * s, TS.PILLAR);
+  cylV(deco, x, z, y + 1.9 * s, y + 2.15 * s, 0.05 * s, TS.WATER);
+  if (o.figure) {
+    cylV(deco, x, z, y + 1.9 * s, y + 2.6 * s, 0.13 * s, TS.ROCK);
+    cylV(deco, x, z, y + 2.6 * s, y + 2.8 * s, 0.09 * s, TS.ROCK);
+  }
+}
+// planting bed against a wall (prop frame), soil and overgrown plants
+export function planterBed(deco, p, y, rng) {
+  const w = p.la, d = Math.min(p.lb, 0.8);
+  B(deco, p, 0, y, 0, w, y + 0.55, d, TS.PILLAR, SOLID);
+  B(deco, p, 0.06, y + 0.5, 0.06, w - 0.06, y + 0.56, d - 0.06, TS.GROUND, { faces: FACE.TOP });
+  for (let a = 0.25; a < w - 0.2; a += 0.45) {
+    const h = rng.float(0.4, 1.3), r = rng.float(0.18, 0.32);
+    B(deco, p, a - r, y + 0.55, d / 2 - r, a + r, y + 0.55 + h, d / 2 + r, TS.FOLIAGE);
+  }
+}
+// hanging iron lantern on a chain at world (x, z), lamp at height y
+export function lantern(deco, x, z, y, o = {}) {
+  deco.box(x - 0.02, y + 0.42, z - 0.02, x + 0.02, y + (o.chain ?? 0.9), z + 0.02, TS.PIPE, { faces: FACE.SIDES });
+  deco.box(x - 0.17, y + 0.36, z - 0.17, x + 0.17, y + 0.42, z + 0.17, TS.METAL);
+  deco.box(x - 0.13, y, z - 0.13, x + 0.13, y + 0.36, z + 0.13, TS.LIGHT, { uv: 'fit', emissive: 1 });
+  deco.box(x - 0.15, y - 0.05, z - 0.15, x + 0.15, y, z + 0.15, TS.METAL);
+  deco.light(x, y + 0.1, z, o.color ?? LAMP, o.radius ?? 6, { flicker: true });
+}
+// crocks, jars and a loaf on a table top (prop frame t)
+export function crocks(deco, t, y, rng) {
+  for (let a = 0.3; a < t.la - 0.2; a += rng.float(0.35, 0.6)) {
+    const b = rng.float(0.25, t.lb - 0.25), r = rng.float(0.08, 0.14), h = rng.float(0.12, 0.3);
+    cylV(deco, t.px(a, b), t.pz(a, b), y, y + h, r, rng.pick([TS.ROCK, TS.CRATE2, TS.METAL]));
+  }
+}
+// plate rack on the wall: two rails with plates standing in them
+export function plateRack(deco, p, y) {
+  const w = p.la;
+  B(deco, p, 0, y, 0, w, y + 0.05, 0.22, TS.WOOD);
+  B(deco, p, 0, y + 0.55, 0, w, y + 0.6, 0.22, TS.WOOD);
+  for (let a = 0.12; a < w - 0.1; a += 0.16) B(deco, p, a, y + 0.05, 0.04, a + 0.03, y + 0.4, 0.18, TS.PAINT, { faces: FACE.SIDES });
+}
+// butcher's block with a cleaver
+export function block(deco, x, z, y) {
+  deco.box(x - 0.36, y + 0.15, z - 0.36, x + 0.36, y + 0.86, z + 0.36, TS.WOOD, SOLID);
+  for (const [dx, dz] of [[-0.3, -0.3], [0.24, -0.3], [-0.3, 0.24], [0.24, 0.24]]) deco.box(x + dx, y, z + dz, x + dx + 0.06, y + 0.15, z + dz + 0.06, TS.WOOD, { faces: FACE.SIDES });
+  deco.box(x - 0.05, y + 0.86, z - 0.2, x + 0.05, y + 0.88, z + 0.05, TS.METAL);
+  deco.box(x - 0.02, y + 0.86, z + 0.05, x + 0.02, y + 0.9, z + 0.25, TS.WOOD);
+}
+// row of coat pegs with coats and hats (prop frame on the wall)
+export function coatPegs(deco, p, y) {
+  const w = p.la;
+  B(deco, p, 0.1, y, 0, w - 0.1, y + 0.12, 0.04, TS.WOOD);
+  for (let a = 0.35; a < w - 0.2; a += 0.55) {
+    B(deco, p, a - 0.02, y + 0.03, 0.04, a + 0.02, y + 0.07, 0.14, TS.METAL);
+    B(deco, p, a - 0.2, y - 0.95, 0.05, a + 0.2, y + 0.02, 0.2, TS.FABRIC, { faces: FACE.SIDES | FACE.BOTTOM });
+  }
+}
+// servants' bell board: rows of bells under labels
+export function bellBoard(deco, p, y) {
+  const w = p.la;
+  B(deco, p, 0, y, 0, w, y + 0.8, 0.05, TS.WOOD);
+  for (let r = 0; r < 2; r++) for (let a = 0.2; a < w - 0.1; a += 0.3) {
+    B(deco, p, a - 0.06, y + 0.15 + r * 0.38, 0.05, a + 0.06, y + 0.27 + r * 0.38, 0.12, TS.ACCENT);
+    B(deco, p, a - 0.1, y + 0.29 + r * 0.38, 0.05, a + 0.1, y + 0.36 + r * 0.38, 0.06, TS.PAINT, { faces: FACE.SIDES });
+  }
+}
+// laundry copper: a brick base with its fire door and the copper pan on top
+export function copper(deco, p, y) {
+  const w = p.la, d = p.lb;
+  B(deco, p, 0, y, 0, w, y + 0.9, d, TS.FACADE3, SOLID);
+  B(deco, p, w / 2 - 0.25, y + 0.1, d, w / 2 + 0.25, y + 0.45, d + 0.02, TS.LAVA, { emissive: 0.8 });
+  cylV(deco, p.px(w / 2, d / 2), p.pz(w / 2, d / 2), y + 0.9, y + 1.15, Math.min(w, d) * 0.4, TS.METAL);
+  cylV(deco, p.px(w / 2, d / 2), p.pz(w / 2, d / 2), y + 1.12, y + 1.14, Math.min(w, d) * 0.34, TS.WATER, { faces: FACE.TOP });
+  B(deco, p, w - 0.3, y + 0.9, 0, w - 0.1, y + 3.2, 0.2, TS.FACADE3, { faces: FACE.SIDES });
+  llight(deco, p, w / 2, y + 0.4, d + 0.4, FIRE, 4, { flicker: true });
+}
+// horizontal cylinder along a prop frame's a axis (a0..a1 at b), centre height cy
+export function pcylH(deco, p, a0, a1, b, cy, r, tex, o) {
+  const x0 = p.px(a0, b), z0 = p.pz(a0, b), x1 = p.px(a1, b), z1 = p.pz(a1, b);
+  if (Math.abs(x1 - x0) > Math.abs(z1 - z0)) cylH(deco, Math.min(x0, x1), Math.max(x0, x1), cy, z0, r, true, tex, o);
+  else cylH(deco, Math.min(z0, z1), Math.max(z0, z1), cy, x0, r, false, tex, o);
+}
+// box mangle: iron frame, two wooden rollers, the hand wheel
+export function mangle(deco, p, y) {
+  B(deco, p, 0.15, y, 0.25, 0.85, y + 0.08, 0.75, TS.METAL, SOLID);
+  for (const a of [0.15, 0.78]) B(deco, p, a, y, 0.35, a + 0.07, y + 1.1, 0.65, TS.METAL);
+  for (const yy of [0.75, 0.92]) pcylH(deco, p, 0.22, 0.78, 0.5, y + yy, 0.08, TS.WOOD);
+  B(deco, p, 0.85, y + 0.55, 0.45, 0.88, y + 1.15, 0.55, TS.METAL);
+}
+// drying line across a room with sheets hanging from it (local line along a at b)
+export function dryingLine(deco, fr, a0, b, a1, y, rng) {
+  lbox(deco, fr, a0, y, b - 0.015, a1, y + 0.03, b + 0.015, TS.PIPE);
+  for (let a = a0 + 0.3; a < a1 - 0.6; a += rng.float(0.9, 1.6)) {
+    const w = rng.float(0.5, 1.0), h = rng.float(0.8, 1.4);
+    lbox(deco, fr, a, y - h, b - 0.02, Math.min(a1 - 0.1, a + w), y, b + 0.02, TS.PAINT);
+  }
+}
+// broken floorboards jutting over the edge of a collapsed floor
+export function brokenBoards(deco, fr, a0, b0, a1, b1, y, rng) {
+  for (let k = 0; k < 4; k++) {
+    const side = rng.int(0, 3), t = rng.float(0.2, 0.8), len = rng.float(0.3, 0.7);
+    const [x0, z0, x1, z1] = side === 0 ? [a0, b0 + t * (b1 - b0) - 0.1, a0 + len, b0 + t * (b1 - b0) + 0.1]
+      : side === 1 ? [a1 - len, b0 + t * (b1 - b0) - 0.1, a1, b0 + t * (b1 - b0) + 0.1]
+        : side === 2 ? [a0 + t * (a1 - a0) - 0.1, b0, a0 + t * (a1 - a0) + 0.1, b0 + len]
+          : [a0 + t * (a1 - a0) - 0.1, b1 - len, a0 + t * (a1 - a0) + 0.1, b1];
+    lbox(deco, fr, x0, y - 0.06, z0, x1, y, z1, TS.WOOD);
+  }
+}
+export function bottles(deco, t, y) {
+  for (let k = 0; k < 4; k++) {
+    const a = 0.3 + k * 0.28, b = 0.3 + (k % 2) * 0.35;
+    cylV(deco, t.px(a, b), t.pz(a, b), y, y + 0.26, 0.04, TS.GLASS, { emissive: 0.1 });
+    cylV(deco, t.px(a, b), t.pz(a, b), y + 0.26, y + 0.34, 0.015, TS.GLASS);
+  }
+}
+// iron brazier on a tripod with glowing coals
+export function brazier(deco, x, z, y) {
+  for (const [dx, dz] of [[-0.25, -0.2], [0.25, -0.2], [0, 0.28]]) deco.bar([x + dx, y, z + dz], [x, y + 0.85, z], 0.05, 0.05, TS.METAL);
+  cylV(deco, x, z, y + 0.85, y + 1.1, 0.34, TS.METAL);
+  cylV(deco, x, z, y + 1.06, y + 1.12, 0.28, TS.LAVA, { emissive: 1, faces: FACE.TOP });
+  deco.collider(x - 0.3, y, z - 0.3, x + 0.3, y + 1.1, z + 0.3);
+  deco.light(x, y + 1.5, z, FIRE, 6, { flicker: true });
+}
+// burial niches in a wall: stone frames with coffin ends and skulls (prop frame on the wall)
+export function niches(deco, p, y0, y1, rng) {
+  const w = p.la, rows = Math.max(2, Math.floor((y1 - y0 - 0.3) / 0.85));
+  B(deco, p, 0, y0, 0, w, y1, 0.08, TS.PITWALL);
+  for (let r = 0; r < rows; r++) {
+    const yy = y0 + 0.3 + r * 0.85;
+    B(deco, p, 0.1, yy, 0.08, w - 0.1, yy + 0.08, 0.35, TS.PITWALL);
+    B(deco, p, 0.15, yy + 0.08, 0.08, w - 0.15, yy + 0.7, 0.1, TS.ROCK, { lightMul: 0.35, faces: FACE.SIDES });
+    const n = rng.int(0, 2);
+    for (let k = 0; k < n; k++) {
+      const a = 0.35 + k * 0.6 + rng.float(0, 0.2);
+      if (rng.chance(0.5)) B(deco, p, a - 0.12, yy + 0.08, 0.12, a + 0.12, yy + 0.3, 0.32, TS.PAINT);
+      else B(deco, p, a - 0.25, yy + 0.08, 0.12, a + 0.25, yy + 0.38, 0.33, TS.WOOD);
+    }
+  }
+}
+// marble bust on a pedestal
+export function pedestalBust(deco, x, z, y) {
+  deco.box(x - 0.2, y, z - 0.2, x + 0.2, y + 1.1, z + 0.2, TS.PILLAR, SOLID);
+  deco.box(x - 0.25, y + 1.1, z - 0.25, x + 0.25, y + 1.18, z + 0.25, TS.TRIM);
+  deco.box(x - 0.2, y + 1.18, z - 0.13, x + 0.2, y + 1.42, z + 0.13, TS.ROCK);
+  deco.box(x - 0.1, y + 1.42, z - 0.1, x + 0.1, y + 1.7, z + 0.1, TS.ROCK);
+}
+// water closet: the bowl, the high cistern and its chain
+export function closet(deco, p, y) {
+  const w = p.la;
+  B(deco, p, w / 2 - 0.2, y, 0.15, w / 2 + 0.2, y + 0.42, 0.65, TS.ROCK, SOLID);
+  B(deco, p, w / 2 - 0.22, y + 0.42, 0.12, w / 2 + 0.22, y + 0.47, 0.68, TS.WOOD);
+  B(deco, p, w / 2 - 0.25, y + 1.9, 0, w / 2 + 0.25, y + 2.2, 0.25, TS.METAL);
+  B(deco, p, w / 2 - 0.02, y + 0.47, 0.05, w / 2 + 0.02, y + 1.9, 0.09, TS.PIPE);
+  B(deco, p, w / 2 + 0.18, y + 1.3, 0.18, w / 2 + 0.2, y + 1.9, 0.2, TS.PIPE);
+}
+export function towelRail(deco, p, y) {
+  const w = p.la;
+  for (const a of [0.05, w - 0.1]) B(deco, p, a, y, 0.05, a + 0.05, y + 1.0, 0.25, TS.METAL, { faces: FACE.SIDES });
+  B(deco, p, 0.05, y + 0.95, 0.1, w - 0.05, y + 1.0, 0.2, TS.METAL);
+  B(deco, p, 0.15, y + 0.45, 0.12, w - 0.15, y + 0.98, 0.18, TS.PAINT);
+}
+// cobweb strands across a corner (thin pale strips)
+export function cobwebs(deco, fr, a, b, y) {
+  for (let k = 0; k < 4; k++) lbar(deco, fr, a, y + k * 0.15, b + 0.05 * k, a + 1, y + 0.3 + k * 0.1, b + 0.6 - 0.1 * k, 0.01, 0.01, TS.PAINT);
+}
+// iron-bound wooden chest (front toward +b)
+export function chest(deco, p, y) {
+  const w = p.la, d = p.lb;
+  B(deco, p, 0, y, 0, w, y + 0.5, d, ltex(p, TS.WOOD, TS.CRATE2, 2), { solid: true, uv: 'fit' });
+  B(deco, p, -0.01, y + 0.5, -0.01, w + 0.01, y + 0.6, d + 0.01, TS.WOOD);
+  for (const a of [0.12, w - 0.18]) B(deco, p, a, y, -0.02, a + 0.06, y + 0.62, d + 0.02, TS.METAL);
+  B(deco, p, w / 2 - 0.06, y + 0.38, d, w / 2 + 0.06, y + 0.5, d + 0.03, TS.METAL);
+}
+export function dollHouse(deco, p, y) {
+  const w = p.la, d = p.lb;
+  B(deco, p, 0.05, y, 0.05, w - 0.05, y + 0.5, d - 0.05, TS.WOOD, SOLID);
+  B(deco, p, 0.1, y + 0.5, 0.1, w - 0.1, y + 1.0, d - 0.1, ltex(p, TS.FACADE, TS.FACADE, 2), { s: 0.25 });
+  B(deco, p, 0.05, y + 1.0, 0.05, w - 0.05, y + 1.12, d - 0.05, TS.ROOF);
+  for (const a of [0.2, w - 0.4]) B(deco, p, a, y + 0.65, d - 0.1, a + 0.2, y + 0.85, d - 0.09, TS.GLASS, { uv: 'fit', emissive: 0.3 });
+}
+
+// sash window on an inside wall (prop frame: la = width, b = 0 on the wall):
+// the glass, its frame and glazing bars, the sill, curtains either side
+export function sashWindow(deco, p, y0, y1, o = {}) {
+  const w = p.la;
+  B(deco, p, 0.08, y0, 0, w - 0.08, y1, 0.03, TS.GLASS, { uv: 'fit', emissive: o.lit ? 0.6 : 0.3, faces: FACE.SIDES });
+  const fr = o.frame ?? TS.WOOD;
+  for (const a of [0, w - 0.09]) B(deco, p, a, y0 - 0.04, 0, a + 0.09, y1 + 0.04, 0.08, fr, { faces: ST | FACE.BOTTOM });
+  B(deco, p, 0, y1, 0, w, y1 + 0.1, 0.09, fr, { faces: ST | FACE.BOTTOM });
+  B(deco, p, -0.08, y0 - 0.1, 0, w + 0.08, y0, 0.2, TS.TRIM, { faces: ST | FACE.BOTTOM });
+  B(deco, p, 0.05, (y0 + y1) / 2 - 0.03, 0.02, w - 0.05, (y0 + y1) / 2 + 0.03, 0.06, fr);
+  if (o.curtains) curtains(deco, sub(p, -0.4, 0, w + 0.4, 0.16), y0 - 0.3, Math.min(y1 + 0.25, y1 + 0.25));
+}
+// stone urn on a square plinth
+export function urn(deco, x, z, y) {
+  deco.box(x - 0.25, y, z - 0.25, x + 0.25, y + 0.6, z + 0.25, TS.PILLAR, SOLID);
+  deco.box(x - 0.3, y + 0.6, z - 0.3, x + 0.3, y + 0.68, z + 0.3, TS.TRIM);
+  cylV(deco, x, z, y + 0.68, y + 0.8, 0.12, TS.PILLAR);
+  cylV(deco, x, z, y + 0.8, y + 1.15, 0.27, TS.PILLAR);
+  cylV(deco, x, z, y + 1.12, y + 1.16, 0.22, TS.GROUND, { faces: FACE.TOP });
+  deco.box(x - 0.18, y + 1.15, z - 0.18, x + 0.18, y + 1.45, z + 0.18, TS.FOLIAGE);
+}
+// sundial on a column
+export function sundial(deco, x, z, y) {
+  cylV(deco, x, z, y, y + 0.15, 0.32, TS.PILLAR, { solid: true });
+  cylV(deco, x, z, y + 0.15, y + 0.95, 0.14, TS.PILLAR);
+  cylV(deco, x, z, y + 0.95, y + 1.02, 0.3, TS.ROCK);
+  deco.bar([x - 0.2, y + 1.02, z], [x + 0.12, y + 1.25, z], 0.02, 0.03, TS.METAL);
 }
 
 export { cylV, cylH, lbar, LAMP };

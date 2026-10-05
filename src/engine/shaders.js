@@ -181,12 +181,13 @@ void main() {
       } else if (uPlanet == 2) { pc = mix(vec3(0.7, 0.28, 0.12), vec3(0.4, 0.15, 0.08), fbm(suv * 2.0)); }
       else if (uPlanet == 3) { pc = mix(vec3(0.8, 0.6, 0.4), vec3(0.6, 0.3, 0.2), 0.5 + 0.5 * sin(n.y * 18.0 + fbm(suv) * 4.0)); }
       else if (uPlanet == 4) { pc = vec3(0.0); lit = 1.0; }
+      else if (uPlanet == 6) { pc = mix(vec3(0.92, 0.92, 0.86), vec3(0.55, 0.56, 0.6), smoothstep(0.35, 0.7, fbm(suv * 2.5))); lit = 0.55 + 0.45 * lit; }  // full moon
       else { pc = vec3(1.0, 0.6, 0.2) * (1.2 + fbm(suv * 3.0 + uTime * 0.1)); lit = 1.0; }
       vec3 planet = pc * (0.08 + lit);
       float edge = smoothstep(1.0, 0.96, r);
       col = mix(col, planet, edge);
       // atmosphere rim
-      col += (uPlanet == 4 ? vec3(1.0, 0.5, 0.2) : vec3(0.4, 0.6, 1.0)) * smoothstep(0.85, 1.0, r) * smoothstep(1.08, 1.0, r) * 0.6;
+      col += (uPlanet == 4 ? vec3(1.0, 0.5, 0.2) : uPlanet == 6 ? vec3(0.5, 0.55, 0.65) : vec3(0.4, 0.6, 1.0)) * smoothstep(0.85, 1.0, r) * smoothstep(1.08, 1.0, r) * 0.6;
     } else if (uPlanet == 4 && d < uPlanetSize * 1.8) {
       col += vec3(1.0, 0.55, 0.2) * pow(1.0 - (d - uPlanetSize) / (uPlanetSize * 0.8), 3.0) * 0.8; // accretion glow
     }
