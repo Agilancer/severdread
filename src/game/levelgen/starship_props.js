@@ -224,7 +224,7 @@ export function reactorCore(ctx, cx, cz, yBot, yTop, R, o = {}) {
     const px = cx + ax * R, pz = cz + az * R;
     deco.box(px - 0.07, c0, pz - 0.07, px + 0.07, c1, pz + 0.07, TS.METAL, { faces: FACE.SIDES });
   }
-  for (let y = c0 + 1.2; y < c1 - 0.4; y += 2.2) {
+  for (let y = c0 + 1.2; y < c1 - 0.4; y += 3.0) {
     cylV(deco, cx, cz, y, y + 0.22, R + 0.08, TS.METAL);
     cylV(deco, cx, cz, y + 0.22, y + 0.24, R * 0.62 + 0.04, TS.TRIM);
   }
@@ -278,7 +278,7 @@ export function tankV(ctx, cx, cz, y, r, h, o = {}) {
   const { deco } = ctx;
   cylV(deco, cx, cz, y, y + 0.3, r + 0.1, TS.METAL);
   cylV(deco, cx, cz, y + 0.3, y + h, r, o.tex ?? TS.METAL, { s: 2 });
-  for (let by = y + 1.1; by < y + h - 0.3; by += 1.2) cylV(deco, cx, cz, by, by + 0.1, r + 0.05, TS.TRIM);
+  for (let by = y + 1.1; by < y + h - 0.3; by += o.bandStep ?? 1.2) cylV(deco, cx, cz, by, by + 0.1, r + 0.05, TS.TRIM);
   cylV(deco, cx, cz, y + h, y + h + 0.25, r * 0.6, TS.METAL);
   if (o.gauge) deco.box(cx - 0.15, y + 1.3, cz - r - 0.04, cx + 0.15, y + 1.6, cz - r, TS.SCREEN, { uv: 'fit', emissive: 0.8 });
   deco.collider(cx - r, y, cz - r, cx + r, y + h, cz + r);

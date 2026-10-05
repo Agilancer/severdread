@@ -322,9 +322,9 @@ function tornEnds(L, S, rng) {
       if (!touches) continue;
       for (const [yy, th] of [[r.floor - 0.35, 0.35], [r.floor + r.ceilH, 0.4]]) {
         if (yy < cr.floor + 0.3) continue;
-        for (let z = r.z - 1; z < r.z + r.h + 1; z += 1) {
+        for (let z = r.z - 1; z < r.z + r.h + 1; z += 2) {
           const out = rng.float(0.15, yy < cr.floor + 2.3 ? 0.45 : 1.2);
-          deco.box(Math.min(fx, fx + sg * out), yy, z, Math.max(fx, fx + sg * out), yy + th, z + 1, rng.chance(0.7) ? TS.METAL : TS.WALL2);
+          deco.box(Math.min(fx, fx + sg * out), yy, z, Math.max(fx, fx + sg * out), yy + th, Math.min(z + 2, r.z + r.h + 1), rng.chance(0.7) ? TS.METAL : TS.WALL2);
         }
       }
       for (let z = r.z + 1; z < r.z + r.h - 1; z += 3) {
@@ -369,8 +369,9 @@ function tornEnds(L, S, rng) {
           if (nb) continue;
           const rub = base + (k === 1 ? rng.float(0.8, 1.3) : rng.float(1.6, 2.4));
           const ceil = Math.max(rub + 1.0, yTop - (k === 1 ? rng.float(0, 0.8) : rng.float(0.8, 1.8)));
-          g.open(x, z, rub, ceil, { floorTex: TS.ROCK, ceilTex: TS.METAL, wallTex: TS.WALL2, light: g.light[i0], region: -2 });
-          g.flags[i] |= F.NOSPAWN;
+          // rubble: not a route (debris on top), never a doorway
+          g.open(x, z, rub, ceil, { floorTex: TS.ROCK, ceilTex: TS.METAL, wallTex: TS.WALL2, light: g.light[i0], region: -1 });
+          g.flags[i] |= F.NOSPAWN | F.OBSTACLE;
           P.debris(ctx, x + 0.5, z + 0.5, rub, rng.float(0.5, 0.8), { obstacle: false, texes: [TS.METAL, TS.WALL2, TS.BEAM] });
         }
       }

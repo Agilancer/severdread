@@ -187,6 +187,50 @@ function crashed(ctx, density = 1) {
   }
 }
 
+// A deck over a pit is a thin plate: the grid keeps one floor per cell, so
+// under catwalk cells the pit's bottom and walls are filled in with boxes
+// (liquid surface at yPit, pit-wall faces toward higher ground / walls).
+function fillUnderBridges(ctx, cells, yPit, tex) {
+  const { g, deco } = ctx;
+  const liquid = tex === TS.POISON || tex === TS.LAVA || tex === TS.WATER;
+  for (const i of cells) {
+    if (!(g.flags[i] & F.BRIDGE)) continue;
+    const x = i % g.w, z = (i / g.w) | 0;
+    deco.box(x, yPit - 0.02, z, x + 1, yPit, z + 1, tex, { faces: FACE.TOP, emissive: liquid ? 0.6 : 0 });
+    for (let d = 0; d < 4; d++) {
+      const nx = x + DIR_X[d], nz = z + DIR_Z[d];
+      if (!g.in(nx, nz)) continue;
+      const j = g.idx(nx, nz);
+      const pitNb = g.type[j] && ((g.flags[j] & F.PIT) || ((g.flags[j] & F.BRIDGE) && g.floor[j] > yPit + 1));
+      if (pitNb) continue;
+      const topY = g.type[j] ? Math.min(g.floor[j], g.floor[i] - 0.35) : g.floor[i] - 0.35;
+      if (topY <= yPit + 0.05) continue;
+      // faces on the edge toward the neighbour, facing back into this cell:
+      // pit wall below the room floor, the neighbour's own wall above it
+      const e = 0.02, yr = ctx.room.floor;
+      const face = (y0, y1, tex) => {
+        if (y1 - y0 < 0.02) return;
+        if (d === 0) deco.box(x + 1 - e, y0, z, x + 1, y1, z + 1, tex, { faces: FACE.NX });
+        else if (d === 1) deco.box(x, y0, z, x + e, y1, z + 1, tex, { faces: FACE.PX });
+        else if (d === 2) deco.box(x, y0, z + 1 - e, x + 1, y1, z + 1, tex, { faces: FACE.NZ });
+        else deco.box(x, y0, z, x + 1, y1, z + e, tex, { faces: FACE.PZ });
+      };
+      face(yPit, Math.min(topY, yr), TS.PITWALL);
+      if (topY > yr) face(yr, topY, g.wallTex[j] || TS.METAL);
+    }
+  }
+}
+// yellow keep-clear lines round a frame rectangle of machinery
+function hazardLinesRect(ctx, Fr, t0, s0, dt, ds) {
+  const { room: r } = ctx;
+  const y = r.floor;
+  for (const [a, b] of [[t0 - 0.2, t0 - 0.08], [t0 + dt + 0.08, t0 + dt + 0.2]]) paint(ctx, ...frameRect(Fr, a, b, s0 - 0.2, s0 + ds + 0.2), y);
+  for (const [a, b] of [[s0 - 0.2, s0 - 0.08], [s0 + ds + 0.08, s0 + ds + 0.2]]) paint(ctx, ...frameRect(Fr, t0 - 0.2, t0 + dt + 0.2, a, b), y);
+}
+function frameRect(Fr, t0, t1, s0, s1) {
+  const [ax, az] = Fr.pt(t0, s0), [bx, bz] = Fr.pt(t1, s1);
+  return [Math.min(ax, bx), Math.min(az, bz), Math.max(ax, bx), Math.max(az, bz)];
+}
 // a hole torn in the deck (jagged wreckage below), railed off; kept only if
 // the room still works
 function tornDeck(ctx) {
@@ -540,6 +584,7 @@ function buildCore(ctx, Fr, up, boss) {
     else cylH(deco, Math.min(az, bz), Math.max(az, bz), yc, ax, 0.26, false, TS.PIPE);
     for (let t = 1.5; t < tc - R; t += 2.5) fb(deco, Fr, t, t + 0.18, sc + 0.5 + ds - 0.34, sc + 0.5 + ds + 0.34, yc - 0.34, yc + 0.34, TS.TRIM);
   }
+  fillUnderBridges(ctx, well, yPit, TS.POISON);
   // rails: catwalk / platform edges over the well and the floor round its rim
   railAll(ctx);
   hazardLines(ctx, well.filter((i) => g.flags[i] & F.PIT));
@@ -563,6 +608,48 @@ function engineWalls(ctx, Fr) {
     const line = Fr.away < 2 ? lx : lz, c = Fr.away < 2 ? lz : lx;
     P.thruster(ctx, line, c, cy, R, 2.6, Fr.away);
     useL(ctx, Fr, 0, s0, 3, w);
+  }
+  // the drive plant beside the core: coolant tank farms and turbine
+  // generators on the open floor (kept only while the hall stays walkable)
+  const m = freeMask(ctx, Fr, 1);
+  for (let k = 0; k < 4; k++) {
+    const turb = k % 2 === 1;
+    const pr = bestRect(m, turb ? { minT: 2, minS: 4, maxT: 2, maxS: 4 } : { minT: 2, minS: 5, maxT: 2, maxS: 7, score: (t, s, dt, ds) => dt * ds + rng.float(0, 2) });
+    if (!pr) break;
+    const s0 = snap(ctx), mk = deco.mark();
+    if (turb) {
+      // turbine generator: banded drum on cradles, the generator housing at one end
+      const [ax, az] = Fr.pt(pr.t + 1, pr.s + 0.4), [bx, bz] = Fr.pt(pr.t + 1, pr.s + 2.9);
+      const alongS = Fr.lat < 2;
+      const cy = y + 1.1;
+      if (alongS) cylH(deco, Math.min(ax, bx), Math.max(ax, bx), cy, az, 0.85, true, TS.METAL, { s: 2 });
+      else cylH(deco, Math.min(az, bz), Math.max(az, bz), cy, ax, 0.85, false, TS.METAL, { s: 2 });
+      for (let q = 0.7; q < 2.6; q += 0.6) {
+        const [px, pz] = Fr.pt(pr.t + 1, pr.s + q);
+        if (alongS) cylH(deco, px, px + 0.14, cy, pz, 0.92, true, TS.TRIM); else cylH(deco, pz, pz + 0.14, cy, px, 0.92, false, TS.TRIM);
+      }
+      fb(deco, Fr, pr.t + 0.15, pr.t + 1.85, pr.s + 2.9, pr.s + 3.9, y, y + 2.1, faced(Fr.lat, TS.MACHINE, TS.METAL), { uv: 'fit' });
+      fb(deco, Fr, pr.t + 0.3, pr.t + 1.7, pr.s + 0.5, pr.s + 2.8, y, y + 0.3, TS.BEAM);
+      fcol(deco, Fr, pr.t + 0.1, pr.t + 1.9, pr.s + 0.3, pr.s + 3.9, y, y + 2.1);
+      cylV(deco, ...Fr.pt(pr.t + 1, pr.s + 3.4), y + 2.1, top, 0.22, TS.PIPE);
+    } else {
+      // coolant tank farm: a row of tall tanks on a plinth, a header pipe along their tops
+      const nT = Math.floor((pr.ds - 1) / 2);
+      const th = Math.min(top - y - 2.0, 5.0);
+      fb(deco, Fr, pr.t + 0.1, pr.t + 1.9, pr.s + 0.2, pr.s + pr.ds - 0.2, y, y + 0.25, TS.METAL);
+      for (let q = 0; q < nT; q++) {
+        const [tx, tz] = Fr.pt(pr.t + 1, pr.s + 1.3 + q * 2);
+        P.tankV(ctx, tx, tz, y + 0.25, 0.78, th, { gauge: true, tex: rng.chance(0.5) ? TS.METAL : TS.PANEL, bandStep: 2.2 });
+      }
+      const [hx0, hz0] = Fr.pt(pr.t + 1, pr.s + 0.6), [hx1, hz1] = Fr.pt(pr.t + 1, pr.s + pr.ds - 0.6);
+      const alongS = Fr.lat < 2;
+      if (alongS) cylH(deco, Math.min(hx0, hx1), Math.max(hx0, hx1), y + th + 0.6, hz0, 0.2, true, TS.PIPE);
+      else cylH(deco, Math.min(hz0, hz1), Math.max(hz0, hz1), y + th + 0.6, hx0, 0.2, false, TS.PIPE);
+      hazardLinesRect(ctx, Fr, pr.t, pr.s, 2, pr.ds);
+    }
+    useL(ctx, Fr, pr.t, pr.s, pr.dt, pr.ds);
+    markMask(m, pr.t - 1, pr.s - 1, pr.dt + 2, pr.ds + 2);
+    if (!roomOK(ctx)) { deco.rollback(mk); restore(ctx, s0); }
   }
   // turbines / generators and coolant tanks along the walls
   for (const [x, z, d] of rng.shuffle(wallSpots(ctx))) {
@@ -680,5 +767,5 @@ function buildBridge(ctx, Fr) {
 
 // the side decks are filled in by starship_decks.js / starship_holds.js
 
-export { SS, tryFrames, sidesLong, sidesShort, hullSide, outerSides, fb, fcol, cellL, wallClosed, railAll, panelLights, highBay, pipeRun, wallScreen, wallMachine, crashed, gallery, deckFace, isCrashed, no };
+export { fillUnderBridges, SS, tryFrames, sidesLong, sidesShort, hullSide, outerSides, fb, fcol, cellL, wallClosed, railAll, panelLights, highBay, pipeRun, wallScreen, wallMachine, crashed, gallery, deckFace, isCrashed, no };
 export { cellsOf, canUseL, useL, okL, ok, use, setHeightL, retexFloor, flightL, snap, restore, roomOK, wallSpots, wallBox, hangLight, paint, hazardLines, pitSet, freeMask, bestRect, markMask, glassLineL, lineOpening, cabinet, machineBlock, counter, monitor, bed, ivStand, vitalsMonitor, trolley, curtain, riser, steelTable, openShelf, nSteps, lightStrip, edgeCells, tank, seatRow, rackRow, cylV, cylH, crane, pallet, drum, forklift, workbench, P, stat };

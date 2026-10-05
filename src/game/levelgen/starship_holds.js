@@ -10,7 +10,7 @@ import {
   SS, tryFrames, sidesLong, sidesShort, outerSides, fb, cellL, wallClosed, railAll, panelLights, highBay, pipeRun, wallScreen,
   crashed, gallery, deckFace, isCrashed, no, canUseL, useL, okL, ok, use, setHeightL, flightL, wallSpots, wallBox, hangLight, paint,
   hazardLines, pitSet, freeMask, bestRect, markMask, lineOpening, cabinet, machineBlock, counter, monitor, riser, openShelf, nSteps,
-  lightStrip, cylV, cylH, crane, pallet, drum, forklift, workbench, P,
+  lightStrip, cylV, cylH, crane, pallet, drum, forklift, workbench, P, fillUnderBridges,
 } from './starship_rooms.js';
 import { slideDoor, runs, longest, wallFree, wr, opp, shipWindow, windowRun, steelBench, stock, stores, WARMW, PURPLE } from './starship_decks.js';
 
@@ -132,8 +132,8 @@ function airlockRoom(ctx, Fr, last, dock, D, op, s0) {
   let suits = 0;
   for (const [x, z, d] of wallSpots(ctx)) {
     if (ctx.used.has(ctx.g.idx(x, z))) continue;
-    if ((x + z) % 3 === 0) P.suitLocker(ctx, x, z, d, y);
-    else if ((x + z) % 3 === 1) P.lockers(ctx, x, z, d, y, 1);
+    if ((x + z) % 4 === 0) P.suitLocker(ctx, x, z, d, y);
+    else if ((x + z) % 4 === 2) P.lockers(ctx, x, z, d, y, 1);
     else continue;
     use(ctx, x, z, 1, 1);
     suits++;
@@ -262,6 +262,7 @@ function maintFloor(ctx, Fr, last, up) {
     if (mid !== null) for (let s = sr.s; s < sr.s + sr.ds; s++) { const [x, z] = Fr.cell(mid, s); bridgeCells.push(...deckBridge(ctx, x, z, 1, 1, y)); }
     else { const ms = sr.s + Math.floor(sr.ds / 2); for (let t = sr.t; t < sr.t + sr.dt; t++) { const [x, z] = Fr.cell(t, ms); bridgeCells.push(...deckBridge(ctx, x, z, 1, 1, y)); } }
     hazardLines(ctx, cells.filter((i) => g.flags[i] & F.PIT));
+    fillUnderBridges(ctx, bridgeCells, y - 1.6, kind === 'water' ? TS.WATER : TS.POISON);
     // a pump with its pipes standing in the sump
     useL(ctx, Fr, sr.t - 1, sr.s - 1, sr.dt + 2, sr.ds + 2);
     sump = sr;
