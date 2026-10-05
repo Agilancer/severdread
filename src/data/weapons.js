@@ -83,6 +83,26 @@ export const PLACEHOLDER_BASES = [
   { id: 'ph_voidsaber', name: 'Void Saber', archetype: 'blade', element: 'void', pal: { body: '#c090ff', accent: '#5020a0' } },
 ];
 
+// Every droppable base: one per row of the uploaded weapon sheets, then the
+// procedural placeholders for archetypes with too little clean real art.
+// Rows the art tool could not slice cleanly (fp.bad) never drop.
+export function buildWeaponBases(manifest) {
+  const bases = [], realCount = {};
+  for (const set of manifest?.weaponSets || []) {
+    for (const w of set.weapons) {
+      const ok = !w.fp?.bad;
+      if (ok) realCount[w.archetype] = (realCount[w.archetype] || 0) + 1;
+      bases.push({ id: w.id, name: w.name, archetype: w.archetype, element: w.element || 'physical', flavor: w.flavor, rarity: w.rarity || null, real: true, set, row: w.row, fp: w.fp || null, enabled: ok });
+    }
+  }
+  for (const b of PLACEHOLDER_BASES) bases.push({ ...b, real: false, enabled: (realCount[b.archetype] || 0) < 2 });
+  for (const b of bases) {
+    if (b.enabled === undefined) b.enabled = true;
+    if (!ARCHETYPES[b.archetype]) { console.warn('unknown archetype', b.archetype, 'for', b.id); b.archetype = 'rifle'; }
+  }
+  return bases;
+}
+
 // Name generation ----------------------------------------------------------
 export const NAME_PARTS = {
   uncommon: ['Tuned', 'Rugged', 'Hardened', 'Reliable', 'Balanced', 'Polished', 'Vicious', 'Brutal', 'Keen', 'Steady'],

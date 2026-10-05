@@ -4,7 +4,7 @@ import { input, consume } from '../engine/input.js';
 import { ARCHETYPES, PLACEHOLDER_BASES } from '../data/weapons.js';
 import { computeStats } from './stats.js';
 import { firePlayerWeapon, damagePlayer, explode, damageMonster } from './combat.js';
-import { generateWeapon } from './items.js';
+import { generateWeapon, upgradedDamage } from './items.js';
 import { canFire, spendAmmo, bestFiringSlot, weaponAmmo, AMMO } from './ammo.js';
 import { F, HAZ } from './grid.js';
 import { clamp, lerp, approach } from '../core/math.js';
@@ -125,7 +125,7 @@ export class Player {
   // base per-hit damage for a weapon (before crits)
   computeHitDamage(weapon) {
     const st = this.stats, ab = st.abilities;
-    const base = weapon.damage * B.upgradeMult(weapon.upgrade) + B.attackPerHit(st.attack, ARCHETYPES[weapon.archetype]?.damage);
+    const base = upgradedDamage(weapon) + B.attackPerHit(st.attack, ARCHETYPES[weapon.archetype]?.damage);
     let mult = 1 + st.dmgPct + (st.elemDmg[weapon.element] || 0);
     if (ab.berserker) mult += ab.berserker * (1 - this.hp / this.maxHp);
     if (ab.vengeance && this.vengeanceT > 0) mult += ab.vengeance;

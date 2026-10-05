@@ -9,7 +9,7 @@ import { ELEMENTS } from '../data/elements.js';
 import { ARMOR_NAMES, ARMOR_SLOT_ARMOR, MATERIALS, RING_NAMES, RING_BANDS } from '../data/armor.js';
 import { STATS, formatStat } from '../data/stats.js';
 import * as B from '../data/balance.js';
-import { AMMO, weaponAmmo } from '../data/ammo.js';
+import { AMMO, weaponAmmo, ammoPower } from '../data/ammo.js';
 
 export const SLOT_KINDS = ['weapon', 'head', 'body', 'legs', 'ring'];
 let uidCounter = 0;
@@ -189,7 +189,8 @@ export function generateItem(rng, { kind, level, rarity, bases, depth = 1, itemF
 
 // ---------------------------------------------------------------- derived values
 const round2 = (v) => Math.round(v * 100) / 100;
-export function upgradedDamage(item) { return item.damage * B.upgradeMult(item.upgrade); }
+// ammo guns hit harder than the unlimited ones (data/ammo.js ARCH_AMMO power)
+export function upgradedDamage(item) { return item.damage * B.upgradeMult(item.upgrade) * ammoPower(item); }
 export function upgradedArmor(item) { return Math.round((item.armor || 0) * B.upgradeMult(item.upgrade)); }
 export function upgradedStat(item, key) { const v = item.stats[key] || 0; return STATS[key]?.fmt === 'int' ? v : v * (1 + item.upgrade * 0.04); }
 export function upgradedAbility(item, ab) {
