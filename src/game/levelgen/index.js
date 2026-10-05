@@ -19,6 +19,7 @@ import { genCastle } from './gen_castle.js';
 import { genLab } from './gen_lab.js';
 import { genFoundry } from './gen_foundry.js';
 import { placeScatter } from './scatter.js';
+import { placeAmmo } from './ammo.js';
 
 const GENERATORS = {
   rooms: genArch, station: genArch, castle: genArch, caves: genCaves, city: genCity, rooftops: genPlatforms, islands: genPlatforms,
@@ -286,6 +287,8 @@ function populate(L, rng, theme, depth, playerLevel) {
   }
   // ---- scatter terrain: pillars, explosive barrels, pedestals, spike traps (levelgen/scatter.js)
   const scatter = placeScatter({ g, deco, rng: rng.fork('scatter'), theme, depth, dist, startIdx, bossCell, portalCell, arenaSet, spawns, chests, keys, doors, lockSpans: lockSpans.map((sp) => sp.cells), props, jumpGap: L.jumpGap || 0 });
+  // ---- ammo caches (levelgen/ammo.js): positions per seed, types picked at load
+  const ammo = placeAmmo({ g, rng: rng.fork('ammo'), startIdx, bossCell, arenaSet, chests, keys, scatter, props, jumpGap: L.jumpGap || 0 });
   bakeLights(g, lights, theme);
   const decoOut = deco.result();
 
@@ -293,7 +296,7 @@ function populate(L, rng, theme, depth, playerLevel) {
     theme, depth, grid: g,
     start: { x: L.start.x + 0.5, z: L.start.z + 0.5, yaw: L.startYaw ?? guessYaw(g, startIdx, dist) },
     spawns, boss: bossSpawn, portal: { x: (portalCell % W) + 0.5, z: ((portalCell / W) | 0) + 0.5 },
-    doors, keys, chests, props, lights, deco: decoOut, scatter,
+    doors, keys, chests, props, lights, deco: decoOut, scatter, ammo,
     rooms: (L.rooms || []).map((r) => ({ id: r.id, x: r.x, z: r.z, w: r.w, h: r.h, floor: r.floor, template: r.template })),
     voidY: L.voidY ?? -30,
     scrollSpeed: L.scrollSpeed || 0,

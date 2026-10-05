@@ -30,6 +30,7 @@ export const AFFIXES = [
   { stat: 'allRes', type: 'pct', range: [0.03, 0.07], slots: [...ARMOR, 'ring'], weight: 4, cap: 0.15 },
   { stat: 'bossDmg', type: 'pct', range: [0.05, 0.15], slots: ['weapon', 'head', 'ring'], weight: 4 },
   { stat: 'splash', type: 'pct', range: [0.1, 0.3], slots: ['weapon'], weight: 2 },
+  { stat: 'ammoCap', type: 'pct', range: [0.08, 0.2], slots: ['body', 'legs', 'ring'], weight: 3, cap: 0.35 },
   // elemental damage bonuses (armour and rings can roll these too)
   ...['fire', 'ice', 'lightning', 'poison', 'void', 'holy', 'plasma', 'blood', 'arcane'].map((e) => ({ stat: e + 'Dmg', type: 'pct', range: [0.06, 0.16], slots: ALL, weight: 2.2, element: e })),
   ...['fire', 'ice', 'lightning', 'poison', 'void'].map((e) => ({ stat: e + 'Res', type: 'pct', range: [0.06, 0.15], slots: [...ARMOR, 'ring'], weight: 2.5, cap: 0.35 })),

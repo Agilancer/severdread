@@ -11,6 +11,7 @@ import { audio } from '../engine/audio.js';
 import { input, requestLock, releaseLock } from '../engine/input.js';
 import { TitleBlood, loadTitleBlood } from './title.js';
 import { LevelMap } from './map.js';
+import { AMMO, AMMO_TYPES, ammoCount, ammoMax, refillCost } from '../game/ammo.js';
 
 const WELCOME_KEY = 'severdread_welcome_v1';   // how-to-play guide shown once per device
 const SLOT_LABELS = { weapon0: '1', weapon1: '2', weapon2: '3', weapon3: '4', head: 'HEAD', body: 'BODY', legs: 'LEGS', ring0: 'RING', ring1: 'RING', ring2: 'RING', ring3: 'RING' };
@@ -171,6 +172,9 @@ export class UI {
             <div><h3>LOOT</h3>Enemies, bosses and chests drop weapons, armour and rings. Equip them in the ${k('Tab / I', 'BAG')} screen;
               its <b>MAP</b> tab (${k('M', 'MAP')}) shows every enemy, the boss and the portal.</div>
             <div><h3>THE CREW</h3>Talk to the robots in the station (${k('E', 'USE')}) to buy, sell, upgrade and craft gear.</div>
+            <div><h3>AMMO</h3>Heavy weapons (shotguns, rockets, plasma, rail, flamers, crossbows...) use <b>ammo</b>: grab the packs and
+              boxes lying around, dropped by enemies and in chests, or buy refills at the station shop. Basic guns and melee
+              <b>never run dry</b> - an empty gun switches to one that can fire.</div>
             <div><h3>DYING</h3>Death ends the run: you keep your level, gear and bag, but the dive starts again at depth 1.</div>
           </div>
           <h3>CONTROLS</h3>
@@ -273,6 +277,7 @@ export class UI {
           <div style="margin-top:8px"><b>Touch:</b> left side = move stick, right side = look, FIRE also aims while held. Tap 1-4 to switch weapons, BAG for equipment, MAP for the level radar.</div>
         </div>
         <p style="font-size:17px;color:#bba">Kill every enemy and the boss on each level to open the portal. Keys open matching coloured doors. Dying ends the run: you keep your level, gear and bag, but start again at depth 1.</p>
+        <p style="font-size:17px;color:#bba">Heavy weapons use ammo (shells, heavy rounds, explosives, cells, fuel, bolts): pick up packs and boxes, or buy refills at the station shop. Pistols, rifles, SMGs, machine guns, throwing stars and melee never run dry.</p>
         <div style="text-align:right"><button class="btn red" data-a="back">Back</button></div>
       </div>`);
     el.querySelector('[data-a=back]').onclick = back;
@@ -523,7 +528,7 @@ export class UI {
           ${mode === 'inventory' ? `<div class="col scroll" style="flex:0 0 auto;gap:6px">${doll}${statsBox}</div>` : `<div class="col scroll" style="flex:0 0 auto;gap:6px;max-width:250px">${npcHead}${doll}</div>`}
           ${shopCol}
           <div class="col" style="flex:1.2"><h3>BAG</h3><div class="grid-bag scroll" style="flex:1">${sorted.map(({ it, i }) => this.slotHTML(it, `data-bag="${i}"`)).join('')}${Array.from({ length: Math.max(0, Math.min(12, s.bagSize - s.bag.length)) }, () => '<div class="slot empty" data-label=""></div>').join('')}</div></div>
-          <div class="col scroll" style="flex:1.3">${card}${mode === 'inventory' ? this.reagentsHTML() : ''}</div>
+          <div class="col scroll" style="flex:1.3">${card}${mode !== 'upgrade' ? this.ammoHTML(mode === 'shop') : ''}${mode === 'inventory' ? this.reagentsHTML() : ''}</div>
         </div>
       </div>`, 'screen dim inv');
     this.bindViewTabs(el);
@@ -543,6 +548,38 @@ export class UI {
     });
     el.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => { this.tab = t.dataset.tab; this.renderInventory(); }));
     el.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => this.invAction(b.dataset.act)));
+    el.querySelectorAll('[data-refill]').forEach((b) => b.addEventListener('click', () => this.refillAmmo(b.dataset.refill)));
+  }
+
+  // The six ammo stocks (count / max); in the station shop with refill buttons
+  // (price per missing round, scaling with the deepest floor reached)
+  ammoHTML(shop) {
+    const g = this.game, s = g.save, st = g.player.stats, depth = Math.max(1, s.best.depth);
+    let total = 0;
+    const rows = AMMO_TYPES.map((t) => {
+      const n = ammoCount(s, t), max = ammoMax(t, st), f = Math.min(1, n / max), ic = g.content.ammoIcon(t);
+      const warn = f <= 0 ? '#ff4040' : f < 0.25 ? '#ffb020' : null;   // count: white, amber when low, red when empty
+      const cost = shop ? refillCost(s, st, t, depth) : 0;
+      total += cost;
+      const btn = !shop ? '' : cost ? `<button class="btn small gold" data-refill="${t}" ${s.credits < cost ? 'disabled' : ''}>¢${fmt(cost)}</button>` : '<span class="full">FULL</span>';
+      return `<div class="ammo-row${shop ? ' shop' : ''}"><i style="background-image:url(${ic.url})"></i><span class="nm">${esc(AMMO[t].short || AMMO[t].name)}</span>
+        <span class="ct"${warn ? ` style="color:${warn}"` : ''}>${n}<em>/${max}</em></span><span class="bar"><b style="width:${(f * 100).toFixed(1)}%;background:${warn || AMMO[t].color}"></b></span>${btn}</div>`;
+    }).join('');
+    const all = shop && total ? `<button class="btn small gold" data-refill="all" ${s.credits < total ? 'disabled' : ''}>Refill all ¢${fmt(total)}</button>` : '';
+    return `<div class="card ammo-box${shop ? '' : ' grid'}"><div class="sub">AMMO${shop ? ' REFILLS' : ''}</div>${rows}${all}</div>`;
+  }
+  refillAmmo(type) {
+    const g = this.game, s = g.save, st = g.player.stats, depth = Math.max(1, s.best.depth);
+    const types = type === 'all' ? AMMO_TYPES : [type];
+    const cost = types.reduce((a, t) => a + refillCost(s, st, t, depth), 0);
+    if (!cost) return;
+    if (s.credits < cost) { audio.play('ui_error'); this.toast('Not enough credits', '#ff6060'); return; }
+    s.credits -= cost;
+    for (const t of types) s.ammo[t] = Math.max(ammoCount(s, t), ammoMax(t, st));
+    audio.play('ui_buy');
+    this.toast(type === 'all' ? 'All ammo refilled' : `${AMMO[type].name} refilled`, type === 'all' ? '#ffd040' : AMMO[type].color);
+    g.persist();
+    this.renderInventory();
   }
 
   invAction(act) {

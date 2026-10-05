@@ -14,6 +14,7 @@ import { F } from './grid.js';
 import { KEY_HEX } from './levelgen/common.js';
 import { updateProjectiles, submitProjectiles, projectileLights, damagePlayer, damageMonster, itemGlowColor } from './combat.js';
 import { generateItem, rollItemLevel, generateWeapon } from './items.js';
+import { newAmmo, migrateAmmo, addAmmo, ammoFull, topUpAmmo, clampAmmo, ammoPickup, rollAmmoType, weaponAmmo, AMMO } from './ammo.js';
 import { ELEMENTS } from '../data/elements.js';
 import { REAGENTS, CHEST_POOL } from '../data/reagents.js';
 import { RARITY } from '../data/rarities.js';
@@ -33,7 +34,7 @@ export function newSave() {
     version: 1, level: 1, xp: 0, credits: 150, reagents: {}, bag: [], bagSize: B.BAG_BASE, bagUpgrades: 0,
     equipment: { weapon0: null, weapon1: null, weapon2: null, weapon3: null, head: null, body: null, legs: null, ring0: null, ring1: null, ring2: null, ring3: null },
     run: { active: false, depth: 0, themes: [] }, best: { depth: 0, kills: 0 }, stats: { kills: 0, bosses: 0, deaths: 0, runs: 0 },
-    shop: null, created: Date.now(),
+    shop: null, created: Date.now(), ammo: newAmmo(),
   };
 }
 
@@ -87,7 +88,7 @@ export class Game {
     const s = this.loadJSON(SAVE_KEY);
     if (!s || !s.version) return null;
     const base = newSave();
-    return { ...base, ...s, equipment: { ...base.equipment, ...(s.equipment || {}) }, run: { ...base.run, ...(s.run || {}) } };
+    return { ...base, ...s, equipment: { ...base.equipment, ...(s.equipment || {}) }, run: { ...base.run, ...(s.run || {}) }, ammo: migrateAmmo(s.ammo) };
   }
   persist() {
     if (!this.save) return;
@@ -176,6 +177,8 @@ export class Game {
     // keys, chests
     for (const k of level.keys) w.pickups.push({ kind: 'key', color: k.color, x: k.x, y: (w.floorAt(k.x, k.z) ?? 0) + 0.6, z: k.z, vx: 0, vy: 0, vz: 0, settled: true, age: 0, phase: fx.float(0, 6) });
     for (const c of level.chests) w.chests.push({ ...c, y: w.floorAt(c.x, c.z) ?? 0, open: false });
+    clampAmmo(this.save, this.player.stats);
+    this.stockAmmo(level);   // ammo caches: packs and boxes for the guns the player carries
     w.scatter.stockPedestals(this.content.weaponBases, this.player.stats?.itemFind || 0);   // special items on pedestals
     this.player.spawnAt(level.start.x, level.start.z, level.start.yaw);
     audio.setMusic(level.theme.music || 'industrial', seed);
@@ -185,6 +188,18 @@ export class Game {
     this.persist();
     this.toast(`DEPTH ${depth}: ${level.theme.name.toUpperCase()}`, '#ffcc66', 4);
     this.events.emit('enter', { hub: false, depth, theme: level.theme });
+  }
+
+  // Level ammo caches (levelgen/ammo.js places them per seed): each gets its
+  // type now, leaning toward the ammo the equipped guns use (like pedestals
+  // are stocked at load), so what lies around is useful.
+  stockAmmo(level) {
+    const w = this.world, ws = this.player.weapons();
+    const rng = new Rng(((level.seed || 1) ^ 0x5eed0a) >>> 0);
+    for (const a of level.ammo || []) {
+      const pk = ammoPickup(rng, rollAmmoType(rng, ws), a.big, ws);
+      w.pickups.push({ ...pk, x: a.x, y: (w.floorAt(a.x, a.z) ?? 0) + 0.25, z: a.z, vx: 0, vy: 0, vz: 0, settled: true, age: 1, phase: rng.float(0, 6) });
+    }
   }
 
   async loadWorld(level) {
@@ -205,7 +220,10 @@ export class Game {
 
   startRunFromHub(continueRun) {
     const depth = continueRun && this.save.run.active ? this.save.run.depth + 1 : 1;
-    if (!continueRun) { this.save.run = { active: true, depth: 0, themes: [] }; this.save.stats.runs++; }
+    if (!continueRun) {
+      this.save.run = { active: true, depth: 0, themes: [] }; this.save.stats.runs++;
+      topUpAmmo(this.save, this.player.stats);   // station issue: every ammo type at least half full
+    }
     this.sfx('teleport');
     this.post.warp = 1;
     setTimeout(() => this.startLevel(depth), 450);
@@ -387,6 +405,11 @@ export class Game {
       }
       const dx = p.x - pk.x, dz = p.z - pk.z, dy = (p.y + 0.6) - pk.y;
       const d = Math.hypot(dx, dz);
+      // ammo of a full type stays on the floor (DOOM style): no magnet, a throttled hint when touched
+      if (pk.kind === 'ammo' && ammoFull(this.save, st, pk.type)) {
+        if (d < 0.7 && Math.abs(dy) < 2.2 && this.time - (this.ammoFullT || -9) > 2.5) { this.ammoFullT = this.time; this.toast(`${AMMO[pk.type].name.toUpperCase()} FULL`, AMMO[pk.type].color, 1.4); }
+        keep.push(pk); continue;
+      }
       const magnet = pk.kind === 'item' ? 1.1 : pk.kind === 'key' ? 1.2 : st.pickupRadius * (pk.kind === 'credits' ? 1.5 : 1);
       if (pk.age > 0.4 && d < magnet && Math.abs(dy) < 2.2 && !p.dead) {
         if (pk.kind !== 'item' && d > 0.45) {
@@ -410,6 +433,15 @@ export class Game {
         this.sfx('pickup_reagent');
         this.toast(`+${pk.value} ${REAGENTS[pk.id].name}`, REAGENTS[pk.id].color);
         return true;
+      case 'ammo': {
+        // takes what fits; the rest stays on the floor (never wasted)
+        const n = addAmmo(s, p.stats, pk.type, pk.value);
+        if (n <= 0) return false;
+        pk.value -= n;
+        this.sfx('pickup_item', { pitch: pk.big ? 0.55 : 0.75 });
+        this.toast(`+${n} ${AMMO[pk.type].name.toUpperCase()}`, AMMO[pk.type].color, 1.6);
+        return pk.value <= 0;
+      }
       case 'key':
         p.keys.add(pk.color);
         this.sfx('pickup_key');
@@ -428,6 +460,9 @@ export class Game {
           return false;
         }
         s.bag.push(pk.item);
+        // a gun that spends ammo comes with a pack of it (once per gun, like DOOM)
+        const wa = pk.item.kind === 'weapon' && !pk.item.ammoGiven && weaponAmmo(pk.item);
+        if (wa) { pk.item.ammoGiven = true; const n = addAmmo(s, p.stats, wa.type, AMMO[wa.type].small); if (n) this.toast(`+${n} ${AMMO[wa.type].name.toUpperCase()}`, AMMO[wa.type].color, 1.6); }
         const r = RARITY[pk.item.rarity];
         this.sfx(r.index >= 4 ? 'pickup_legendary' : r.index >= 2 ? 'pickup_rare' : 'pickup_item');
         this.toast(pk.item.name, r.color, r.index >= 3 ? 4 : 2.5);
@@ -481,6 +516,8 @@ export class Game {
       this.dropAt(fake, { kind: 'reagent', id: r.id, value: rng.int(r.min, r.max) });
     }
     this.dropAt(fake, { kind: 'credits', value: B.creditsFor(depth, 6) });
+    const ws = p.weapons();
+    this.dropAt(fake, ammoPickup(rng, rollAmmoType(rng, ws), true, ws));   // every chest holds an ammo box
   }
 
   dropAt(src, pk) {
@@ -617,6 +654,12 @@ export class Game {
         b.add(ic.handle, MODE.CUTOUT, pk.x, y - 0.15, pk.z, 0.34, 0.34, { fullbright: true });
         const col = hexToRgb(REAGENTS[pk.id].color);
         b.add(c.fx, MODE.ADD, pk.x, y, pk.z, 0.55, 0.55, { uv: [0, 0, 0.25, 1], tint: [...col, 0.35], anchorY: 0.5, spherical: true, fullbright: true });
+      } else if (pk.kind === 'ammo') {
+        // packs and (bigger) boxes from the ammo sheet, a soft glow in the type's colour
+        const ic = c.ammoIconGL(pk.icon, pk.type), sz = pk.big ? 0.62 : 0.42;
+        const col = hexToRgb(AMMO[pk.type].color);
+        b.add(c.fx, MODE.ADD, pk.x, y, pk.z, sz * 1.9, sz * 1.5, { uv: [0, 0, 0.25, 1], tint: [...col, (pk.big ? 0.42 : 0.3) + 0.08 * Math.sin(t * 4 + pk.phase)], anchorY: 0.5, spherical: true, fullbright: true });
+        b.add(ic, MODE.CUTOUT, pk.x, y - 0.22, pk.z, sz, sz, { fullbright: true, glow: [col[0] * 0.12, col[1] * 0.12, col[2] * 0.12, 0] });
       } else if (pk.kind === 'key') {
         const col = hexToRgb(KEY_HEX[pk.color]);
         b.add(c.keycards[pk.color], MODE.CUTOUT, pk.x, y - 0.2, pk.z, 0.45, 0.34, { fullbright: true, glow: [col[0] * 0.3, col[1] * 0.3, col[2] * 0.3, 0] });

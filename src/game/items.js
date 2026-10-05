@@ -9,6 +9,7 @@ import { ELEMENTS } from '../data/elements.js';
 import { ARMOR_NAMES, ARMOR_SLOT_ARMOR, MATERIALS, RING_NAMES, RING_BANDS } from '../data/armor.js';
 import { STATS, formatStat } from '../data/stats.js';
 import * as B from '../data/balance.js';
+import { AMMO, weaponAmmo } from '../data/ammo.js';
 
 export const SLOT_KINDS = ['weapon', 'head', 'body', 'legs', 'ring'];
 let uidCounter = 0;
@@ -220,6 +221,8 @@ export function describeItem(item) {
     const pel = Math.max(1, a.pellets || 1);
     lines.push({ text: `${Math.round(upgradedDamage(item))}${pel > 1 ? ' x' + pel : ''} damage`, cls: 'big' });
     lines.push({ text: `${item.rate.toFixed(1)} shots/s · ${Math.round(dps(item))} DPS`, cls: '' });
+    const wa = weaponAmmo(item);
+    lines.push(wa ? { text: `Ammo: ${AMMO[wa.type].name} - ${wa.cost} per shot`, cls: 'ammo', color: AMMO[wa.type].color } : { text: 'Ammo: unlimited', cls: 'ammo' });
     if (item.element !== 'physical') lines.push({ text: `${ELEMENTS[item.element].name} element · ${Math.round(item.statusChance * 100)}% status chance`, cls: 'elem', color: ELEMENTS[item.element].color });
     for (const p of item.patterns) lines.push({ text: `${PATTERNS[p.id].name}: ${PATTERNS[p.id].desc(p.n)}`, cls: 'pattern' });
   } else if (item.kind !== 'ring') {

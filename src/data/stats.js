@@ -28,6 +28,7 @@ export const STATS = {
   bossDmg: { name: 'Boss Damage', fmt: 'pct' },
   airJumps: { name: 'Air Jumps', fmt: 'int' },
   splash: { name: 'Splash Radius', fmt: 'pct' },
+  ammoCap: { name: 'Ammo Capacity', fmt: 'pct', desc: 'More of every ammo type can be carried' },
   // elemental damage bonuses
   fireDmg: { name: 'Fire Damage', fmt: 'pct', element: 'fire' },
   iceDmg: { name: 'Frost Damage', fmt: 'pct', element: 'ice' },

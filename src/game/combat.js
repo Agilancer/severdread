@@ -5,6 +5,7 @@ import { REAGENTS, UNIVERSAL_DROPS, BOSS_UNIVERSAL_DROPS } from '../data/reagent
 import { RARITY } from '../data/rarities.js';
 import * as B from '../data/balance.js';
 import { generateItem, rollItemLevel, upgradedDamage, patternN } from './items.js';
+import { monsterAmmoDrops } from './ammo.js';
 import { fx, Rng } from '../core/rng.js';
 import { clamp, hexToRgb } from '../core/math.js';
 import { MODE } from './spritebatch.js';
@@ -811,6 +812,8 @@ export function killMonster(game, m, o = {}) {
     });
     dropPickup(game, m, { kind: 'item', item });
   }
+  // ammo (game/ammo.js): packs, elite / boss boxes, leaning toward the equipped guns
+  for (const pk of monsterAmmoDrops(fx, { boss: !!def.boss, elite: !!m.elite }, p.weapons())) dropPickup(game, m, pk);
   // orbs
   if (def.boss) {
     dropPickup(game, m, { kind: 'orb', orb: 'gold', value: Math.round(credits * 12) });

@@ -1,12 +1,14 @@
 // Player controller: movement (run, jump, multi-jump, dash, air dash, glide,
 // jet thrusters, wall jump), weapon handling and DOOM-style weapon bob.
 import { input, consume } from '../engine/input.js';
-import { ARCHETYPES } from '../data/weapons.js';
+import { ARCHETYPES, PLACEHOLDER_BASES } from '../data/weapons.js';
 import { computeStats } from './stats.js';
 import { firePlayerWeapon, damagePlayer, explode, damageMonster } from './combat.js';
+import { generateWeapon } from './items.js';
+import { canFire, spendAmmo, bestFiringSlot, weaponAmmo, AMMO } from './ammo.js';
 import { F, HAZ } from './grid.js';
 import { clamp, lerp, approach } from '../core/math.js';
-import { fx } from '../core/rng.js';
+import { fx, Rng } from '../core/rng.js';
 import * as B from '../data/balance.js';
 
 const EYE = 1.38, HEIGHT = 1.6, RADIUS = 0.3;
@@ -31,6 +33,9 @@ export class Player {
     this.shield = 0;
     this.tempArmor = 0;          // blue orb buff, until end of level
     this.weaponIndex = 0;
+    this.sidearmOn = false;      // emergency pistol out: no equipped gun can fire (out of ammo)
+    this.sidearmItem = null;
+    this.dryT = -99;             // last dry click (HUD flash, toast throttle)
     this.fireCD = 0;
     this.spin = 0;               // minigun spin-up
     this.fireAnim = -1;          // first-person animation time
@@ -70,7 +75,21 @@ export class Player {
   }
 
   weapons() { return [0, 1, 2, 3].map((i) => this.save.equipment['weapon' + i] || null); }
-  currentWeapon() { return this.save.equipment['weapon' + this.weaponIndex] || null; }
+  currentWeapon() { return this.sidearmOn ? this.sidearm() : this.save.equipment['weapon' + this.weaponIndex] || null; }
+
+  // Never soft-locked by ammo: while no equipped gun can fire the player draws
+  // a plain pistol of the area level at reduced damage. It is not an item
+  // (never in the bag or a slot) and goes away as soon as ammo arrives.
+  sidearm() {
+    const g = this.game, lvl = B.areaLevel(Math.max(1, g.world?.depth || g.save?.run?.depth || 1));
+    if (this.sidearmItem && this.sidearmItem.level === lvl) return this.sidearmItem;
+    let bases = (g.content?.weaponBases || []).filter((b) => b.enabled);
+    if (!bases.length) bases = [{ ...PLACEHOLDER_BASES[0], enabled: true }];
+    const base = bases.find((b) => b.archetype === 'pistol' && (!b.rarity || b.rarity === 'common')) || bases.find((b) => b.archetype === 'pistol') || PLACEHOLDER_BASES[0];
+    const w = generateWeapon(new Rng(lvl * 7919 + 13), lvl, 'common', bases, base);
+    Object.assign(w, { uid: 'sidearm', name: 'SIDEARM', sidearm: true, damage: Math.round(w.damage * 0.7 * 100) / 100, element: 'physical', infused: false, statusChance: 0, stats: {}, patterns: [], abilities: [] });
+    return (this.sidearmItem = w);
+  }
 
   spawnAt(x, z, yaw = 0) {
     const w = this.game.world;
@@ -461,7 +480,8 @@ export class Player {
 
   // ------------------------------------------------------------------ weapons
   selectWeapon(i) {
-    if (i === this.weaponIndex || !this.save.equipment['weapon' + i]) return;
+    if (!this.save.equipment['weapon' + i] || (i === this.weaponIndex && !this.sidearmOn)) return;
+    this.sidearmOn = false;      // an empty gun may be selected: firing it switches again
     this.prevWeapon = this.weaponIndex;
     this.weaponIndex = i;
     this.switchT = 0.32;
@@ -469,19 +489,54 @@ export class Player {
     this.game.sfx('ui_click', { pitch: 0.6 });
     this.game.events.emit('weapon', i);
   }
+  // next / previous gun that can fire (DOOM style: empty guns are skipped;
+  // only when nothing else is loaded does it step onto an empty one)
   cycleWeapon(dir) {
-    for (let k = 1; k <= 4; k++) {
-      const i = (this.weaponIndex + dir * k + 8) % 4;
-      if (this.save.equipment['weapon' + i]) { this.selectWeapon(i); return; }
+    const eq = this.save.equipment, cur = eq['weapon' + this.weaponIndex];
+    for (const loaded of [true, false]) {
+      for (let k = 1; k <= 4; k++) {
+        const i = (this.weaponIndex + dir * k + 8) % 4, w = eq['weapon' + i];
+        if (w && (!loaded || canFire(this.save, w)) && (i !== this.weaponIndex || this.sidearmOn)) { this.selectWeapon(i); return; }
+      }
+      if (cur && canFire(this.save, cur) && !this.sidearmOn) return;
     }
+  }
+  // auto-switch (out of ammo / ammo arrived for the sidearm): no click sound
+  autoSwitch(i) {
+    if (i < 0) {
+      if (this.sidearmOn) return;
+      this.sidearmOn = true;
+      this.game.toast('SIDEARM - out of ammo', '#d8d8d8', 2);
+    } else {
+      if (i !== this.weaponIndex) this.prevWeapon = this.weaponIndex;
+      this.sidearmOn = false;
+      this.weaponIndex = i;
+    }
+    this.switchT = 0.32;
+    this.spin = 0;
+    this.game.events.emit('weapon', this.weaponIndex);
+  }
+  // trigger pulled on an empty gun: dry click, NO SHELLS, switch to what can fire
+  dryFire(wpn) {
+    const g = this.game, a = weaponAmmo(wpn);
+    g.sfx('hit_metal', { pitch: 2.2, volume: 0.45 });
+    if (g.time - this.dryT > 1.2) g.toast(`NO ${AMMO[a.type].name.toUpperCase()}`, AMMO[a.type].color, 1.4);
+    this.dryT = g.time;
+    this.fireCD = 0.2;
+    this.autoSwitch(bestFiringSlot(this.weapons(), this.save));
   }
 
   updateWeapon(dt) {
-    const g = this.game, wpn = this.currentWeapon();
+    const g = this.game;
     this.fireCD -= dt;
     if (this.fireAnim >= 0) { this.fireAnim += dt; if (this.fireAnim > this.fireAnimLen) this.fireAnim = -1; }
     if (this.switchT > 0) { this.switchT -= dt; return; }
-    if (!wpn || g.inHub) return;
+    if (g.inHub) return;
+    // the sidearm stays out only while nothing equipped can fire
+    if (this.sidearmOn) { const i = bestFiringSlot(this.weapons(), this.save); if (i >= 0) { this.autoSwitch(i); return; } }
+    else if (!this.weapons().some(Boolean)) this.sidearmOn = true;
+    const wpn = this.currentWeapon();
+    if (!wpn) return;
     const arch = ARCHETYPES[wpn.archetype] || ARCHETYPES.rifle;
     const wantFire = input.fire;
     if (arch.spinup) this.spin = clamp(this.spin + (wantFire ? dt / arch.spinup : -dt), 0, 1);
@@ -489,10 +544,12 @@ export class Player {
     if (!arch.auto && this.triggerHeld && input.mode !== 'touch') return;
     if (this.fireCD > 0) return;
     if (arch.spinup && this.spin < 0.35) return;
+    if (!canFire(this.save, wpn)) { this.dryFire(wpn); return; }
     const rate = wpn.rate * this.stats.fireRate * (this.adrenalineT > 0 ? 1 + (this.stats.abilities.adrenaline || 0) : 1) * (arch.spinup ? 0.4 + this.spin * 0.6 : 1);
     this.fireCD = 1 / rate;
     this.triggerHeld = true;
     firePlayerWeapon(g, wpn);
+    spendAmmo(this.save, wpn);   // once per shot: pellets, patterns, multishot and double tap are free
     if (this.stats.abilities.double_tap && fx.chance(this.stats.abilities.double_tap)) setTimeout(() => { if (!this.dead && g.state === 'playing') firePlayerWeapon(g, wpn); }, 60);
     this.fireAnim = 0;
     this.fireAnimLen = Math.min(0.42, Math.max(0.1, 0.9 / rate));

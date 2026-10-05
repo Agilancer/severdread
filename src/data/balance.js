@@ -77,6 +77,9 @@ export function rarityShift(depth, itemFind) {
   // multiplier applied to weights of uncommon+ tiers (index>0)
   return (1 + depth * 0.035) * (1 + itemFind);
 }
+// Station shop: credits for a full load of one ammo type (empty to base
+// capacity), by the deepest floor reached - about one floor's kill credits
+export function ammoRefillCost(depth) { return Math.round(30 * Math.pow(1.075, Math.max(1, depth) - 1)); }
 export function itemValue(ilvl, rarityValueMult) { return Math.round(12 * Math.pow(1.07, ilvl - 1) * rarityValueMult); }
 
 // Bag upgrade cost (k = upgrade number starting at 1)

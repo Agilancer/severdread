@@ -30,6 +30,20 @@ export const REAGENT_SPRITES = {
   tyrant_heart: 'it_currency_treasure_27', astral_sigil: 'it_relics_05',
 };
 
+// Ammo packs / boxes (data/ammo.js) from the "AMMO & UPGRADES 601-650" sheet:
+// numbers are it_ammo_upgrades_NN (01 = icon 601). `elem` picks a coloured
+// pack for the element of the equipped weapon of that type; boxes are drawn
+// bigger in the world. `hud` is the type's icon in the HUD / menus. Icons
+// 36-50 (weapon upgrade parts and infusers) are not ammo and stay unused.
+export const AMMO_SPRITES = {
+  shells: { hud: 4, small: [4], box: [5], elem: { fire: 7, ice: 8, lightning: 9, poison: 10 } },
+  heavy: { hud: 3, small: [3, 2], box: [6] },
+  explosives: { hud: 11, small: [11, 31, 12], box: [15, 14] },
+  cells: { hud: 17, small: [17, 16, 19, 20], box: [18], elem: { plasma: 17, ice: 17, poison: 16, lightning: 19, holy: 19, fire: 20, blood: 20 } },
+  fuel: { hud: 21, small: [21], box: [24], elem: { fire: 21, ice: 22, poison: 23, void: 25, arcane: 25 } },
+  bolts: { hud: 26, small: [26, 27], box: [28, 29, 30] },
+};
+
 // Player projectile sprites by kind. Bullets & rockets are drawn from
 // behind (what you see as they fly away from you).
 export const PLAYER_PROJ = {
