@@ -135,7 +135,9 @@ function deckFloor(leaf, rng) {
     // the engine room stays on the spine deck (its bulkhead is often the boss
     // gate, which must be flat); its height lives in the well and catwalks
     case 'ss_engine': return base;
-    case 'ss_bridge': return base + rng.pick([1.2, 1.2, 1.8]);
+    // the bridge is level with the spine (its gate stays flat); the command
+    // deck inside it is raised
+    case 'ss_bridge': return base;
     case 'ss_cargo': return base + rng.pick([-2.4, -3.0, -3.0]);
     case 'ss_hangar': return base + rng.pick([0, -1.2, -1.8]);
     case 'ss_maint': return base + rng.pick([0, -1.2]);
@@ -174,7 +176,8 @@ function shipLayout({ W, H, rng, add }, S) {
   // the engine room needs depth for the reactor well between the thrusters on
   // the aft wall and the exits on its bow wall
   let E = clamp(Math.round(Lu * 0.21), 17, 25);
-  let B = clamp(Math.round(Lu * 0.15), 13, 18);
+  // the bridge: deep enough for the helm row, the command deck and its approach
+  let B = clamp(Math.round(Lu * 0.17), 15, 20);
   const uE0 = sternPad;
   const uB1 = Lu - bowPad;
   // the crash site: the hull broke in two, the gap between the halves is open ground
@@ -182,12 +185,12 @@ function shipLayout({ W, H, rng, add }, S) {
   if (crashed) {
     const G = clamp(Math.round(Lu * 0.2), 14, 22);
     // both halves need the end room and at least one spine section
-    while (E + B + G + 2 * 11 > uB1 - uE0 && (E > 16 || B > 12)) { if (E > 16) E--; if (B > 12) B--; }
+    while (E + B + G + 2 * 11 > uB1 - uE0 && (E > 16 || B > 14)) { if (E > 16) E--; if (B > 14) B--; }
     const lo = uE0 + E + 11, hi = uB1 - B - 11 - G;
     const g0 = clamp(Math.round(lo + (hi - lo) * rng.float(0.3, 0.7)), lo, Math.max(lo, hi));
     gap = [g0, g0 + G];
   } else {
-    while (E + B + 22 > uB1 - uE0 && (E > 16 || B > 12)) { if (E > 16) E--; if (B > 12) B--; }
+    while (E + B + 22 > uB1 - uE0 && (E > 16 || B > 14)) { if (E > 16) E--; if (B > 14) B--; }
   }
   const uE1 = uE0 + E, uB0 = uB1 - B;
   S.u = { uE0, uE1, uB0, uB1, gap };

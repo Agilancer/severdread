@@ -619,12 +619,16 @@ function buildBridge(ctx, Fr) {
   // command deck behind the helm row: raised a step or two, the tactical desk
   // along its front between the two flights, the captain's chair behind it
   const up = Fr.L >= 14 ? 1.2 : 0.6, n = nSteps(up);
-  const dw = Math.min(9, Fr.Wd - 6), dd = 3;
-  const s0 = Math.floor((Fr.Wd - dw) / 2);
-  let deck = null, t0 = 0;
-  for (let tt = 4 + n; tt + dd <= Fr.L - 4 && !deck && dw >= 5; tt++) {
-    if (!okL(ctx, Fr, tt - n, s0 - 1, dd + n, dw + 2, 0)) continue;
-    t0 = tt;
+  let deck = null, t0 = 0, dw = 0, s0 = 0;
+  const cands = [];
+  for (let w = Math.min(9, Fr.Wd - 6); w >= 5; w -= 2) {
+    const mid = Math.floor((Fr.Wd - w) / 2);
+    for (const off of [0, -1, 1, -2, 2, -3, 3]) if (mid + off >= 1 && mid + off + w <= Fr.Wd - 1) cands.push([w, mid + off]);
+  }
+  const dd = 3;
+  for (let tt = 4 + n; tt + dd <= Fr.L - 3 && !deck; tt++) for (const [w, sa] of cands) {
+    if (deck || !okL(ctx, Fr, tt - n, sa - 1, dd + n, w + 2, 0)) continue;
+    t0 = tt; dw = w; s0 = sa;
     const cells = setHeightL(ctx, Fr, t0, s0, dd, dw, y + up, { floorTex: TS.FLOOR3, wallTex: TS.METAL });
     flightL(ctx, Fr, t0 - n, s0, n, 2, 'away', y, y + up);
     flightL(ctx, Fr, t0 - n, s0 + dw - 2, n, 2, 'away', y, y + up);
@@ -643,6 +647,7 @@ function buildBridge(ctx, Fr) {
     useL(ctx, Fr, t0 - n, s0 - 1, dd + n + 1, dw + 2);
     deck = { cells, t0, s0, dw, dd };
   }
+  if (!deck) stat('nodeck', 'ss_bridge', Fr.L, Fr.Wd);
   // holo table between the helm and the deck
   const th = deck ? t0 - n - 1 : 5;
   if (th >= 4 && okL(ctx, Fr, th - 1, Math.floor(Fr.Wd / 2) - 1, 2, 2, 0)) {

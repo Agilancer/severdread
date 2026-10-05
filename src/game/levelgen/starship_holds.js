@@ -66,10 +66,11 @@ function buildAirlock(ctx, Fr, last, dock) {
   // the outer hatch: centred on the hull wall where the wall is closed
   const hs0 = Math.floor(Fr.Wd / 2) - 1 + rng.int(-1, 1);
   let s0 = -1;
-  for (const c of [hs0, hs0 - 1, hs0 + 1, hs0 - 2, hs0 + 2]) {
-    if (c < 1 || c + 4 > Fr.Wd) continue;
+  for (const c of [hs0, hs0 - 1, hs0 + 1, hs0 - 2, hs0 + 2, hs0 - 3, hs0 + 3]) {
+    if (c < 0 || c + 3 > Fr.Wd) continue;
     let good = true;
-    for (let s = c - 1; s < c + 4 && good; s++) if (s >= 0 && s < Fr.Wd && !wallFree(ctx, Fr, s)) good = false;
+    const m = last ? 0 : 1;   // a clear cell beside the hatch unless this is the last wall
+    for (let s = c - m; s < c + 3 + m && good; s++) if (s >= 0 && s < Fr.Wd && !wallFree(ctx, Fr, s)) good = false;
     if (good) { s0 = c; break; }
   }
   if (s0 < 0) return no(ctx, 'hatch wall');
@@ -83,6 +84,12 @@ function buildAirlock(ctx, Fr, last, dock) {
   if (!op && !last) return no(ctx, 'inner hatch');
   hatch(ctx, Fr, s0, y, { collar: dock, light: dock ? AMBER : ALARM });
   useL(ctx, Fr, 0, s0 - 1, 1, 5);
+  // the docking port: a window onto space beside the hatch (the docked ship's side)
+  if (dock) {
+    const wa = runs(Fr.Wd, (s) => wallFree(ctx, Fr, s) && s > 0 && s < Fr.Wd - 1, 2);
+    const w = longest(wa);
+    if (w) shipWindow(ctx, Fr, w[0], Math.min(w[1], w[0] + 4), { head: Math.min(r.ceilH - 0.5, 2.9) });
+  }
   if (!op) {
     // no room for the bulkhead: an open airlock bay with the gantry over the hatch
     D = 3;
@@ -144,11 +151,37 @@ function airlockRoom(ctx, Fr, last, dock, D, op, s0) {
     deco.console(x, z, y, Fr.toward, { width: 0.8 });
     useL(ctx, Fr, D + 1, cs, 1, 1);
   }
-  // the docking port: a window onto space beside the hatch
-  if (dock) {
-    const wa = runs(Fr.Wd, (s) => wallFree(ctx, Fr, s) && (s < s0 - 1 || s >= s0 + 4) && s > 0 && s < Fr.Wd - 1, 2);
-    const w = longest(wa);
-    if (w) shipWindow(ctx, Fr, w[0], Math.min(w[1], w[0] + 4), { head: Math.min(r.ceilH - 0.5, 2.9) });
+  // the inner hatch seen from the suit room: heavy frame, hazard header, keep-clear box
+  if (op) {
+    for (const [a, b] of [[op[0] - 0.32, op[0]], [op[1], op[1] + 0.32]]) fb(deco, Fr, D, D + 0.22, a, b, y, y + 3.2, TS.METAL, { faces: FACE.SIDES | FACE.TOP });
+    fb(deco, Fr, D, D + 0.22, op[0] - 0.32, op[1] + 0.32, y + 2.95, y + 3.3, TS.METAL);
+    fb(deco, Fr, D + 0.22, D + 0.24, op[0], op[1], y + 3.0, y + 3.2, TS.PAINT, { uv: 'fit' });
+    for (const [a, b] of [[D + 0.3, D + 0.42], [D + 2.3, D + 2.42]]) paint(ctx, ...wr(Fr, a, b, op[0], op[1]), y);
+    paint(ctx, ...wr(Fr, D + 0.3, D + 2.42, op[0], op[0] + 0.12), y);
+    paint(ctx, ...wr(Fr, D + 0.3, D + 2.42, op[1] - 0.12, op[1]), y);
+  }
+  // the suit-up island: two benches back to back with a helmet rack between
+  const mi = freeMask(ctx, Fr, 1);
+  const ir = bestRect(mi, { minT: 2, minS: 3, maxT: 2, maxS: 5, t0: D + 3 });
+  if (ir) {
+    steelBench(ctx, ...wr(Fr, ir.t + 0.05, ir.t + 0.55, ir.s + 0.2, ir.s + ir.ds - 0.2), y);
+    steelBench(ctx, ...wr(Fr, ir.t + 1.45, ir.t + 1.95, ir.s + 0.2, ir.s + ir.ds - 0.2), y);
+    openShelf(ctx, ...wr(Fr, ir.t + 0.7, ir.t + 1.3, ir.s + 0.4, ir.s + ir.ds - 0.4), y, 1.9, { items: [TS.GLASS, TS.METAL, TS.CRATE2], topEmpty: true });
+    useL(ctx, Fr, ir.t, ir.s, 2, ir.ds);
+  }
+  // a rack of oxygen bottles on a free stretch of wall
+  for (const [x, z, d] of wallSpots(ctx)) {
+    if (ctx.used.has(ctx.g.idx(x, z))) continue;
+    const along = d >= 2;
+    for (let k = 0; k < 3; k++) {
+      const px = along ? x + 0.22 + k * 0.28 : x + 0.5 + DIR_X[d] * 0.28, pz = along ? z + 0.5 + DIR_Z[d] * 0.28 : z + 0.22 + k * 0.28;
+      cylV(deco, px, pz, y, y + 1.35, 0.12, k === 1 ? TS.PAINT : TS.METAL);
+      cylV(deco, px, pz, y + 1.35, y + 1.48, 0.05, TS.MACHINE);
+    }
+    wallBox(ctx, x, z, d, 0.1, y + 0.9, y + 1.0, TS.METAL, { inset: 0.05 });
+    deco.collider(x + 0.1, y, z + 0.1, x + 0.9, y + 1.5, z + 0.9);
+    use(ctx, x, z, 1, 1);
+    break;
   }
   if (!suits && !last) return no(ctx, 'suits');
   panelLights(ctx, 3, dock ? WARMW : COOL);
@@ -158,6 +191,16 @@ function airlockRoom(ctx, Fr, last, dock, D, op, s0) {
 function airlockLite(ctx) {
   const { room: r } = ctx;
   ctx.used = ctx.used || new Set();
+  // the outer hatch on the hull if three cells of wall are free
+  for (const side of outerSides(ctx)) {
+    const Fr = frame(r, side);
+    const rr = longest(runs(Fr.Wd, (s) => wallFree(ctx, Fr, s), 3));
+    if (!rr) continue;
+    const s0 = rr[0] + Math.floor((rr[1] - rr[0] - 3) / 2);
+    hatch(ctx, Fr, s0, r.floor, { collar: r.leaf.kind === 'ss_dock', light: ALARM });
+    useL(ctx, Fr, 0, s0, 2, 3);
+    break;
+  }
   for (const [x, z, d] of wallSpots(ctx)) if ((x + z) % 3 === 0) { P.suitLocker(ctx, x, z, d, r.floor); use(ctx, x, z, 1, 1); }
   panelLights(ctx, 3, COOL);
 }
@@ -182,7 +225,13 @@ function buildMaint(ctx, Fr, last) {
     G = gallery(ctx, Fr, gD, y + u, { minDeck: md, floorTex: TS.GRATE });
     if (G) { up = u; break; }
   }
-  if (!G) return no(ctx, 'deck');
+  if (!G && !last) return no(ctx, 'deck');
+  if (G) maintDeck(ctx, Fr, G, up);
+  return maintFloor(ctx, Fr, last, up || 3.0);
+}
+function maintDeck(ctx, Fr, G, up) {
+  const { deco, room: r } = ctx;
+  const y = r.floor;
   deckFace(ctx, G);
   // junction boxes and valves on the wall of the deck, a control panel at one end
   for (let s = G.s0; s < G.s1; s++) {
@@ -194,6 +243,10 @@ function buildMaint(ctx, Fr, last) {
   }
   const [cx, cz] = Fr.cell(1, G.s1 - 1);
   deco.console(cx, cz, y + up, Fr.dirOf('latN'), { width: 0.8 });
+}
+function maintFloor(ctx, Fr, last, up) {
+  const { g, deco, rng, room: r } = ctx;
+  const y = r.floor, top = y + r.ceilH;
   // the plant floor: a sump under grating and pumps
   const m = freeMask(ctx, Fr, 1);
   const sr = bestRect(m, { minT: 3, minS: 3, maxT: 4, maxS: 6, t0: 4 });

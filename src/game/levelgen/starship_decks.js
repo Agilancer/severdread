@@ -75,6 +75,30 @@ function slideDoor(ctx, Fr, t, s0, s1, y, side = 1, tex = TS.PANEL) {
   fb(ctx.deco, Fr, a, b, s0, s1, y + 0.02, y + 2.95, faced(Fr.dirOf(side > 0 ? 'away' : 'toward'), tex, TS.METAL), { uv: 'fit' });
   fb(ctx.deco, Fr, a - 0.01, b + 0.01, s0, s1, y + 1.0, y + 1.1, TS.PAINT, { uv: 'fit' });
 }
+// stores rack (world rect): steel uprights, three shelves of crates, drums and
+// cases - a lean rack (fewer boxes than the lab's open shelving)
+function cargoRack(ctx, x0, z0, x1, z1, y, h = 2.4) {
+  const { deco, rng } = ctx;
+  const alongX = x1 - x0 >= z1 - z0;
+  const L = alongX ? x1 - x0 : z1 - z0, D = alongX ? z1 - z0 : x1 - x0;
+  const B = (a0, a1, b0, b1, y0, y1, tex, o) => (alongX ? deco.box(x0 + a0, y0, z0 + b0, x0 + a1, y1, z0 + b1, tex, o) : deco.box(x0 + b0, y0, z0 + a0, x0 + b1, y1, z0 + a1, tex, o));
+  for (const a of [0, L - 0.08]) B(a, a + 0.08, 0, D, y, y + h, TS.BEAM, { faces: FACE.SIDES | FACE.TOP });
+  for (let k = 0; k < 3; k++) {
+    const sy = y + 0.1 + k * (h - 0.2) / 3;
+    B(0.08, L - 0.08, 0.02, D - 0.02, sy, sy + 0.05, TS.METAL);
+    for (let a = 0.15; a < L - 0.4;) {
+      const w = rng.float(0.45, 0.85);
+      if (a + w > L - 0.12) break;
+      if (rng.chance(0.75)) {
+        const tex = rng.pick([TS.CRATE, TS.CRATE, TS.CRATE2, TS.METAL]);
+        const hh = Math.min((h - 0.2) / 3 - 0.12, rng.float(0.3, 0.6));
+        B(a, a + w, 0.08, D - 0.08, sy + 0.05, sy + 0.05 + hh, tex, { uv: 'fit' });
+      }
+      a += w + rng.float(0.08, 0.25);
+    }
+  }
+  deco.collider(x0, y, z0, x1, y + h, z1);
+}
 // a metal-legged bench (world rect)
 function steelBench(ctx, x0, z0, x1, z1, y) {
   const { deco } = ctx;
@@ -207,7 +231,7 @@ function buildQuarters(ctx, Fr, last) {
   }
   // bunk bays down both long walls
   const n = bunkBays(ctx, Fr) + (Fr.L >= 5 ? bunkBays(ctx, opp(r, Fr)) : 0);
-  if (n < (last ? 2 : 4)) return no(ctx, 'bunks ' + n);
+  if (n < (last ? 1 : 4)) return no(ctx, 'bunks ' + n);
   // a table with stools in the aisle (wide quarters)
   const m = freeMask(ctx, Fr, 0);
   const tb = bestRect(m, { minT: 2, minS: 3, maxT: 2, maxS: 3, t0: 1, t1: Fr.L - 1 });
@@ -251,7 +275,13 @@ function buildMess(ctx, Fr, last) {
   const hull = outerSides(ctx);
   if (hull.includes(Fr.side) && !last) return no(ctx, 'galley on the hull');
   const run = longest(runs(Fr.Wd, (s) => wallFree(ctx, Fr, s, 3), last ? 4 : 5));
-  if (!run) return no(ctx, 'galley wall');
+  if (!run && !last) return no(ctx, 'galley wall');
+  if (run) buildGalley(ctx, Fr, run);
+  return messHall(ctx, Fr, last, hull, run ? 4 : 1);
+}
+function buildGalley(ctx, Fr, run) {
+  const { deco, rng, room: r } = ctx;
+  const y = r.floor;
   let [a, b] = run;
   while (b - a > 11) { a++; if (b - a > 11) b--; }
   for (let s = a; s < b; s++) {
@@ -285,10 +315,14 @@ function buildMess(ctx, Fr, last) {
   for (const s of [a + 1.1, b - 1.14]) { const [px0, pz0, px1, pz1] = wr(Fr, 2.41, 2.47, s, s + 0.04); deco.box(px0, y + 1.0, pz0, px1, y + 1.62, pz1, TS.METAL, { faces: FACE.SIDES }); }
   lightStrip(ctx, ...wr(Fr, 1.2, 1.5, a + 1, b - 1), y + r.ceilH, WARMW, 5);
   useL(ctx, Fr, 0, a, 4, b - a);
+}
+function messHall(ctx, Fr, last, hull, tStart) {
+  const { rng, room: r } = ctx;
+  const y = r.floor;
   // dining: rows of tables (2 cells each) with aisles, parallel to the galley
   const m = freeMask(ctx, Fr, 0);
   let tables = 0;
-  for (let t0 = 4; t0 + 2 <= Fr.L; t0 += 3) {
+  for (let t0 = tStart; t0 + 2 <= Fr.L; t0 += 3) {
     for (const [s0, s1] of runs(Fr.Wd, (s) => m[t0][s] && m[t0 + 1][s], 3)) {
       for (let s = s0; s + 3 <= s1;) {
         const len = Math.min(5, s1 - s);
@@ -499,7 +533,7 @@ function buildStorage(ctx, Fr, last) {
     for (let s = a; s < b; s += 4) {
       const e = Math.min(b, s + 3);
       if (e - s < 2) continue;
-      openShelf(ctx, ...wr(Fr, 0.05, 0.75, s + 0.05, e - 0.05), y, h);
+      cargoRack(ctx, ...wr(Fr, 0.05, 0.8, s + 0.05, e - 0.05), y, h);
       useL(ctx, Fr, 0, s, 1, e - s);
       shelves++;
     }
@@ -511,8 +545,8 @@ function buildStorage(ctx, Fr, last) {
       for (let s = a + 1; s + 2 <= b - 1; s += 5) {
         const e = Math.min(b - 1, s + 4);
         if (e - s < 2) continue;
-        openShelf(ctx, ...wr(Fr, t + 0.1, t + 0.95, s + 0.05, e - 0.05), y, h);
-        openShelf(ctx, ...wr(Fr, t + 1.05, t + 1.9, s + 0.05, e - 0.05), y, h);
+        cargoRack(ctx, ...wr(Fr, t + 0.1, t + 0.95, s + 0.05, e - 0.05), y, h);
+        cargoRack(ctx, ...wr(Fr, t + 1.05, t + 1.9, s + 0.05, e - 0.05), y, h);
         markMask(m, t, s, 2, e - s);
         useL(ctx, Fr, t, s, 2, e - s);
         shelves += 2;
@@ -603,4 +637,4 @@ function buildLounge(ctx, Fr, last) {
   return true;
 }
 
-export { slideDoor, runs, longest, wallFree, wr, opp, shipWindow, windowRun, steelBench, vending, stock, stores, WARMW, PURPLE };
+export { cargoRack, slideDoor, runs, longest, wallFree, wr, opp, shipWindow, windowRun, steelBench, vending, stock, stores, WARMW, PURPLE };

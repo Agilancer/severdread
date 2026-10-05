@@ -48,16 +48,21 @@ function wallSlots(L, S, rng, byLeaf) {
   const nearCrash = (r) => crashRoom && (r.leaf.x + r.leaf.w === crashRoom.leaf.x || crashRoom.leaf.x + crashRoom.leaf.w === r.leaf.x);
   for (const r of L.rooms) {
     if (r.leaf.kind === 'ss_crash') continue;
-    let want;
-    if (S.crashed) want = nearCrash(r) || (r.leaf.kind === 'ss_engine' && rng.chance(0.5)) || rng.chance(0.18) ? TS.WALL2 : TS.WALL;
-    else want = WALL2_FREIGHTER.has(r.leaf.kind) ? TS.WALL2 : TS.WALL;
+    let want, tornX = null;
+    if (S.crashed) {
+      // torn plating where the hull broke (the walls toward the crash site and
+      // a few cells round the corners), on a wrecked room now and then
+      want = (r.leaf.kind === 'ss_engine' && rng.chance(0.4)) || rng.chance(0.1) ? TS.WALL2 : TS.WALL;
+      if (nearCrash(r)) tornX = r.leaf.x + r.leaf.w === crashRoom.leaf.x ? r.x + r.w : r.x - 1;
+    } else want = WALL2_FREIGHTER.has(r.leaf.kind) ? TS.WALL2 : TS.WALL;
     r.wallSlotFinal = want;
     for (let z = r.z - 1; z <= r.z + r.h; z++) for (let x = r.x - 1; x <= r.x + r.w; x++) {
       if (!g.in(x, z)) continue;
       const i = g.idx(x, z);
       if (g.type[i]) continue;
       const ring = x === r.x - 1 || x === r.x + r.w || z === r.z - 1 || z === r.z + r.h;
-      if (ring && (g.wallTex[i] === TS.WALL || g.wallTex[i] === TS.WALL2 || g.wallTex[i] === TS.ACCENT)) g.wallTex[i] = want;
+      const torn = tornX !== null && Math.abs(x - tornX) <= 2 + ((x * 7 + z * 13) % 3);
+      if (ring && (g.wallTex[i] === TS.WALL || g.wallTex[i] === TS.WALL2 || g.wallTex[i] === TS.ACCENT)) g.wallTex[i] = torn ? TS.WALL2 : want;
     }
   }
   void byLeaf;
@@ -349,6 +354,27 @@ function tornEnds(L, S, rng) {
     const i0 = ax ? g.idx(hullSideLine, a0) : g.idx(a0, hullSideLine);
     const yTop = Math.min(g.ceil[i0], cr.floor + 6);
     const lo = cr.floor;
+    // the breach is ragged: the wall beside the opening is blown out too,
+    // rubble heaped in the gaps (too high to walk over), the top torn unevenly
+    if (!c.door) {
+      const base = Math.max(g.floor[i0], g.floor[ax ? g.idx(crashSideLine, a0) : g.idx(a0, crashSideLine)]);
+      for (const [b, k] of [[a0 - 1, 1], [a1, 1], [a0 - 2, 2], [a1 + 1, 2]]) {
+        if (k === 2 && rng.chance(0.4)) continue;
+        for (const t of [c.line - 1, c.line]) {
+          const x = ax ? t : b, z = ax ? b : t;
+          if (!g.in(x, z)) continue;
+          const i = g.idx(x, z);
+          if (g.type[i]) continue;
+          const nb = [0, 1, 2, 3].some((d) => { const j = g.idx(x + DIR_X[d], z + DIR_Z[d]); return g.type[j] && (g.flags[j] & F.DOOR); });
+          if (nb) continue;
+          const rub = base + (k === 1 ? rng.float(0.8, 1.3) : rng.float(1.6, 2.4));
+          const ceil = Math.max(rub + 1.0, yTop - (k === 1 ? rng.float(0, 0.8) : rng.float(0.8, 1.8)));
+          g.open(x, z, rub, ceil, { floorTex: TS.ROCK, ceilTex: TS.METAL, wallTex: TS.WALL2, light: g.light[i0], region: -2 });
+          g.flags[i] |= F.NOSPAWN;
+          P.debris(ctx, x + 0.5, z + 0.5, rub, rng.float(0.5, 0.8), { obstacle: false, texes: [TS.METAL, TS.WALL2, TS.BEAM] });
+        }
+      }
+    }
     // shredded plating round the opening on the crash-site face
     for (const b of [a0, a1]) {
       for (let k = 0; k < 3; k++) {
@@ -361,6 +387,13 @@ function tornEnds(L, S, rng) {
     for (let a = a0 + 0.5; a < a1; a += rng.float(1.2, 2.2)) {
       const x = ax ? facePlane + sg * 0.2 : a, z = ax ? a : facePlane + sg * 0.2;
       P.sparkCable(ctx, x, z, yTop, rng.float(1.0, Math.max(1.1, yTop - lo - 2.0)));
+    }
+    // plates torn from the lintel, hanging down and out over the opening (above head height)
+    for (let a = a0 + 0.3; a < a1 - 0.2; a += rng.float(0.7, 1.3)) {
+      const drop = rng.float(0.6, Math.max(0.7, Math.min(1.6, yTop - lo - 2.4)));
+      const p0 = ax ? [facePlane, yTop - 0.05, a] : [a, yTop - 0.05, facePlane];
+      const p1 = ax ? [facePlane + sg * rng.float(0.2, 0.7), yTop - drop, a + rng.float(-0.3, 0.3)] : [a + rng.float(-0.3, 0.3), yTop - drop, facePlane + sg * rng.float(0.2, 0.7)];
+      deco.bar(p0, p1, rng.float(0.3, 0.6), 0.05, rng.pick([TS.WALL2, TS.METAL, TS.CEIL]));
     }
     // debris heaps flanking the ramp on the site side
     for (const b of [a0 - 1, a1]) {
