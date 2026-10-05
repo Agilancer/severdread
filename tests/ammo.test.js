@@ -4,7 +4,7 @@
 // station issue, shop refills, level caches and monster drop rates.
 // Runs the game's own Player / Game code against a small fake world.
 import { ARCHETYPES, PLACEHOLDER_BASES } from '../src/data/weapons.js';
-import { AMMO, AMMO_TYPES, ARCH_AMMO, AMMO_ISSUE, AMMO_DROPS, weaponAmmo } from '../src/data/ammo.js';
+import { AMMO, AMMO_TYPES, ARCH_AMMO, AMMO_ISSUE, AMMO_DROPS, AMMO_SPOTS, AMMO_CHEST, AMMO_CAP_MAX, weaponAmmo } from '../src/data/ammo.js';
 import { AMMO_SPRITES } from '../src/data/itemart.js';
 import * as A from '../src/game/ammo.js';
 import { generateWeapon } from '../src/game/items.js';
@@ -190,14 +190,15 @@ for (const [arch, a] of Object.entries(ARCH_AMMO)) {
   const st0 = computeStats(10, {});
   check(A.ammoMax('shells', st0) === AMMO.shells.max, 'base capacity');
   const st1 = computeStats(10, { ring0: { stats: { ammoCap: 0.3 }, abilities: [], upgrade: 0 }, body: { stats: { ammoCap: 5 }, abilities: [], upgrade: 0 } });
-  check(A.ammoMax('shells', st1) === AMMO.shells.max * 2, 'Ammo Capacity capped at +100%');
+  check(A.ammoMax('shells', st1) === Math.round(AMMO.shells.max * (1 + AMMO_CAP_MAX)), `Ammo Capacity capped at +${AMMO_CAP_MAX * 100}%`);
   // collect: takes what fits, the rest stays; a full type is left on the floor (no magnet)
-  const save = newSave(); save.ammo.shells = 36;
+  const SH = AMMO.shells.max;
+  const save = newSave(); save.ammo.shells = SH - 4;
   const fake = { save, player: { stats: st0, x: 0, y: 0, z: 0, dead: false }, time: 10, sounds: [], toasts: [], sfx(n) { this.sounds.push(n); }, toast(t) { this.toasts.push(t); }, collect: Game.prototype.collect };
   const pk = { kind: 'ammo', type: 'shells', value: 8, big: false };
-  check(Game.prototype.collect.call(fake, pk) === false && save.ammo.shells === 40 && pk.value === 4, 'partial pickup keeps the rest');
+  check(Game.prototype.collect.call(fake, pk) === false && save.ammo.shells === SH && pk.value === 4, 'partial pickup keeps the rest');
   check(fake.toasts.includes('+4 SHELLS'), 'pickup toast');
-  check(Game.prototype.collect.call(fake, pk) === false && save.ammo.shells === 40 && pk.value === 4, 'full: nothing taken');
+  check(Game.prototype.collect.call(fake, pk) === false && save.ammo.shells === SH && pk.value === 4, 'full: nothing taken');
   fake.world = { pickups: [{ ...pk, x: 0.2, y: 0.6, z: 0, age: 5, settled: true }, { kind: 'ammo', type: 'cells', value: 40, x: 0.3, y: 0.6, z: 0, age: 5, settled: true }] };
   Game.prototype.updatePickups.call(fake, 1 / 60);
   check(fake.world.pickups.length === 1 && fake.world.pickups[0].type === 'shells' && fake.world.pickups[0].x === 0.2, 'full type stays put, the other is collected');
@@ -212,23 +213,24 @@ for (const [arch, a] of Object.entries(ARCH_AMMO)) {
   check(save.ammo.cells === AMMO.cells.small, 'only once per gun');
   // station issue on a new run
   for (const t of AMMO_TYPES) save.ammo[t] = 0;
-  save.ammo.heavy = 390;
+  save.ammo.heavy = AMMO.heavy.max + 30;
   const hub = { save, player: { stats: st0 }, post: {}, sfx() {}, startLevel() {} };
   Game.prototype.startRunFromHub.call(hub, false);
-  check(AMMO_TYPES.every((t) => save.ammo[t] >= Math.round(AMMO[t].max * AMMO_ISSUE)) && save.ammo.heavy === 390, 'new run tops up to the issue level, keeps more');
+  check(AMMO_TYPES.every((t) => save.ammo[t] >= Math.round(AMMO[t].max * AMMO_ISSUE)) && save.ammo.heavy === AMMO.heavy.max + 30, 'new run tops up to the issue level, keeps more');
   save.ammo.shells = 0;
   Game.prototype.startRunFromHub.call(hub, true);
   check(save.ammo.shells === 0, 'continuing a run is not a new issue');
   // shop refills: free when full, dearer deeper
+  save.ammo.heavy = 0;
   check(A.refillCost(save, st0, 'heavy', 1) > 0 && A.refillCost(save, st0, 'shells', 30) > A.refillCost(save, st0, 'shells', 1), 'refill prices');
   save.ammo.bolts = AMMO.bolts.max;
   check(A.refillCost(save, st0, 'bolts', 10) === 0, 'full type costs nothing');
-  // chests always hold one ammo box
+  // chests hold ammo (data/ammo.js AMMO_CHEST: a pack, or a box)
   const ch = { world: { pickups: [], depth: 4, burst() {}, flash() {} }, player: { stats: st0, weapons: () => [mk('shotgun')] }, content: { weaponBases: bases }, sfx() {} };
   ch.dropAt = Game.prototype.dropAt;
   Game.prototype.openChest.call(ch, { x: 1, y: 0, z: 1 });
-  const boxes = ch.world.pickups.filter((k) => k.kind === 'ammo');
-  check(boxes.length === 1 && boxes[0].big && boxes[0].value === AMMO[boxes[0].type].box, 'chest ammo box');
+  const am = ch.world.pickups.filter((k) => k.kind === 'ammo');
+  check(am.length === (AMMO_CHEST.chance >= 1 ? 1 : am.length) && am.length <= 1 && am.every((k) => k.value === AMMO[k.type][k.big ? 'box' : 'small'] && (k.big ? AMMO_CHEST.box > 0 : AMMO_CHEST.box < 1)), 'chest ammo');
 }
 
 // ---------------------------------------------------------------- monster drops
@@ -250,13 +252,18 @@ for (const [arch, a] of Object.entries(ARCH_AMMO)) {
 // ---------------------------------------------------------------- level caches
 {
   const themes = ['possessed_station', 'castle', 'hell', 'ruined_city', 'caves', 'bio_lab', 'clockwork_foundry', undefined];
-  let total = 0;
+  let total = 0, preBoss = 0;
   for (const th of themes) for (const seed of [11, 222, 3333]) {
     let L;
     try { L = generateLevel({ depth: 1 + (seed % 9), seed, playerLevel: 5, themeId: th }); } catch (e) { check(false, `generateLevel ${th} ${seed}: ${e.message}`); continue; }
     const g = L.grid, a = L.ammo || [];
     const boxes = a.filter((s) => s.big).length, packs = a.length - boxes;
-    check(boxes >= 2 && boxes <= 5 && packs >= 4 && packs <= 8, `${L.theme.id} seed ${seed}: ${boxes} boxes, ${packs} packs`);
+    // the AMMO_SPOTS range times the level size (0.7-1.4)
+    const lim = ([a, b]) => [Math.max(1, Math.round(a * 0.7)), Math.round(b * 1.4)];
+    const [b0, b1] = lim(AMMO_SPOTS.boxes), [p0, p1] = lim(AMMO_SPOTS.packs);
+    check(boxes >= b0 && boxes <= b1 && packs >= p0 && packs <= p1, `${L.theme.id} seed ${seed}: ${boxes} boxes, ${packs} packs`);
+    check(a.filter((s) => s.boss).length <= 1 && a.every((s) => !s.boss || s.big), `${L.theme.id} seed ${seed}: one box before the boss`);
+    preBoss += a.some((s) => s.boss) ? 1 : 0;
     const start = g.idx(Math.floor(L.start.x), Math.floor(L.start.z));
     const dist = g.bfs([start], { jumpGap: L.jumpGap || 0, avoid: F.OBSTACLE });
     const cells = new Set();
@@ -271,7 +278,17 @@ for (const [arch, a] of Object.entries(ARCH_AMMO)) {
     check(JSON.stringify(L2.ammo) === JSON.stringify(a), `${L.theme.id} ${seed}: cache positions not deterministic`);
     total += a.length;
   }
-  console.log(`level caches: ${total} spots over ${themes.length * 3} levels`);
+  check(preBoss >= themes.length * 3 * 0.75, `a box before the boss arena in only ${preBoss} levels`);
+  console.log(`level caches: ${total} spots over ${themes.length * 3} levels, ${preBoss} with a box before the boss`);
+  // the box before the boss arena always holds ammo for a gun the player carries
+  const lvl = { seed: 5, ammo: [{ x: 1.5, z: 1.5, big: true, boss: true }, { x: 3.5, z: 1.5, big: true }] };
+  let ok = true;
+  for (let s = 1; s <= 40; s++) {
+    const fg = { world: { pickups: [], floorAt: () => 0 }, player: { weapons: () => [mk('rifle'), mk('flamer')] } };
+    Game.prototype.stockAmmo.call(fg, { ...lvl, seed: s });
+    if (fg.world.pickups[0].type !== 'fuel' || fg.world.pickups[0].value !== AMMO.fuel.box) ok = false;
+  }
+  check(ok, 'the box before the boss is for an equipped gun');
 }
 
 console.log(fails ? `ammo FAILED (${fails})` : 'ammo OK');

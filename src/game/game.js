@@ -14,7 +14,7 @@ import { F } from './grid.js';
 import { KEY_HEX } from './levelgen/common.js';
 import { updateProjectiles, submitProjectiles, projectileLights, damagePlayer, damageMonster, itemGlowColor } from './combat.js';
 import { generateItem, rollItemLevel, generateWeapon } from './items.js';
-import { newAmmo, migrateAmmo, addAmmo, ammoFull, topUpAmmo, clampAmmo, ammoPickup, rollAmmoType, weaponAmmo, AMMO } from './ammo.js';
+import { newAmmo, migrateAmmo, addAmmo, ammoFull, topUpAmmo, clampAmmo, ammoPickup, rollAmmoType, equippedAmmoTypes, weaponAmmo, AMMO, AMMO_CHEST } from './ammo.js';
 import { ELEMENTS } from '../data/elements.js';
 import { REAGENTS, CHEST_POOL } from '../data/reagents.js';
 import { RARITY } from '../data/rarities.js';
@@ -194,10 +194,12 @@ export class Game {
   // type now, leaning toward the ammo the equipped guns use (like pedestals
   // are stocked at load), so what lies around is useful.
   stockAmmo(level) {
-    const w = this.world, ws = this.player.weapons();
+    const w = this.world, ws = this.player.weapons(), eq = equippedAmmoTypes(ws);
     const rng = new Rng(((level.seed || 1) ^ 0x5eed0a) >>> 0);
     for (const a of level.ammo || []) {
-      const pk = ammoPickup(rng, rollAmmoType(rng, ws), a.big, ws);
+      // the box before the boss arena is always for a gun the player carries
+      const t = a.boss && eq.length ? rng.pick(eq) : rollAmmoType(rng, ws);
+      const pk = ammoPickup(rng, t, a.big, ws);
       w.pickups.push({ ...pk, x: a.x, y: (w.floorAt(a.x, a.z) ?? 0) + 0.25, z: a.z, vx: 0, vy: 0, vz: 0, settled: true, age: 1, phase: rng.float(0, 6) });
     }
   }
@@ -516,8 +518,8 @@ export class Game {
       this.dropAt(fake, { kind: 'reagent', id: r.id, value: rng.int(r.min, r.max) });
     }
     this.dropAt(fake, { kind: 'credits', value: B.creditsFor(depth, 6) });
-    const ws = p.weapons();
-    this.dropAt(fake, ammoPickup(rng, rollAmmoType(rng, ws), true, ws));   // every chest holds an ammo box
+    const ws = p.weapons();   // ammo: a pack (or a box) for the guns the player carries, data/ammo.js AMMO_CHEST
+    if (rng.chance(AMMO_CHEST.chance)) this.dropAt(fake, ammoPickup(rng, rollAmmoType(rng, ws), rng.chance(AMMO_CHEST.box), ws));
   }
 
   dropAt(src, pk) {

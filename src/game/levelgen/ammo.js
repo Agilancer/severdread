@@ -51,16 +51,16 @@ export function placeAmmo({ g, rng, startIdx, bossCell, arenaSet = new Set(), ch
   const out = [];
   const cd = (a, b) => Math.abs((a % W) - (b % W)) + Math.abs(((a / W) | 0) - ((b / W) | 0));
   const free = (i, gap) => !out.some((o) => cd(o.cell, i) < gap);
-  const put = (i, big) => out.push({ cell: i, x: (i % W) + 0.5, z: ((i / W) | 0) + 0.5, big });
+  const put = (i, big, boss) => out.push({ cell: i, x: (i % W) + 0.5, z: ((i / W) | 0) + 0.5, big, ...(boss ? { boss: true } : {}) });
   const size = Math.min(1.4, Math.max(0.7, reach / 1400));   // like the monster count
-  const nBoxes = Math.max(AMMO_SPOTS.boxes[0], Math.min(AMMO_SPOTS.boxes[1], Math.round(rng.int(2, 4) * size)));
-  const nPacks = Math.max(AMMO_SPOTS.packs[0], Math.min(AMMO_SPOTS.packs[1], Math.round(rng.int(4, 7) * size)));
+  const nBoxes = Math.max(1, Math.round(rng.int(AMMO_SPOTS.boxes[0], AMMO_SPOTS.boxes[1]) * size));
+  const nPacks = Math.max(1, Math.round(rng.int(AMMO_SPOTS.packs[0], AMMO_SPOTS.packs[1]) * size));
   const outside = cand.filter((c) => !arenaSet.has(c.i));
   // a box just before the boss arena, close to the route
   if (bossCell >= 0) {
     const dB = dist[bossCell];
     const pre = outside.filter((c) => dist[c.i] < dB - 4 && dist[c.i] > dB - 30 && (!side || side[c.i] <= 6));
-    if (pre.length) put(pre[0].i, true);
+    if (pre.length) put(pre[0].i, true, true);
   }
   // boxes next to chests
   for (const ch of rng.shuffle([...chests])) {

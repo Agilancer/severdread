@@ -1,12 +1,12 @@
 // Ammo runtime: the player's stock lives in the save (save.ammo = {shells,
 // heavy, ...}); capacity comes from the Ammo Capacity stat. Pure functions so
 // the player, pickups, UI and tests share one set of rules (data/ammo.js).
-import { AMMO, AMMO_TYPES, AMMO_ISSUE, AMMO_DROPS, weaponAmmo } from '../data/ammo.js';
+import { AMMO, AMMO_TYPES, AMMO_ISSUE, AMMO_DROPS, AMMO_CHEST, weaponAmmo } from '../data/ammo.js';
 import { AMMO_SPRITES } from '../data/itemart.js';
 import { dps } from './items.js';
 import * as B from '../data/balance.js';
 
-export { AMMO, AMMO_TYPES, weaponAmmo };
+export { AMMO, AMMO_TYPES, AMMO_CHEST, weaponAmmo };
 
 // a fresh stock: every type at `frac` of its base capacity
 export function newAmmo(frac = AMMO_ISSUE) {
