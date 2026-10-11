@@ -249,13 +249,24 @@ function makePlan(rng, depth) {
   const mid3 = (a0, a1, w = 3) => Math.floor((a0 + a1 - w) / 2);
   const ov = (A, B, axis) => (axis === 'u' ? [Math.max(A.v, B.v), Math.min(A.v + A.dv, B.v + B.dv)] : [Math.max(A.u, B.u), Math.min(A.u + A.du, B.u + B.du)]);
   const pick = (A, B, axis, w, m = 1) => { const [a0, a1] = ov(A, B, axis); return rng.int(a0 + m, Math.max(a0 + m, a1 - m - w)); };
+  // a door in a yard's side wall (plan u = uWall) stands on a stoop: a landing
+  // one cell either side of it and two steps 4 cells out into the yard. A
+  // building in the yard closer to that wall than that (the mausoleum in the
+  // graveyard's corner) would wall the steps in, so the door keeps clear of
+  // its rows, walls and the landing's overhang included.
+  const yardClear = (yard, uWall, p, w) => !rooms.some((o) => {
+    if (o.inside !== yard) return false;
+    const gap = uWall < o.u ? o.u - 1 - (uWall + 1) : uWall - (o.u + o.du + 1);
+    return gap < 5 && p - 1 < o.v + o.dv + 1 && p + w + 1 > o.v - 1;
+  });
   // the C / P wall: avoid the secret stair's rows
   const pickCP = (A, B, w, m = 2, lo = -1e9, hi = 1e9) => {
     let [a0, a1] = ov(A, B, 'u');
     a0 = Math.max(a0 + m, lo); a1 = Math.min(a1 - m, hi);
+    const yard = A === garden || A === grave ? A : B === garden || B === grave ? B : null, uWall = uC + wc;
     const ok = [];
-    for (let p = a0; p + w <= a1; p++) if (p + w <= secRows[0] - 1 || p >= secRows[1] + 1) ok.push(p);
-    return ok.length ? ok[Math.floor(ok.length / 2) + rng.int(-1, 1) < 0 ? 0 : Math.min(ok.length - 1, Math.floor(ok.length / 2) + rng.int(-1, 1))] : null;
+    for (let p = a0; p + w <= a1; p++) if ((p + w <= secRows[0] - 1 || p >= secRows[1] + 1) && (!yard || yardClear(yard, uWall, p, w))) ok.push(p);
+    return ok.length ? ok[clamp(Math.floor(ok.length / 2) + rng.int(-1, 1), 0, ok.length - 1)] : null;
   };
   // front door: centre of the foyer's front wall
   L(fore, foyer, { axis: 'v', pos: mid3(uC, uC + wc), hA: GF, hB: GF, kind: 'frontdoor', gate: true, bias: 0 });
@@ -274,11 +285,18 @@ function makePlan(rng, depth) {
   if (serv.length > 1) L(serv[0], serv[1], { axis: 'v', pos: pick(serv[0], serv[1], 'v', 3), hA: GF, hB: GF, kind: 'door', gate: true, bias: 0.8 });
   for (const s of serv) {
     // a door onto the garden or the graveyard, whichever it faces more
+    // (the longest run of the shared wall clear of the yard's buildings)
     let best = null;
     for (const yard of [garden, grave]) {
       const [a0, a1] = ov(s, yard, 'u');
-      const lo = Math.max(a0 + 2, yard.v + 2), hi = Math.min(a1 - 2, yard.v + yard.dv - 2);
-      if (hi - lo >= 3 && (!best || hi - lo > best.hi - best.lo)) best = { yard, lo, hi };
+      const lo0 = Math.max(a0 + 2, yard.v + 2), hi0 = Math.min(a1 - 2, yard.v + yard.dv - 2);
+      for (let lo = lo0; lo + 3 <= hi0;) {
+        if (!yardClear(yard, uC - 1, lo, 3)) { lo++; continue; }
+        let hi = lo + 3;
+        while (hi + 1 <= hi0 && yardClear(yard, uC - 1, hi - 2, 3)) hi++;
+        if (!best || hi - lo > best.hi - best.lo) best = { yard, lo, hi };
+        lo = hi;
+      }
     }
     if (best) L(s, best.yard, { axis: 'u', pos: mid3(best.lo, best.hi), hA: GF, hB: GF, kind: 'garden', gate: true, bias: 1.2, loopP: 0.5 });
   }
