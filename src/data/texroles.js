@@ -852,7 +852,11 @@ export const THEME_TEX = {
   sewer_labyrinth: { wall: '18:2,3 21:4,5 18:4,8', wall2: 'G:dripping_stone G:decay_green', floor: '20:1,3 21:0,8', floor2: '8:2,4 14:1,3', ceil: 'G:dripping_stone 15:2,3', side: '18:2,3 G:stone_dark_bricks', accent: '8:1,0 14:1,1', pitwall: 'G:decay_green 8:3,9' },
   // meat plant vats and gutters hold blood (POISON role), stainless benches (METAL), framed glass
   meat_plant: { wall: '18:1,3 8:2,5', wall2: '16:0,8 10:0,0 10:1,0', floor: '8:2,5 8:2,9', ceil: '8:1,0 8:1,1', accent: '16:0,8 16:2,0', floor3: 'G:blood_stone', poison: '11:blood', metal: '22:1,0 22:1,6', glass: '#glass_pane' },
-  prison_complex: { wall: '21:3,4 13:0,0 1:3,0', wall2: 'G:iron_spikes_grey 8:1,4 14:1,9', floor: '22:2,1 20:1,3', floor2: '8:2,4 14:1,3' },
+  // prison (gen_prison.js): grey cinderblock in the cell blocks, institutional green paint in the
+  // admin range and the mess, grimy plaster in the laundry, dark brick outside and a concrete
+  // perimeter wall; a barred cell door tile for the painted tiers (PANEL), chain-link mesh for
+  // the fences (GRATE), barred windows, diamond plate on galleries and stairs, white tile floors
+  prison_complex: { wall: '18:2,8', wall2: '18:3,7', facade3: '18:4,2', facade: '18:2,1', facade2: '21:3,4', floor: '22:2,1', floor2: '8:2,2', floor3: '18:1,3', ceil: '18:3,1', ceil2: '14:2,1', side: '21:3,4', pillar: '21:3,4', trim: '18:3,1', panel: '19:2,6', grate: '8:1,4', glass: '19:0,9', accent: '1:3,1', paint: '21:1,3', road: '21:0,0', sidewalk: '21:0,2', ground: '21:0,1', roof: '20:1,1', pitwall: '8:0,9', door: '19:2,1', carpet: '#carpet_red', fabric: '#linen_old', machine: '14:3,9', glass_plain: '#glass_pane' },
   military_base: { wall: '21:3,4 1:0,0 20:1,7', wall2: '1:0,0 3:0,3 14:0,3', floor: '22:2,1 20:1,3 8:2,2', floor2: '21:0,0 21:0,2', ceil: '21:3,4 20:1,7 22:2,1 12:2,0', crate: '14:0,3 3:0,3 #crate_metal', accent: '1:3,1' },
   possessed_military: { wall: '21:3,4 1:0,0', wall2: '10:0,0 16:0,8 15:2,6', floor: '22:2,1 20:1,3', floor2: 'G:blood_stone 8:2,5', ceil: '20:1,7 21:3,4 22:2,1 12:2,0', accent: '10:0,0 15:2,6' },
   ruined_military: { wall: '21:4,9 21:3,4 21:4,7', wall2: 'G:plaster_brick_ruin 21:4,6', floor: '22:2,1 20:1,3', floor2: '6:1,1 5:1,0', ceil: '21:3,4 20:1,7', ground: '6:1,1 5:1,0 21:4,0' },

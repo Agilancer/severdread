@@ -213,6 +213,30 @@ hand rails, AABB colliders, light fixtures). See `docs/ARCHITECTURE.md`.
   torn-off nacelle; the torn hull ends show the decks' cross-section round
   ragged breaches; torn decks open over wreckage, fuel leaks pool on the
   decks, the bow half climbs toward its buried nose.
+- `gen_mansion.js` (haunted mansion): a gothic manor on three storeys from a
+  real house plan (forecourt, service wing, the two-storey foyer with its
+  double staircase and gallery, the walled garden, the graveyard with the
+  mausoleum over the crypt, the bedroom wing, library, ballroom, chapel; a
+  secret stair behind a bookcase). Rooms are `mansion_rooms.js` /
+  `mansion_wings.js` templates written in a local frame (`mansion_kit.js`
+  Frame / Kit) so the plan can take any of eight orientations; a spanning
+  tree of doorways from the forecourt picks the routes, keyed 3-wide gates
+  sit on the path to the boss, extra doorways inside a zone make loops.
+- `gen_prison.js` (prison complex): a walled penitentiary on the same plan
+  system. The forecourt inside the vehicle gate (gatehouse, drive, prison
+  bus, parking, floodlight masts) leads to the admin range: intake (walk-
+  through detectors, the reception counter behind glass, a holding cage),
+  the infirmary ward, the warden's office and the armory. Two cell blocks
+  flank the control hub (a glass guard booth on a railed dais): each block is
+  a tall skylit atrium with real 3x3 cells as alcoves off the wide block
+  floor on one side, a railed steel gallery of cells on the tier above on
+  the other reached by two flights, and the upper tiers painted on the high
+  walls with ledges and rails. Behind the hub the mess hall; at the back the
+  laundry with a boiler pit sunk in its floor, the solitary wing and the
+  exercise yard (a fenced court with hoops, benches, weights, watch towers
+  up steel stairs, floodlights) inside the razor-wired perimeter wall.
+  Sally ports between sections are the 3-wide keyed gates
+  (`prison_rooms.js`, `prison_grounds.js`, props in `prison_props.js`).
 - Caves, canyons, mountains, mazes, halls, rooftops, sky islands and convoys
   have their own generators built on the same toolkit.
 

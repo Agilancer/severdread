@@ -1,5 +1,5 @@
-// Maze levels: the Back Rooms, sewer labyrinth, subway tunnels, data core,
-// prison complex and dream maze. All share the lattice layout of mazekit.js
+// Maze levels: the Back Rooms, sewer labyrinth, subway tunnels, data core
+// and dream maze. All share the lattice layout of mazekit.js
 // (wide corridors, frequent big chambers, zones split by 1-wide doorways,
 // real stair flights) and differ in their "skin": sizes, heights, corridor
 // dressing and the themed room templates below.
@@ -10,7 +10,9 @@
 //             skyscraper facades)
 //   prison  - cell blocks with real ground cells and a railed upper gallery
 //             reached by stairs, mess halls, guard rooms, solitary, showers,
-//             the exercise yard (sky) with a guard tower
+//             the exercise yard (sky) with a guard tower. Now only the
+//             fallback skin: the Prison Complex theme has its own planned
+//             archetype (gen_prison.js)
 //   data    - server halls (rack rows, neon conduits, cable trays), the core
 //             (glowing column over a coolant ring pit), coolant pits
 //   backrooms - endless yellow office floor: rooms opening into each other

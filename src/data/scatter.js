@@ -65,6 +65,8 @@ export const THEME_SCATTER = {
   graveyard: { pillar: ['crypt', 'gothic', 'rock'], pedestal: ['crypt', 'moss'] },
   // a house has no free-standing columns in its rooms (its own halls carry real ones)
   haunted_mansion: { pillar: [], pedestal: ['gothic', 'marble'] },
+  // the prison builds its own columns, tables and fences: no free-standing pillars
+  prison_complex: { pillar: [], explosive: ['industrial', 'rust'] },
   clocktower: { pillar: ['gothic', 'iron', 'stone'], explosive: ['gothic', 'rust'] },
   sunken_temple: { pillar: ['moss', 'gold', 'crypt'], pedestal: ['gold', 'moss'] },
   jungle_ruins: { pillar: ['moss', 'rock', 'crypt'], pedestal: ['moss', 'crypt'] },
