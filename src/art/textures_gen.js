@@ -232,6 +232,42 @@ export const TEXGEN = {
     return p;
   },
 
+  // raised-and-fielded wood panelling, one panel per tile: stiles and rails
+  // round a bevelled field (panelled halls, libraries, studies)
+  panelling(pal, seed) {
+    const base = rgb(pal.base || '#4a2c18'), p = new PixelCanvas(S, S);
+    const fr = 6, bv = 5, f0 = fr + bv, f1 = S - fr - bv;
+    const grain = (x, y, vert, k) => {
+      const u = vert ? x : y, v = vert ? y : x;
+      return Math.sin(u * 0.85 + tnoise(u / 4, v / 14, 16, seed + k) * 6) * 0.07 + (tnoise(u / 2, v / 6, 32, seed + k + 3) - 0.5) * 0.12;
+    };
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const inX = x >= fr && x < S - fr, inY = y >= fr && y < S - fr;
+      let c;
+      if (!inX || !inY) {
+        // frame: stiles (vertical grain) run full height, rails between them
+        const stile = !inX;
+        c = shade(base, -0.06 + grain(x, y, stile, stile ? 1 : 2));
+      } else if (x < f0 || x >= f1 || y < f0 || y >= f1) {
+        // bevel: lit from the top left
+        const dl = x - fr, dr = S - fr - 1 - x, dt = y - fr, db = S - fr - 1 - y;
+        const m = Math.min(dl, dr, dt, db);
+        const k = m === dt ? 0.2 : m === dl ? 0.1 : m === db ? -0.32 : -0.22;
+        c = shade(base, k + grain(x, y, true, 4) * 0.6);
+      } else c = shade(base, 0.06 + grain(x, y, true, 5));
+      p.set(x, y, c);
+    }
+    // groove of the moulding round the panel, a highlight on the field's edge
+    for (let i = fr; i < S - fr; i++) {
+      p.set(i, fr - 1, shade(base, -0.55)); p.set(fr - 1, i, shade(base, -0.5));
+      p.set(i, S - fr, shade(base, 0.18)); p.set(S - fr, i, shade(base, 0.12));
+      if (i >= f0 && i < f1) { p.set(i, f0, shade(base, 0.24)); p.set(f0, i, shade(base, 0.2)); p.set(i, f1 - 1, shade(base, -0.35)); p.set(f1 - 1, i, shade(base, -0.3)); }
+    }
+    // the joint where the rails meet the stiles
+    for (const y of [fr - 1, S - fr]) for (const x of [0, S - 1]) p.set(x, y, shade(base, -0.6));
+    return p;
+  },
+
   carpet(pal, seed) {
     const base = rgb(pal.base || '#5a1a24'), alt = rgb(pal.alt || '#a8862c'), p = new PixelCanvas(S, S);
     for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
@@ -950,6 +986,27 @@ Object.assign(TEXGEN, {
           p.line(x0, y0, x1, y1, mix(ac, [255, 255, 255], 0.4));
         }
       }
+    } else if (pal.kind === 'portrait') {
+      // an old oil portrait: a dark figure in a dark coat against a brown ground,
+      // the pale face lit from one side, the varnish crazed and darkened
+      const coat = rgb(pal.alt || '#1c1612'), skin = rgb(pal.accent || '#b8987a');
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const vig = Math.min(1, Math.hypot(x - 31.5, y - 26) / 40);
+        p.set(x, y, shade(mix(base, [70, 52, 34], 0.35 - vig * 0.35), (tfbm(x / 9, y / 9, 64 / 9, seed, 3) - 0.5) * 0.25 - vig * 0.4));
+      }
+      const fx = 32 + r.int(-2, 2), fy = 24 + r.int(-1, 2);
+      p.ellipse(fx, 60, 22, 16, coat);                              // shoulders
+      p.ellipse(fx, 52, 7, 6, shade(coat, 0.1));
+      p.polygon([[fx - 5, 44], [fx + 5, 44], [fx + 3, 54], [fx - 3, 54]], [196, 186, 168]);   // collar
+      p.rect(fx - 3, fy + 9, 6, 6, shade(skin, -0.35));               // neck
+      p.ellipse(fx, fy, 8, 11, skin);                                // face
+      for (let y = fy - 11; y <= fy + 11; y++) for (let x = fx; x <= fx + 8; x++) p.set(x, y, shade(skin, -0.45), 110);  // shadowed side
+      p.ellipse(fx, fy - 8, 9, 6, shade(coat, 0.15));                // hair
+      p.rect(fx - 9, fy - 8, 3, 10, shade(coat, 0.15));
+      for (const ex of [fx - 4, fx + 3]) { p.rect(ex, fy - 1, 2, 2, r.chance(0.3) ? [150, 30, 20] : [26, 18, 14]); }
+      p.rect(fx - 2, fy + 5, 4, 1, shade(skin, -0.5));
+      crack(p, r, base, 6, 26);
+      for (let y = 0; y < S; y += 4) for (let x = (y / 4) % 2 ? 2 : 0; x < S; x += 4) p.set(x, y, [0, 0, 0], 26);
     } else { // cinema
       for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
         const sky = mix([250, 196, 130], [150, 186, 236], 1 - y / 40);

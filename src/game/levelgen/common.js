@@ -53,6 +53,8 @@ export const TS = {
   PAINT: 48,      // road paint / floor markings (lane lines, crosswalks, hazard lines)
   NEON: 49,       // neon signs and strips (emissive)
   CARPET: 50,     // carpets / rugs / runners
+  GLASS_PLAIN: 51, // plain glazing seen as panes (glasshouses, glass doors)
+  FABRIC: 52,     // curtains, drapes, bed covers, upholstery
 };
 export const SLOT_COUNT = 56;
 // hub teleporter pad: one painted 9x9 floor (assets/textures/hub_portal_floor.png)

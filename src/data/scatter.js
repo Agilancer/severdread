@@ -63,7 +63,8 @@ export const THEME_SCATTER = {
   infernal_foundry: { pillar: ['iron', 'lava', 'hell', 'rust'], explosive: ['rust', 'industrial'] },
   necropolis: { pillar: ['crypt', 'gothic'], pedestal: ['crypt', 'gothic'] },
   graveyard: { pillar: ['crypt', 'gothic', 'rock'], pedestal: ['crypt', 'moss'] },
-  haunted_mansion: { pillar: ['gothic', 'marble', 'stone'] },
+  // a house has no free-standing columns in its rooms (its own halls carry real ones)
+  haunted_mansion: { pillar: [], pedestal: ['gothic', 'marble'] },
   clocktower: { pillar: ['gothic', 'iron', 'stone'], explosive: ['gothic', 'rust'] },
   sunken_temple: { pillar: ['moss', 'gold', 'crypt'], pedestal: ['gold', 'moss'] },
   jungle_ruins: { pillar: ['moss', 'rock', 'crypt'], pedestal: ['moss', 'crypt'] },

@@ -19,12 +19,14 @@ import { genCastle } from './gen_castle.js';
 import { genLab } from './gen_lab.js';
 import { genFoundry } from './gen_foundry.js';
 import { genStarship } from './gen_starship.js';
+import { genMansion } from './gen_mansion.js';
 import { placeScatter } from './scatter.js';
 import { placeAmmo } from './ammo.js';
 
 const GENERATORS = {
   rooms: genArch, station: genArch, castle: genArch, caves: genCaves, city: genCity, rooftops: genPlatforms, islands: genPlatforms,
   convoy: genConvoy, canyon: genCanyon, hall: genHall, maze: genMaze, mountain: genMountain, lab: genLab, foundry: genFoundry, starship: genStarship,
+  mansion: genMansion,
 };
 
 // Every new level rolls a random archetype first (each archetype equally
@@ -277,6 +279,8 @@ function populate(L, rng, theme, depth, playerLevel) {
       const wallAdj = g.neighbors(x, z).some(([nx, nz]) => !g.isOpen(nx, nz));
       if (!wallAdj && rng.chance(0.6)) continue;
       const name = rng.pick(propNames);
+      // a generator may keep a prop out of rooms it does not fit (plants in a crypt)
+      if (L.propOk && !L.propOk(c, name)) continue;
       props.push({ cell: c, x: x + 0.5 + rng.float(-0.2, 0.2), z: z + 0.5 + rng.float(-0.2, 0.2), prop: name });
     }
   }
