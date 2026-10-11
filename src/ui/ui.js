@@ -594,10 +594,17 @@ export class UI {
         break;
       case 'sell': {
         if (!sel) break;
+        const slot = this.selected.where === 'bag' ? null : this.selected.slot;
+        if (slot?.startsWith('weapon') && Object.keys(s.equipment).filter((k) => k.startsWith('weapon') && s.equipment[k]).length <= 1) {
+          this.toast('Keep at least one weapon equipped', '#ff6060'); audio.play('ui_error'); break;
+        }
         if (RARITY[sel.rarity].index >= 3 && !confirm(`Sell ${sel.name}?`)) break;
         s.credits += sellValue(sel);
-        if (this.selected.where === 'bag') s.bag.splice(this.selected.i, 1);
-        else { s.equipment[this.selected.slot] = null; g.player.recalc(); }
+        if (!slot) s.bag.splice(this.selected.i, 1);
+        else {
+          s.equipment[slot] = null; g.player.recalc();
+          if (slot === 'weapon' + g.player.weaponIndex) g.player.cycleWeapon(1);
+        }
         audio.play('ui_buy');
         this.selected = null;
         break;

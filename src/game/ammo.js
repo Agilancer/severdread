@@ -46,10 +46,12 @@ export function topUpAmmo(save, stats, frac = AMMO_ISSUE) {
   if (!save.ammo) save.ammo = newAmmo(0);
   for (const t of AMMO_TYPES) save.ammo[t] = Math.max(ammoCount(save, t), Math.round(ammoMax(t, stats) * frac));
 }
-// after gear changes: nothing above capacity
-export function clampAmmo(save, stats) {
-  if (!save.ammo) return;
-  for (const t of AMMO_TYPES) save.ammo[t] = Math.max(0, Math.min(ammoCount(save, t), ammoMax(t, stats)));
+// level start: every count a sane whole number. Ammo above capacity (an Ammo
+// Capacity item was taken off) is kept until spent - pickups, the station
+// issue and refills just add nothing to it - so swapping gear never destroys ammo.
+export function sanitizeAmmo(save) {
+  if (!save.ammo) save.ammo = newAmmo(0);
+  for (const t of AMMO_TYPES) { const n = save.ammo[t]; save.ammo[t] = Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0; }
 }
 // old saves: every type present, numbers sane
 export function migrateAmmo(ammo) {

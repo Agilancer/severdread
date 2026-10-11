@@ -172,6 +172,23 @@ for (const [arch, a] of Object.entries(ARCH_AMMO)) {
   check(g2.player.sidearmOn && g2.player.shotCount > 0, 'sidearm with no weapons equipped');
 }
 
+{
+  // the selected slot went empty (sold / unequipped mid-run, old save): the next
+  // update draws a gun that can fire instead of leaving the trigger dead
+  const save = newSave();
+  equip(save, [mk('shotgun'), mk('rifle')]);
+  save.ammo.shells = 10;
+  const g = fakeGame(save), p = g.player;
+  p.weaponIndex = 0; save.equipment.weapon0 = null;
+  hold(g, 1);
+  check(p.weaponIndex === 1 && !p.sidearmOn && p.shotCount > 0, `empty selected slot: switched to slot ${p.weaponIndex}, ${p.shotCount} shots`);
+  // only empty ammo guns left besides the empty slot: the sidearm
+  const s2 = newSave(); equip(s2, [null, mk('rocket')]); s2.ammo.explosives = 0;
+  const g2 = fakeGame(s2);
+  hold(g2, 1);
+  check(g2.player.sidearmOn && g2.player.shotCount > 0, 'empty selected slot, nothing loaded: sidearm');
+}
+
 // ---------------------------------------------------------------- save migration
 {
   const old = newSave(); delete old.ammo; old.level = 7; old.credits = 999;
@@ -211,6 +228,11 @@ for (const [arch, a] of Object.entries(ARCH_AMMO)) {
   save.bag.length = 0;
   Game.prototype.collect.call(fake, { kind: 'item', item: plas });
   check(save.ammo.cells === AMMO.cells.small, 'only once per gun');
+  // ammo above capacity (an Ammo Capacity item came off) is kept, not destroyed
+  save.ammo.shells = SH + 20; save.ammo.cells = NaN; save.ammo.fuel = -3;
+  A.sanitizeAmmo(save);
+  check(save.ammo.shells === SH + 20 && save.ammo.cells === 0 && save.ammo.fuel === 0, 'level start keeps surplus, fixes bad counts');
+  check(A.addAmmo(save, st0, 'shells', 6) === 0 && save.ammo.shells === SH + 20, 'no pickups above capacity');
   // station issue on a new run
   for (const t of AMMO_TYPES) save.ammo[t] = 0;
   save.ammo.heavy = AMMO.heavy.max + 30;

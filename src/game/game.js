@@ -14,7 +14,7 @@ import { F } from './grid.js';
 import { KEY_HEX } from './levelgen/common.js';
 import { updateProjectiles, submitProjectiles, projectileLights, damagePlayer, damageMonster, itemGlowColor } from './combat.js';
 import { generateItem, rollItemLevel, generateWeapon } from './items.js';
-import { newAmmo, migrateAmmo, addAmmo, ammoFull, topUpAmmo, clampAmmo, ammoPickup, rollAmmoType, equippedAmmoTypes, weaponAmmo, AMMO, AMMO_CHEST } from './ammo.js';
+import { newAmmo, migrateAmmo, addAmmo, ammoFull, topUpAmmo, sanitizeAmmo, ammoPickup, rollAmmoType, equippedAmmoTypes, weaponAmmo, AMMO, AMMO_CHEST } from './ammo.js';
 import { ELEMENTS } from '../data/elements.js';
 import { REAGENTS, CHEST_POOL } from '../data/reagents.js';
 import { RARITY } from '../data/rarities.js';
@@ -177,7 +177,7 @@ export class Game {
     // keys, chests
     for (const k of level.keys) w.pickups.push({ kind: 'key', color: k.color, x: k.x, y: (w.floorAt(k.x, k.z) ?? 0) + 0.6, z: k.z, vx: 0, vy: 0, vz: 0, settled: true, age: 0, phase: fx.float(0, 6) });
     for (const c of level.chests) w.chests.push({ ...c, y: w.floorAt(c.x, c.z) ?? 0, open: false });
-    clampAmmo(this.save, this.player.stats);
+    sanitizeAmmo(this.save);
     this.stockAmmo(level);   // ammo caches: packs and boxes for the guns the player carries
     w.scatter.stockPedestals(this.content.weaponBases, this.player.stats?.itemFind || 0);   // special items on pedestals
     this.player.spawnAt(level.start.x, level.start.z, level.start.yaw);

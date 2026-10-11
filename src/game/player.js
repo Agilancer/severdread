@@ -535,6 +535,8 @@ export class Player {
     // the sidearm stays out only while nothing equipped can fire
     if (this.sidearmOn) { const i = bestFiringSlot(this.weapons(), this.save); if (i >= 0) { this.autoSwitch(i); return; } }
     else if (!this.weapons().some(Boolean)) this.sidearmOn = true;
+    // the selected slot went empty (sold / unequipped / old save): draw what can fire
+    else if (!this.currentWeapon()) { this.autoSwitch(bestFiringSlot(this.weapons(), this.save)); return; }
     const wpn = this.currentWeapon();
     if (!wpn) return;
     const arch = ARCHETYPES[wpn.archetype] || ARCHETYPES.rifle;

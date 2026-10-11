@@ -812,8 +812,9 @@ export function killMonster(game, m, o = {}) {
     });
     dropPickup(game, m, { kind: 'item', item });
   }
-  // ammo (game/ammo.js): packs, elite / boss boxes, leaning toward the equipped guns
-  for (const pk of monsterAmmoDrops(fx, { boss: !!def.boss, elite: !!m.elite }, p.weapons())) dropPickup(game, m, pk);
+  // ammo (game/ammo.js): packs, elite / boss boxes, leaning toward the equipped guns;
+  // a boss's summons drop none (an endless supply would make boss ammo moot)
+  if (!m.summoned) for (const pk of monsterAmmoDrops(fx, { boss: !!def.boss, elite: !!m.elite }, p.weapons())) dropPickup(game, m, pk);
   // orbs
   if (def.boss) {
     dropPickup(game, m, { kind: 'orb', orb: 'gold', value: Math.round(credits * 12) });

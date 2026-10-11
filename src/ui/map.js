@@ -4,7 +4,7 @@
 //    per cell size) into an offscreen canvas that survives re-openings.
 //  - radar layer: doors (they unlock), range rings + sweep around the player,
 //    blips for monsters / elites / the boss, the portal, keys on the ground,
-//    chests, relic pedestals, the crew in the hub and the player arrow.
+//    chests, relic pedestals, ammo, the crew in the hub and the player arrow.
 //    Redrawn every animation frame while mounted. mount() starts the loop,
 //    unmount() stops it and drops every listener; UI.close() calls unmount
 //    whenever the inventory re-renders, changes tab or closes.
@@ -14,6 +14,8 @@
 import { F, HAZ, OPP, EDGE_BIT } from '../game/grid.js';
 import { KEY_HEX } from '../game/levelgen/common.js';
 import { RARITY } from '../data/rarities.js';
+import { AMMO } from '../data/ammo.js';
+import { ammoFull } from '../game/ammo.js';
 
 const TAU = Math.PI * 2;
 const FONT = 'Silkscreen, monospace';
@@ -52,6 +54,7 @@ const ICONS = {
   key: ['.##.....', '#..#####', '#..#.#.#', '.##.....'],
   chest: ['.#####.', '#hhhhh#', '#######', '#hh+hh#', '#hhhhh#', '#######'],
   relic: ['.#.', '#+#', '.#.'],
+  ammo: ['.#.#.', '#+#+#', '#####', '#####'],
   crew: ['.###.', '.###.', '..#..', '#####', '..#..', '.#.#.', '#...#'],
 };
 
@@ -530,6 +533,14 @@ export class LevelMap {
         const [sx, sy] = this.toScreen(v, pd.x, pd.z);
         put(sprite('relic', { '#': RARITY[pd.item.rarity]?.color || '#fff' }, P), sx, sy);
       }
+      // ammo packs and boxes in their type's colour, dimmed while that type is full
+      for (const pk of w.pickups) {
+        if (pk.kind !== 'ammo') continue;
+        const [sx, sy] = this.toScreen(v, pk.x, pk.z);
+        if (ammoFull(g.save, g.player.stats, pk.type)) c.globalAlpha = 0.4;
+        put(sprite('ammo', { '#': AMMO[pk.type].color, '+': '#fff4d8' }, pk.big ? P : Math.max(1, P - 1)), sx, sy);
+        c.globalAlpha = 1;
+      }
       for (const pk of w.pickups) {
         if (pk.kind !== 'key') continue;
         const [sx, sy] = this.toScreen(v, pk.x, pk.z), col = KEY_HEX[pk.color] || '#fff';
@@ -712,7 +723,7 @@ export class LevelMap {
         <div class="map-h">LEGEND</div>
         <div class="legend">
           ${item(ic('you'), 'YOU')}${item(ic('enemy'), 'HOSTILE')}${elites ? item(ic('elite'), 'ELITE') : ''}${boss && !boss.dead ? item(ic('boss'), 'BOSS') : ''}
-          ${item(ic('portal'), 'PORTAL')}${keysGround ? item(ic('key'), 'KEY') : ''}${w.chests.some((c) => !c.open) ? item(ic('chest'), 'CHEST') : ''}
+          ${item(ic('portal'), 'PORTAL')}${keysGround ? item(ic('key'), 'KEY') : ''}${w.chests.some((c) => !c.open) ? item(ic('chest'), 'CHEST') : ''}${w.pickups.some((pk) => pk.kind === 'ammo') ? item(ic('ammo'), 'AMMO') : ''}
           ${(w.scatter?.pedestals || []).some((pd) => !pd.taken && pd.item) ? item(ic('relic'), 'RELIC') : ''}
           ${dr ? item(sw('door'), 'DOOR') : ''}${has.stair ? item(sw('stair'), 'STAIRS') : ''}${has.bridge ? item(sw('bridge'), 'BRIDGE') : ''}
           ${has.void ? item(sw('void'), 'VOID') : ''}${has.pit ? item(sw('pit'), 'PIT') : ''}${has.lava ? item(sw('lava'), 'LAVA') : ''}
@@ -731,7 +742,7 @@ export class LevelMap {
       c.imageSmoothingEnabled = false;
       const mid = cv.width / 2;
       const pal = { enemy: ['enemy', { '#': C.enemy }], elite: ['elite', { '#': C.elite, '+': '#fff' }], boss: ['boss', { '#': C.boss }], portal: ['portal', { '#': C.portal, '+': '#fff' }],
-        key: ['key', { '#': KEY_HEX.yellow }], chest: ['chest', { '#': C.chest, h: '#a87a10' }], relic: ['relic', { '#': '#3d7bff' }], crew: ['crew', { '#': C.crew }], tele: ['portal', { '#': C.tele, '+': '#e8ffff' }] }[name];
+        key: ['key', { '#': KEY_HEX.yellow }], chest: ['chest', { '#': C.chest, h: '#a87a10' }], relic: ['relic', { '#': '#3d7bff' }], ammo: ['ammo', { '#': AMMO.heavy.color, '+': '#fff4d8' }], crew: ['crew', { '#': C.crew }], tele: ['portal', { '#': C.tele, '+': '#e8ffff' }] }[name];
       if (name === 'you') {
         const L = 5 * dpr, P2 = dpr;
         c.beginPath(); c.moveTo(mid + L, mid); c.lineTo(mid - 0.6 * L, mid + 0.5 * L); c.lineTo(mid - 0.25 * L, mid); c.lineTo(mid - 0.6 * L, mid - 0.5 * L); c.closePath();
