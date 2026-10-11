@@ -114,4 +114,6 @@ image in `art/raw/<category>/`, run `npm run art`, and it's in the game.
 ```bash
 npm test                               # every theme generates & is solvable; item generation
 npm start & node tests/play.mjs out/   # headless playthrough with screenshots
+node tests/balance.test.js -v          # damage + ammo balance tables (first runs, ammo economy)
+node tests/fight.mjs                   # real-shot weapon probe behind the balance test's FIGHT table (server running)
 ```

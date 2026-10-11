@@ -1407,6 +1407,52 @@ def bright_lines(lum, count, axis):
     return edges
 
 
+def caption_top(prof, min_px=2, max_gap=8):
+    """Top row of a cell's two-line caption (number over name) from a per-row
+    count of caption-text pixels, scanning up from the bottom; None if the
+    cell has no such caption."""
+    y, top = len(prof) - 1, None
+    while y >= 0 and prof[y] < min_px:
+        y -= 1
+    for band in range(2):
+        if y < 0:
+            return None
+        while y >= 0 and (prof[y] >= min_px or (y > 0 and prof[y - 1] >= min_px)):
+            top = y
+            y -= 1
+        if band == 0:
+            gap = 0
+            while y >= 0 and prof[y] < min_px:
+                y -= 1
+                gap += 1
+            if gap > max_gap:
+                return None
+    return top
+
+
+def solid_icon_alpha(diff, tol):
+    """Alpha for an icon drawn on a near-black cell whose own dark metal is as
+    dark as the background (flood-filling the background from the edges eats
+    it): foreground = clearly not background, outlines closed, and enclosed
+    regions filled unless they are flat background showing through a gap."""
+    fg = diff >= tol
+    l2, n2 = ndimage.label(fg)
+    if n2:
+        sz = ndimage.sum(fg, l2, range(1, n2 + 1))
+        fg = np.isin(l2, np.where(sz >= max(12, sz.max() * 0.04))[0] + 1)
+    closed = ndimage.binary_closing(np.pad(fg, 2), iterations=2)[2:-2, 2:-2] | fg
+    holes = ndimage.binary_fill_holes(closed) & ~closed
+    lh, nh = ndimage.label(holes)
+    solid = closed.copy()
+    for k in range(1, nh + 1):
+        m = lh == k
+        if not ((diff[m] < 7).mean() > 0.6 and m.sum() > 4):
+            solid |= m
+    alpha = np.where(solid, 255, 0).astype(np.uint8)
+    alpha[solid & ~ndimage.binary_erosion(solid) & (diff < 40)] = 150
+    return alpha
+
+
 def process_item_grid(sheet):
     """Labelled item sheets: a header, then cols x rows boxed cells each with
     an icon on top and a caption below. Captions are dropped; the dark cell
@@ -1418,6 +1464,7 @@ def process_item_grid(sheet):
     lum = f.mean(-1)
     sat = (f.max(-1) - f.min(-1)) / np.maximum(f.max(-1), 1)
     line = (lum > 35) & (lum < 150) & (sat < 0.3)        # grey frame lines
+    text = (lum > 150) & (sat < 0.25)                     # white caption text
 
     def lines(axis):
         prof = line.mean(0) if axis == 0 else line.mean(1)
@@ -1429,6 +1476,13 @@ def process_item_grid(sheet):
                 pk = pk[1:]
         return pk
     xs, ys = lines(0), lines(1)
+    # a stray rule (the sheet's bottom frame, a label line) adds a short junk
+    # row / column: drop the shorter end until the configured count is left
+    def trim(ls, want):
+        while want and len(ls) - 1 > want:
+            ls = ls[1:] if ls[1] - ls[0] < ls[-1] - ls[-2] else ls[:-1]
+        return ls
+    xs, ys = trim(xs, sheet.get("cols")), trim(ys, sheet.get("rows"))
     if len(xs) < 2 or len(ys) < 2:           # fallback: even split
         cols, rows = sheet.get("cols", 5), sheet.get("rows", 10)
         top = sheet.get("headerPx") or int(H * 0.03)
@@ -1445,19 +1499,28 @@ def process_item_grid(sheet):
             idx = r * cols + c
             x0, x1 = xs[c] + 6, xs[c + 1] - 5
             y0, y1 = ys[r] + 6, ys[r] + 6 + int((ys[r + 1] - ys[r]) * icon_frac)
+            if sheet.get("captionCut") == "auto":
+                # cut just above the two caption lines (number + name)
+                cx0, cx1 = x0 + int((x1 - x0) * 0.3), x1 - int((x1 - x0) * 0.3)
+                ct = caption_top(text[y0:ys[r + 1] - 3, cx0:cx1].sum(1))
+                if ct is not None and ct > 16:
+                    y1 = y0 + ct - 2
             cell = im[y0:y1, x0:x1].astype(float)
             if cell.size == 0:
                 continue
             border = np.concatenate([cell[:3].reshape(-1, 3), cell[-3:].reshape(-1, 3), cell[:, :3].reshape(-1, 3), cell[:, -3:].reshape(-1, 3)])
             bg = np.median(border, 0)
             diff = np.abs(cell - bg).max(-1)
-            near = diff < sheet.get("tol", 26)
-            lab, n = ndimage.label(near)
-            edge_ids = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
-            bgmask = np.isin(lab, list(edge_ids))
-            alpha = np.where(bgmask, 0, 255).astype(np.uint8)
-            soft = ndimage.binary_dilation(bgmask, iterations=1) & ~bgmask & (diff < 60)
-            alpha[soft] = 140
+            if sheet.get("fillHoles"):
+                alpha = solid_icon_alpha(diff, sheet.get("tol", 16))
+            else:
+                near = diff < sheet.get("tol", 26)
+                lab, n = ndimage.label(near)
+                edge_ids = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+                bgmask = np.isin(lab, list(edge_ids))
+                alpha = np.where(bgmask, 0, 255).astype(np.uint8)
+                soft = ndimage.binary_dilation(bgmask, iterations=1) & ~bgmask & (diff < 60)
+                alpha[soft] = 140
             # drop tiny specks (sparkles of the frame)
             fg = alpha > 0
             l2, n2 = ndimage.label(fg)

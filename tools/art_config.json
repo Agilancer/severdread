@@ -9692,7 +9692,10 @@
    "tags": [
     "ammo"
    ],
-   "headerPx": 42
+   "headerPx": 42,
+   "captionCut": "auto",
+   "fillHoles": true,
+   "tol": 16
   },
   {
    "id": "it_keys_currency",

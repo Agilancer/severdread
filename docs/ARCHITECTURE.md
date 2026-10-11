@@ -119,3 +119,17 @@ traps.
   door / screen walls, by doors, stairs or rails, or behind detail boxes.
   Its thin collider (`obstacle: false`) only lets shots spark it.
   `placeWallTerminals` is shared with the hub.
+
+## Ammo caches (`level.ammo`, `src/game/levelgen/ammo.js`)
+
+`[{cell, x, z, big, boss?}]`: boxes and packs (`AMMO_SPOTS` in
+`data/ammo.js` times the level size 0.7-1.4, so ~1-3 boxes and ~1-4 packs)
+placed after the scatter pass (so solid props are already in) on reachable,
+headroom >= 1.4 floor that is not hazard / void / pit / door / stair /
+bridge / water / NOSPAWN, nor a chest, key, prop or scatter cell. Spots
+favour dead ends and side rooms off the start -> boss route, sit beside
+chests and just before the boss arena (at most one pack inside it).
+Positions come from the level seed (`rng.fork('ammo')`, the last draw of
+populate, so nothing else moves); the ammo type is picked at load by
+`Game.stockAmmo` from the guns the player carries, and the box before the
+boss arena (`boss: true`) always holds ammo for one of them.

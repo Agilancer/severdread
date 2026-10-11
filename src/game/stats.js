@@ -2,6 +2,7 @@
 import { emptyStats } from '../data/stats.js';
 import { ABILITIES } from '../data/abilities.js';
 import * as B from '../data/balance.js';
+import { AMMO_CAP_MAX } from '../data/ammo.js';
 import { upgradedArmor, upgradedStat, upgradedAbility } from './items.js';
 
 export function computeStats(level, equipment, buffs = {}) {
@@ -54,6 +55,7 @@ export function computeStats(level, equipment, buffs = {}) {
     thorns: s.thorns,
     bossDmg: s.bossDmg + (ab.boss_slayer || 0),
     splash: s.splash,
+    ammoCap: 1 + Math.min(AMMO_CAP_MAX, s.ammoCap),   // x base ammo capacity (data/ammo.js)
     elemDmg: { fire: s.fireDmg, ice: s.iceDmg, lightning: s.lightningDmg, poison: s.poisonDmg, void: s.voidDmg, holy: s.holyDmg, plasma: s.plasmaDmg, blood: s.bloodDmg, arcane: s.arcaneDmg, physical: 0 },
     res: { fire: s.fireRes + s.allRes, ice: s.iceRes + s.allRes, lightning: s.lightningRes + s.allRes, poison: s.poisonRes + s.allRes, void: s.voidRes + s.allRes, holy: s.allRes, plasma: s.allRes, blood: s.allRes, arcane: s.allRes, physical: 0 },
     abilities: ab,

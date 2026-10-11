@@ -3,10 +3,11 @@
 // fallback. Real art always wins as soon as it exists in the manifest.
 import { loadImage, cropToCanvas, makeCanvas } from '../engine/assets.js';
 import { MONSTERS } from '../data/monsters.js';
-import { PLACEHOLDER_BASES, ARCHETYPES } from '../data/weapons.js';
+import { PLACEHOLDER_BASES, ARCHETYPES, buildWeaponBases } from '../data/weapons.js';
 import { REAGENTS } from '../data/reagents.js';
 import { KEY_HEX } from './levelgen/common.js';
-import { ITEM_ICON_POOLS, KEY_SPRITES, CHEST_SPRITE, CHEST_SET, COIN_SPRITE, REAGENT_SPRITES, PLAYER_PROJ, ENEMY_PROJ_SHEETS, ENERGY_PROJ_SHEETS } from '../data/itemart.js';
+import { ITEM_ICON_POOLS, KEY_SPRITES, CHEST_SPRITE, CHEST_SET, COIN_SPRITE, REAGENT_SPRITES, PLAYER_PROJ, ENEMY_PROJ_SHEETS, ENERGY_PROJ_SHEETS, AMMO_SPRITES } from '../data/itemart.js';
+import { AMMO } from '../data/ammo.js';
 import {
   generateWeaponFP, generateWeaponIcon, FP_W, FP_H, ICON_W, ICON_H, generateArmorIcon, generateRingIcon,
   generateReagentIcon, generateChest, generateKeycard, generateCredit, generatePortalFrames, generateProp,
@@ -291,26 +292,8 @@ export class Content {
 
   // ---------------------------------------------------------------- weapons
   _buildWeaponBases() {
-    const bases = [];
-    const realCount = {};
-    for (const set of this.manifest.weaponSets) {
-      for (const w of set.weapons) {
-        // rows the art tool could not slice cleanly (fp.bad) never drop
-        const ok = !w.fp?.bad;
-        if (ok) realCount[w.archetype] = (realCount[w.archetype] || 0) + 1;
-        bases.push({ id: w.id, name: w.name, archetype: w.archetype, element: w.element || 'physical', flavor: w.flavor, rarity: w.rarity || null, real: true, set, row: w.row, fp: w.fp || null, enabled: ok });
-      }
-    }
-    // procedural placeholders fill archetypes with too little clean real art
-    for (const b of PLACEHOLDER_BASES) {
-      bases.push({ ...b, real: false, enabled: (realCount[b.archetype] || 0) < 2 });
-    }
-    for (const b of bases) {
-      if (b.enabled === undefined) b.enabled = true;
-      if (!ARCHETYPES[b.archetype]) { console.warn('unknown archetype', b.archetype, 'for', b.id); b.archetype = 'rifle'; }
-      this.baseById.set(b.id, b);
-    }
-    this.weaponBases = bases;
+    this.weaponBases = buildWeaponBases(this.manifest);
+    for (const b of this.weaponBases) this.baseById.set(b.id, b);
   }
 
   // First-person sprite of a weapon base: atlas handle + frame layout + `meta`,
@@ -414,6 +397,26 @@ export class Content {
     let h = this.store.get('gl_' + key);
     if (!h) h = this.store.fromCanvas('gl_' + key, e.canvas);
     return { url: e.url, handle: h };
+  }
+
+  // Ammo art (data/itemart.js AMMO_SPRITES): GL handle for a pack / box lying
+  // in the world, and {url, canvas} of a type's icon for the HUD and menus. A
+  // tinted placeholder stands in when the ammo sheet is missing.
+  ammoIconGL(spriteId, type) {
+    return (spriteId && this.spriteHandle(spriteId)) || this.store.get('ammo_ph_' + type) || this.store.fromCanvas('ammo_ph_' + type, this.ammoIcon(type).canvas);
+  }
+  ammoIcon(type) {
+    const n = AMMO_SPRITES[type]?.hud;
+    const e = n && this.spriteDataURL(`it_ammo_upgrades_${String(n).padStart(2, '0')}`);
+    if (e) return e;
+    const key = 'ammo_' + type;
+    let ph = this.iconURLCache.get(key);
+    if (!ph) {
+      const c = generateReagentIcon('core', AMMO[type]?.color || '#ccc', type.length);
+      ph = { url: c.toDataURL(), canvas: c, cw: c.width, ch: c.height };
+      this.iconURLCache.set(key, ph);
+    }
+    return ph;
   }
 
   npcPortraitCSS(npc) {

@@ -5,6 +5,7 @@ import { KEY_HEX } from '../game/levelgen/common.js';
 import { xpToNext, MAX_LEVEL } from '../data/balance.js';
 import { fmt, clamp } from '../core/math.js';
 import { input } from '../engine/input.js';
+import { AMMO, weaponAmmo, ammoCount, ammoMax, canFire } from '../game/ammo.js';
 
 const FONT_BIG = 'PressStart, monospace';
 const FONT = 'Silkscreen, monospace';
@@ -114,7 +115,7 @@ export class HUD {
     const sy0 = this.h - shh - pad - (touch ? 4 * s : 0);
     this.slotRects = [0, 1, 2, 3].map((i) => ({ x: sx0 + i * (sw + gap), y: sy0, w: sw, h: shh }));
     for (let i = 0; i < 4; i++) {
-      const x = sx0 + i * (sw + gap), it = ws[i], sel = i === p.weaponIndex;
+      const x = sx0 + i * (sw + gap), it = ws[i], sel = i === p.weaponIndex && !p.sidearmOn;
       g.fillStyle = sel ? 'rgba(60,10,14,.8)' : 'rgba(0,0,0,.55)';
       g.fillRect(x, sy0, sw, shh);
       const rc = it ? RARITY[it.rarity].color : '#333';
@@ -130,11 +131,29 @@ export class HUD {
           g.drawImage(img, ic.sx, ic.sy, ic.sw, ic.sh, x + (sw - dw) / 2, sy0 + (shh - dh) / 2, dw, dh);
         }
         if (it.element !== 'physical') { g.fillStyle = ELEMENTS[it.element].color; g.fillRect(x + sw - 6 * s, sy0 + 2 * s, 4 * s, 4 * s); }
+        // ammo guns: a thin bar of what is left; greyed out when empty
+        const wa = weaponAmmo(it);
+        if (wa) {
+          const f = clamp(ammoCount(sv, wa.type) / Math.max(1, ammoMax(wa.type, p.stats)), 0, 1);
+          if (!canFire(sv, it)) { g.fillStyle = 'rgba(20,20,24,.62)'; g.fillRect(x + 1, sy0 + 1, sw - 2, shh - 2); }
+          g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(x + 3 * s, sy0 + shh - 5 * s, sw - 6 * s, 3 * s);
+          g.fillStyle = this.ammoColor(wa.type, f); g.fillRect(x + 3 * s, sy0 + shh - 5 * s, (sw - 6 * s) * f, 3 * s);
+        }
       }
       this.text(String(i + 1), x + 3 * s, sy0 + 2 * s, sel ? '#ffdd55' : '#aaa', 8 * s, FONT_BIG);
     }
     const cw = p.currentWeapon();
-    if (cw && !game.inHub) this.text(cw.name, sx0, sy0 - 11 * s, RARITY[cw.rarity].color, 8 * s, FONT);
+    if (cw && !game.inHub) {
+      const right = sx0 + sw * 4 + gap * 3;
+      const aw = this.ammoReadout(game, p, cw, touch ? right : right + 10 * s, touch ? sy0 - 4 * s : sy0 + shh / 2, touch);
+      // weapon name above the slots (shortened if it would run into the touch readout)
+      let name = cw.name;
+      g.font = `${8 * s}px ${FONT}`;
+      const room = touch ? right - aw - 8 * s - sx0 : Infinity;
+      while (name.length > 4 && g.measureText(name).width > room) name = name.slice(0, -2);
+      if (name !== cw.name) name = name.trimEnd() + '.';
+      this.text(name, sx0, sy0 - 11 * s, cw.sidearm ? '#d8d8d8' : RARITY[cw.rarity].color, 8 * s, FONT);
+    }
 
     // ---------------- crosshair
     if (!game.inHub && !p.dead) {
@@ -181,6 +200,58 @@ export class HUD {
     else { this.drips.length = 0; this.bloodRain.length = 0; }
     if (p.dead) {
       g.fillStyle = 'rgba(80,0,0,.35)'; g.fillRect(0, 0, this.w, this.h);
+    }
+  }
+
+  // amber when low, red when empty, the type colour otherwise
+  ammoColor(type, f) { return f <= 0 ? '#ff3030' : f < 0.25 ? '#ffb020' : AMMO[type].color; }
+
+  // Current weapon's ammo: type icon + count / max, or an infinity mark for
+  // guns that never run dry. Desktop: right of the slots, centred on them
+  // (x = left edge); touch: above the slot row, right-aligned to it (x =
+  // right edge), clear of the FIRE / JUMP / DASH cluster. Returns its width.
+  ammoReadout(game, p, w, x, y, touch) {
+    const g = this.g, s = this.s, sv = game.save, wa = weaponAmmo(w);
+    const big = (touch ? 11 : 13) * s, small = (touch ? 7.5 : 8) * s, ic = (touch ? 18 : 22) * s;
+    const flash = game.time - p.dryT < 0.6 && Math.sin(game.time * 30) > 0;
+    let parts;
+    if (!wa) parts = { icon: null, n: null, max: null, col: '#d0d0d0' };
+    else {
+      const n = ammoCount(sv, wa.type), max = ammoMax(wa.type, p.stats);
+      const f = n < wa.cost ? 0 : n / max;
+      // count white (amber when low, red when empty, flashing on a dry click); the label in the type colour
+      parts = { icon: game.content.ammoIcon(wa.type), n: String(n), max: '/' + max, col: flash ? '#ffffff' : f <= 0 ? '#ff3030' : f < 0.25 ? '#ffb020' : '#ffffff', lcol: f <= 0 ? '#ff3030' : AMMO[wa.type].color, label: (AMMO[wa.type].short || AMMO[wa.type].name).toUpperCase() };
+    }
+    g.font = `${big}px ${FONT_BIG}`;
+    const nw = parts.n ? g.measureText(parts.n).width : big * 1.6;
+    g.font = `${small}px ${FONT}`;
+    const mw = parts.max ? g.measureText(parts.max).width : 0;
+    const width = (parts.icon ? ic + 4 * s : 0) + nw + (mw ? 3 * s + mw : 0);
+    const x0 = touch ? x - width : x, top = touch ? y - ic : y - ic / 2;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x0 - 4 * s, top - 2 * s, width + 8 * s, ic + 4 * s);
+    let cx = x0;
+    if (parts.icon) {
+      g.imageSmoothingEnabled = true;
+      g.drawImage(parts.icon.canvas, cx, top, ic, ic);
+      g.imageSmoothingEnabled = false;
+      cx += ic + 4 * s;
+    }
+    const ty = top + (ic - big) / 2;
+    if (parts.n) {
+      this.text(parts.n, cx, ty, parts.col, big, FONT_BIG);
+      this.text(parts.max, cx + nw + 3 * s, ty + big - small, '#b0a8a0', small, FONT);
+      if (!touch) this.text(parts.label, cx, top - small - 1 * s, parts.lcol, small * 0.85, FONT);
+    } else this.infinity(cx + nw / 2, top + ic / 2, nw * 0.26, parts.col, Math.max(1.5, 2 * s));
+    return width;
+  }
+  // a hand-drawn infinity sign (the pixel fonts have no glyph for it)
+  infinity(cx, cy, r, color, lw) {
+    const g = this.g;
+    g.lineWidth = lw;
+    for (const [col, o] of [['rgba(0,0,0,.85)', lw * 0.6], [color, 0]]) {
+      g.strokeStyle = col;
+      g.beginPath(); g.ellipse(cx - r + o, cy + o, r, r * 0.62, 0, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.ellipse(cx + r + o, cy + o, r, r * 0.62, 0, 0, Math.PI * 2); g.stroke();
     }
   }
 
