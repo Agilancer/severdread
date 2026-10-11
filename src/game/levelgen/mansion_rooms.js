@@ -11,7 +11,7 @@
 import { Kit, TS, F, FACE, OPP, GF, UF, CF, CANDLE, FIRE, MOON, lbox, lcol, llight, lrail, ledge, each, setCells } from './mansion_kit.js';
 import * as P from './mansion_props.js';
 
-const CARPET_STAIR = { floorTex: TS.CARPET, sideTex: TS.WOOD };
+const CARPET_STAIR = { floorTex: TS.CARPET, sideTex: TS.PANEL };   // panelled spandrels
 const MARBLE_STAIR = { floorTex: TS.FLOOR3, sideTex: TS.PILLAR, style: 'stone' };
 
 // ---------------------------------------------------------------- shared dressing
@@ -303,7 +303,7 @@ export const ROOMS = {
     k.floorRect(W - 2, 2, W, bm, my, { floorTex: TS.FLOOR, wallTex: TS.WALL2 });
     k.use(0, 0, W, 2); k.use(W - 2, 2, W, bm);
     const mez = [...k.cells(0, 0, W, 2), ...k.cells(W - 2, 2, W, bm)];
-    k.flight(W - 2, bm, 2, 7, 3, y, my, { floorTex: TS.WOOD, sideTex: TS.WOOD });
+    k.flight(W - 2, bm, 2, 7, 3, y, my, { floorTex: TS.WOOD, sideTex: TS.PANEL });
     k.rail(mez);
     platformFace(k, mez, { step: 3, pilTex: TS.WOOD });
     k.use(W - 2, bm + 7, W, bm + 8);

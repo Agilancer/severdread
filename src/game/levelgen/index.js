@@ -278,6 +278,8 @@ function populate(L, rng, theme, depth, playerLevel) {
       const wallAdj = g.neighbors(x, z).some(([nx, nz]) => !g.isOpen(nx, nz));
       if (!wallAdj && rng.chance(0.6)) continue;
       const name = rng.pick(propNames);
+      // a generator may keep a prop out of rooms it does not fit (plants in a crypt)
+      if (L.propOk && !L.propOk(c, name)) continue;
       props.push({ cell: c, x: x + 0.5 + rng.float(-0.2, 0.2), z: z + 0.5 + rng.float(-0.2, 0.2), prop: name });
     }
   }

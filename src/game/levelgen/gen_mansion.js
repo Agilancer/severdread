@@ -75,7 +75,8 @@ const KIND = {
   study: { floor: GF, ceil: [5.4, 6], floorTex: TS.FLOOR, wall: TS.WALL2, ceilTex: TS.CEIL },
   secret: { floor: GF, ceil: [2.8], floorTex: TS.FLOOR2, wall: TS.PITWALL, ceilTex: TS.PITWALL },
 };
-export const HOUSE_TOP = 13;     // eaves of the house walls
+export const HOUSE_TOP = 13;
+const PLANT_ROOMS = new Set(['foyer', 'conservatory', 'ballroom', 'dining', 'music', 'study', 'master', 'bedroom', 'nursery', 'bwhall', 'bath']);     // eaves of the house walls
 
 export function genMansion(rng, theme, depth) {
   const P = makePlan(rng, depth);
@@ -148,6 +149,15 @@ export function genMansion(rng, theme, depth) {
     arenaCells: arena, noFortify: true,
     boss: { x: boss.fr.px(bc.a, bc.b), z: boss.fr.pz(bc.a, bc.b) },
     scatterIndoor: true,
+    // the theme's loose props: candles anywhere but the lawns and the drive,
+    // pot plants only in the living rooms (never below stairs or underground)
+    propOk: (i, name) => {
+      const r = P.rooms[g.region[i]];
+      if (!r) return false;
+      if (name === 'plant') return PLANT_ROOMS.has(r.kind);
+      if (name === 'candles') return r.kind !== 'forecourt' && r.kind !== 'garden';
+      return true;
+    },
     mansion: M,
   };
 }

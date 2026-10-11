@@ -207,7 +207,7 @@ export class Kit {
   }
   // straight flight over a0..a0+na x b0..b0+nb climbing toward local ld
   flight(a0, b0, na, nb, ld, y0, y1, o = {}) {
-    const cells = lstairs(this.deco, this.fr, a0, b0, na, nb, ld, y0, y1, { style: 'wood', floorTex: TS.STAIR, sideTex: TS.WOOD, light: this.r.light, region: this.r.id, ...o });
+    const cells = lstairs(this.deco, this.fr, a0, b0, na, nb, ld, y0, y1, { style: 'wood', floorTex: TS.STAIR, sideTex: TS.PANEL, light: this.r.light, region: this.r.id, ...o });
     this.use(a0, b0, a0 + na, b0 + nb);
     return cells;
   }

@@ -9,7 +9,7 @@ import { HAZ } from '../grid.js';
 import * as P from './mansion_props.js';
 import { outside, markWall, wallTaken, hangPainting, sconces, placeFireplace, sittingGroup, platformFace, rug, consoleTables } from './mansion_rooms.js';
 
-const WOOD_STAIR = { floorTex: TS.WOOD, sideTex: TS.WOOD };
+const WOOD_STAIR = { floorTex: TS.STAIR, sideTex: TS.PANEL };
 const STONE_STAIR = { floorTex: TS.FLOOR2, sideTex: TS.PITWALL };
 
 // sink a rectangle into a pit (spikes / water / poison), walls of the pit in

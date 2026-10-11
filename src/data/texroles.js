@@ -647,6 +647,7 @@ export const PH = {
   carpet_grey: { type: 'carpet', kind: 'office', base: '#4a4e58', alt: '#3a3e46' },
   linen: { type: 'carpet', kind: 'office', base: '#d4d8d4', alt: '#c0c6c4' },
   linen_mint: { type: 'carpet', kind: 'office', base: '#a6c8bc', alt: '#90b4a8' },
+  linen_old: { type: 'carpet', kind: 'office', base: '#a49880', alt: '#8e8268' },
   // props (uv 'fit': one object face per tile)
   crate_wood: { type: 'crate', kind: 'wood', base: '#7a5430' },
   crate_metal: { type: 'crate', kind: 'metal', base: '#5a6068', accent: '#e0b020' },
@@ -696,6 +697,8 @@ export const PH = {
   concrete: { type: 'concrete', base: '#7a7872' },
   metal: { type: 'metal_panel', base: '#5a5e66' },
   wood: { type: 'wood', base: '#6b4426' },
+  panelling_dark: { type: 'panelling', base: '#4a2c18' },
+  wood_polished: { type: 'wood', base: '#5a3418' },
   rock: { type: 'rock', base: '#6a5a4c' },
   grass: { type: 'grass', base: '#3d5a26' },
   windows_day: { type: 'windows', base: '#3a3f48', alt: '#1a2a3a', accent: '#ffd27a' },
@@ -873,7 +876,7 @@ export const THEME_TEX = {
   sky_fortress: { wall: 'G:stone_grey_bricks 15:0,9', wall2: 'G:gold_filigree 22:4,0', floor: 'G:slab_dark_floor 15:0,8', floor2: '#cloud', side: 'G:stone_grey_bricks 15:0,9', accent: 'G:marble_columns G:gold_filigree' },
   // mansion: papered and panelled rooms, floorboards, marble halls, flagstones below stairs and
   // in the cellars, grey stone outside under slate, mossy garden walls, gravel walks
-  haunted_mansion: { wall: 'G:damask_red G:fleur_green', wall2: 'G:wood_dark_planks', floor: '21:3,9', floor2: 'G:slab_dark_floor 21:0,4', floor3: 'G:checker_floor G:marble_black_floor', ceil: '15:3,7 G:ornate_metal_tile', ceil2: 'G:star_carving G:gothic_quatrefoil', accent: 'G:gold_filigree', door: 'G:wood_iron_door 19:2,0', panel: '=WALL2', carpet: '#carpet_red', light: '#lantern', machine: '#bookshelf', side: '=WALL2', trim: '15:1,7 G:gothic_tracery', crate: '15:3,3', crate2: '15:3,4', glass: '19:0,6 19:0,3', facade: 'G:stone_grey_bricks 15:0,0', facade2: 'G:stone_moss_bricks G:stone_moss_blocks', facade3: 'G:plaster_brick_ruin 15:2,2', roof: '20:0,1 20:0,6', sidewalk: '20:1,1', ground: '6:2,1 5:2,5', pitwall: 'G:stone_dark_bricks G:cobweb_stone', pillar: '22:0,9 22:0,1', rock: '15:0,3', beam: '=WALL2', rail: '=WALL2', stair: '=WALL2', wood: 'G:wood_dark_planks', glass_plain: '#glass_pane_dark', fabric: '15:3,9 G:damask_red', paint: '#linen', screen: '#portrait', foliage: '#hedge' },
+  haunted_mansion: { wall: 'G:damask_red G:fleur_green', wall2: '#panelling_dark', floor: '21:3,9', floor2: 'G:slab_dark_floor 21:0,2', floor3: 'G:checker_floor G:marble_black_floor', ceil: '15:3,7 G:ornate_metal_tile', ceil2: 'G:star_carving G:gothic_quatrefoil', accent: 'G:gold_filigree', door: 'G:wood_iron_door 19:2,0', panel: '=WALL2', carpet: '#carpet_red', light: '#lantern', machine: '#bookshelf', side: '=WALL2', trim: '15:1,7 G:gothic_tracery', crate: '15:3,3', crate2: '15:3,4', glass: '19:0,6 19:0,3', facade: 'G:stone_grey_bricks 15:0,0', facade2: 'G:stone_moss_bricks G:stone_moss_blocks', facade3: 'G:plaster_brick_ruin 15:2,2', roof: '20:0,1 20:0,6', sidewalk: '20:1,1', ground: '6:2,1 5:2,5', pitwall: 'G:stone_dark_bricks G:cobweb_stone', pillar: '22:0,9 22:0,1', rock: '15:0,3', beam: 'G:wood_dark_planks', rail: 'G:wood_dark_planks', stair: 'G:wood_dark_planks', wood: '#wood_polished', glass_plain: '#glass_pane_dark', fabric: '15:3,9 G:damask_red', paint: '#linen_old', screen: '#portrait', foliage: '#hedge' },
   cyber_castle: { floor: 'G:ornate_metal_tile 22:3,2', floor2: '#neon_grid_cyan', wall2: '14:0,0 22:4,1', accent: '#neon_grid_pink', light: '#light_cyan', neon: '#sign_cyan', ceil: '22:1,2 14:0,0', side: '22:0,0 G:stone_dark_bricks', machine: 'machine@cyber', screen: 'screen@cyber' },
   // ---- city
   ruined_city: { floor: '21:0,1 21:4,3 21:0,9', floor2: '21:0,8 21:4,1 21:0,2', wall2: 'G:plaster_brick_ruin 21:4,6 18:4,5', ceil: '21:3,4 20:1,7', accent: '21:4,7 21:4,9 21:2,7', legacy: { wall: 'facade_ruin@city facade3@city' } },
